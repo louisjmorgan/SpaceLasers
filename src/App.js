@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-param-reassign */
 /* eslint-disable consistent-return */
@@ -6,7 +7,7 @@
 import React, { useEffect, useState, useRef, Suspense } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as satellite from 'satellite.js/lib/index';
 import * as THREE from 'three';
@@ -25,6 +26,8 @@ const TargetDate = new Date();
 const App = ({ title }) => {
   const [satellites, setSatellites] = useState([]);
   const [isLoaded, setLoaded] = useState(false);
+
+  const satelliteRef = useRef();
 
   function getCorsFreeUrl(url) {
     return `https://api.allorigins.win/raw?url=${url}`;
@@ -96,30 +99,17 @@ const App = ({ title }) => {
     return toThree(positionEcf);
   }
 
-  function getOrbitPoints(station) {
+  function getOrbitAtTime(station, initialDate, elapsedTime) {
+    initialDate.setSeconds(initialDate.getSeconds() + elapsedTime);
+    const date = initialDate;
     if (!station.satrec) {
       const { tle1, tle2 } = station;
       if (!tle1 || !tle2) return null;
       station.satrec = satellite.twoline2satrec(tle1, tle2);
     }
 
-    const ixpdotp = 1440 / (2.0 * 3.141592654);
-    const revsPerDay = station.satrec.no * ixpdotp;
-    const intervalMinutes = 1;
-    const minutes = station.orbitMinutes || 1440 / revsPerDay;
-    const initialDate = new Date();
-
-    const points = [];
-
-    for (let i = 0; i <= minutes; i += intervalMinutes) {
-      const date = new Date(initialDate.getTime() + i * 60000);
-
-      const pos = getPositionFromTLE(station, date);
-      if (!pos) continue;
-
-      points.push(new THREE.Vector3(pos.x, pos.y, pos.z));
-    }
-    return points;
+    const pos = getPositionFromTLE(station, date);
+    return new THREE.Vector3(pos.x, pos.y, pos.z);
   }
 
   useEffect(() => {
@@ -130,8 +120,12 @@ const App = ({ title }) => {
       0xffffff,
       defaultStationOptions
     ).then((results) => {
-      setSatellites((data) => [...data, results[0]]);
-      console.log(getOrbitPoints(results[0]));
+      setSatellites((data) => [
+        ...data,
+        results[0],
+        results[1],
+        results[2],
+      ]);
       setLoaded(() => true);
     });
   }, []);
@@ -151,10 +145,17 @@ const App = ({ title }) => {
           <Earth />
           {isLoaded ? (
             <Suspense fallback={null}>
-              <Satellite
-                position={getPositionFromTLE(satellites[0])}
-              />
-              <Orbit points={getOrbitPoints(satellites[0])} />
+              {satellites.map((sat, index) => {
+                return (
+                  <Satellite
+                    key={sat.name}
+                    station={sat}
+                    initialDate={TargetDate}
+                    getOrbitAtTime={getOrbitAtTime}
+                  />
+                );
+              })}
+              {/* <Orbit points={getOrbitPoints(satellites[0])} /> */}
             </Suspense>
           ) : (
             ''

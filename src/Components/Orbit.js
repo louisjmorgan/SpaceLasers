@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+
 import { Line } from '@react-three/drei';
 
 export default function Orbit({ points }) {
