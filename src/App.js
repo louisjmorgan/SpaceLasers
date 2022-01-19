@@ -1,10 +1,17 @@
+/* eslint-disable react/prop-types */
 /* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-param-reassign */
 /* eslint-disable consistent-return */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-continue */
-import React, { useEffect, useState, useRef, Suspense } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useMemo,
+  Suspense,
+} from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Canvas, useFrame } from '@react-three/fiber';
@@ -13,22 +20,20 @@ import * as satellite from 'satellite.js/lib/index';
 import * as THREE from 'three';
 
 import Earth from './Components/Earth';
-import Satellite from './Components/Satellite';
-import Orbit from './Components/Orbit';
+import Satellites from './Components/Satellites';
 
 const defaultStationOptions = {
   orbitMinutes: 1200,
   satelliteSize: 50,
 };
 
-const TargetDate = new Date();
-
 const App = ({ title }) => {
-  const [satellites, setSatellites] = useState([]);
+  // const [satellites, setSatellites] = useState([]);
   const [isLoaded, setLoaded] = useState(false);
-
-  const satelliteRef = useRef();
-
+  const [satellites, setSatellites] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const newDate = new Date();
+  const currentDate = newDate.valueOf();
   function getCorsFreeUrl(url) {
     return `https://api.allorigins.win/raw?url=${url}`;
   }
@@ -57,7 +62,7 @@ const App = ({ title }) => {
     return result;
   }
 
-  function loadTLEs(url, color, stationOptions) {
+  function loadTLEs(url, stationOptions) {
     return fetch(url).then((res) => {
       if (res.ok) {
         return res.text().then((text) => {
@@ -74,7 +79,6 @@ const App = ({ title }) => {
   };
 
   function getPositionFromTLE(station, date, type = 1) {
-    date = date || TargetDate;
     if (!station || !date) return null;
 
     if (!station.satrec) {
@@ -100,8 +104,9 @@ const App = ({ title }) => {
   }
 
   function getOrbitAtTime(station, initialDate, elapsedTime) {
-    initialDate.setSeconds(initialDate.getSeconds() + elapsedTime);
-    const date = initialDate;
+    const temp = new Date(initialDate);
+    temp.setSeconds(temp.getSeconds() + elapsedTime * 600);
+    const date = temp;
     if (!station.satrec) {
       const { tle1, tle2 } = station;
       if (!tle1 || !tle2) return null;
@@ -112,22 +117,26 @@ const App = ({ title }) => {
     return new THREE.Vector3(pos.x, pos.y, pos.z);
   }
 
+  function addSatellites(sats) {
+    setSatellites((data) => [...data, ...sats]);
+  }
+
+  function addCustomers(sats) {
+    setCustomers((data) => [...data, sats]);
+  }
+
   useEffect(() => {
     loadTLEs(
       getCorsFreeUrl(
         'http://www.celestrak.com/NORAD/elements/active.txt'
       ),
-      0xffffff,
       defaultStationOptions
-    ).then((results) => {
-      setSatellites((data) => [
-        ...data,
-        results[0],
-        results[1],
-        results[2],
-      ]);
-      setLoaded(() => true);
-    });
+    )
+      .then((results) => {
+        addSatellites([results[69], results[1]]);
+        addCustomers(results[1330]);
+      })
+      .then(setLoaded(() => true));
   }, []);
 
   return (
@@ -143,23 +152,12 @@ const App = ({ title }) => {
         />
         <Suspense fallback={null}>
           <Earth />
-          {isLoaded ? (
-            <Suspense fallback={null}>
-              {satellites.map((sat, index) => {
-                return (
-                  <Satellite
-                    key={sat.name}
-                    station={sat}
-                    initialDate={TargetDate}
-                    getOrbitAtTime={getOrbitAtTime}
-                  />
-                );
-              })}
-              {/* <Orbit points={getOrbitPoints(satellites[0])} /> */}
-            </Suspense>
-          ) : (
-            ''
-          )}
+          <Satellites
+            sats={satellites}
+            customers={customers}
+            initialDate={currentDate}
+            getOrbitAtTime={getOrbitAtTime}
+          />
         </Suspense>
       </Canvas>
     </Wrapper>
@@ -169,7 +167,10 @@ const App = ({ title }) => {
 const Wrapper = styled.div`
   position: relative;
   background: #070b34;
-  color: white;
+  h1 {
+    color: white;
+    text-align: center;
+  }
 
   canvas {
     height: 1200px;
