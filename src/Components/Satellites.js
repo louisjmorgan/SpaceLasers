@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 /* eslint-disable import/no-cycle */
 /* eslint-disable no-return-assign */
 /* eslint-disable prefer-destructuring */
@@ -23,6 +24,7 @@ const Satellites = ({
   initialDate,
   getOrbitAtTime,
   toggleLabel,
+  setTime,
 }) => {
   // const [satRefs, setSatRefs] = useState([]);
   // const [customerRefs, setCustomerRefs] = useState([]);

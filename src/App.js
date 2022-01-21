@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 /* eslint-disable no-shadow */
 /* eslint-disable react/destructuring-assignment */
 /* eslint-disable import/no-cycle */
@@ -31,6 +32,8 @@ import Earth from './Components/Earth';
 import Satellites from './Components/Satellites';
 import { Search } from './Components/Search';
 import Selected from './Components/Selected';
+import Time from './Components/Time';
+import Sun from './Components/Sun';
 
 const defaultStationOptions = {
   orbitMinutes: 1200,
@@ -47,8 +50,8 @@ const App = ({ title }) => {
   const [allStations, setAllStations] = useState([]);
   const [powerSats, setPowerSats] = useState([]);
   const [customers, setCustomers] = useState([]);
-  const labels = new Map();
   const newDate = new Date();
+  const [simTime, setSimTime] = useState({ current: newDate });
   const currentDate = newDate.valueOf();
   const earthRef = useRef();
   const context = useContext(Context);
@@ -129,6 +132,7 @@ const App = ({ title }) => {
     const temp = new Date(initialDate);
     temp.setSeconds(temp.getSeconds() + elapsedTime);
     const date = temp;
+
     if (!station.satrec) {
       const { tle1, tle2 } = station;
       if (!tle1 || !tle2) return null;
@@ -154,7 +158,7 @@ const App = ({ title }) => {
   }
 
   function addPowerSat(sat) {
-    if (isSelectedPower(sat) === -1)
+    if (isSelectedPower(sat) === -1 && isSelectedCustomer(sat) === -1)
       setPowerSats((sats) => [...sats, sat]);
   }
 
@@ -168,7 +172,7 @@ const App = ({ title }) => {
   }
 
   function addCustomerSat(sat) {
-    if (isSelectedCustomer(sat) === -1)
+    if (isSelectedCustomer(sat) === -1 && isSelectedPower(sat) === -1)
       setCustomers((sats) => [...sats, sat]);
   }
 
@@ -219,6 +223,7 @@ const App = ({ title }) => {
   return (
     <Wrapper className="app">
       <h1>{title}</h1>
+
       <Search
         stations={allStations}
         onResultClick={addPowerSat}
@@ -243,17 +248,14 @@ const App = ({ title }) => {
         onStationClick={toggleLabel}
         isCustomer
       />
-      <Context.Provider>
+      <Context.Provider value={Context}>
         <Canvas className="canvas">
+          <Time initialDate={currentDate} />
           <OrbitControls enableZoom={false} enablePan={false} />
           <ambientLight color={0x333333} />
-          <directionalLight
-            color={0xffffff}
-            intensity={1}
-            position={[149597870.7 / context.earthRadius, 0, 0]}
-          />
+          <Sun initialDate={currentDate} />
           <Suspense fallback={null}>
-            <Earth ref={earthRef} />
+            <Earth ref={earthRef} initialDate={currentDate} />
             <Suspense id="satellites">
               <Satellites
                 sats={powerSats}

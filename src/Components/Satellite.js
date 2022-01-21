@@ -59,17 +59,15 @@ const Satellite = ({
         />
         {station.showLabel ? (
           <Html>
-            <LabelWrapper>
-              <h1
-                style={{
-                  fontFamily: 'sans-serif',
-                  color: 'white',
-                  fontSize: '1rem',
-                }}
-              >
-                {station.name}
-              </h1>
-            </LabelWrapper>
+            <h1
+              style={{
+                fontFamily: 'sans-serif',
+                color: 'white',
+                fontSize: '1rem',
+              }}
+            >
+              {station.name}
+            </h1>
           </Html>
         ) : (
           ' '
@@ -89,7 +87,5 @@ Satellite.propTypes = {
 Satellite.defaultProps = {
   color: 0xff0000,
 };
-
-const LabelWrapper = styled.div``;
 
 export default Satellite;
