@@ -1,3 +1,7 @@
+/* eslint-disable no-shadow */
+/* eslint-disable react/destructuring-assignment */
+/* eslint-disable import/no-cycle */
+/* eslint-disable no-return-assign */
 /* eslint-disable react/prop-types */
 /* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
@@ -11,29 +15,43 @@ import React, {
   useRef,
   useMemo,
   Suspense,
+  createContext,
+  useContext,
 } from 'react';
+import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import * as satellite from 'satellite.js/lib/index';
 import * as THREE from 'three';
 
+import { earthRadius, tumin } from 'satellite.js/lib/constants';
 import Earth from './Components/Earth';
 import Satellites from './Components/Satellites';
+import { Search } from './Components/Search';
+import Selected from './Components/Selected';
 
 const defaultStationOptions = {
   orbitMinutes: 1200,
   satelliteSize: 50,
+  showLabel: false,
 };
 
+const Context = createContext({
+  earthRadius,
+  animationSpeed: 600,
+});
+
 const App = ({ title }) => {
-  // const [satellites, setSatellites] = useState([]);
-  const [isLoaded, setLoaded] = useState(false);
-  const [satellites, setSatellites] = useState([]);
+  const [allStations, setAllStations] = useState([]);
+  const [powerSats, setPowerSats] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const labels = new Map();
   const newDate = new Date();
   const currentDate = newDate.valueOf();
+  const earthRef = useRef();
+  const context = useContext(Context);
   function getCorsFreeUrl(url) {
     return `https://api.allorigins.win/raw?url=${url}`;
   }
@@ -75,10 +93,14 @@ const App = ({ title }) => {
   }
 
   const toThree = (v) => {
-    return { x: v.x / 6371, y: v.z / 6371, z: -v.y / 6371 };
+    return {
+      x: v.x / earthRadius,
+      y: v.z / earthRadius,
+      z: -v.y / earthRadius,
+    };
   };
 
-  function getPositionFromTLE(station, date, type = 1) {
+  function getPositionFromTLE(station, date, type = 2) {
     if (!station || !date) return null;
 
     if (!station.satrec) {
@@ -105,7 +127,7 @@ const App = ({ title }) => {
 
   function getOrbitAtTime(station, initialDate, elapsedTime) {
     const temp = new Date(initialDate);
-    temp.setSeconds(temp.getSeconds() + elapsedTime * 600);
+    temp.setSeconds(temp.getSeconds() + elapsedTime);
     const date = temp;
     if (!station.satrec) {
       const { tle1, tle2 } = station;
@@ -117,12 +139,63 @@ const App = ({ title }) => {
     return new THREE.Vector3(pos.x, pos.y, pos.z);
   }
 
-  function addSatellites(sats) {
-    setSatellites((data) => [...data, ...sats]);
+  function isSelectedCustomer(sat) {
+    const index = customers.findIndex(
+      (entry) => entry.name === sat.name
+    );
+    return index;
   }
 
-  function addCustomers(sats) {
-    setCustomers((data) => [...data, sats]);
+  function isSelectedPower(sat) {
+    const index = powerSats.findIndex(
+      (entry) => entry.name === sat.name
+    );
+    return index;
+  }
+
+  function addPowerSat(sat) {
+    if (isSelectedPower(sat) === -1)
+      setPowerSats((sats) => [...sats, sat]);
+  }
+
+  function removePowerSat(sat) {
+    const newPowerSats = powerSats.filter((s) => s !== sat);
+    setPowerSats(() => [...newPowerSats]);
+  }
+
+  function removeAllPowerSats() {
+    setPowerSats(() => []);
+  }
+
+  function addCustomerSat(sat) {
+    if (isSelectedCustomer(sat) === -1)
+      setCustomers((sats) => [...sats, sat]);
+  }
+
+  function removeCustomerSat(sat) {
+    const newCustomers = customers.filter((s) => s !== sat);
+    setCustomers(() => [...newCustomers]);
+  }
+
+  function removeAllCustomerSats() {
+    setCustomers(() => []);
+  }
+
+  function toggleLabel(sat) {
+    const index = isSelectedPower(sat);
+    if (index !== -1) {
+      const newPowerSats = powerSats;
+      newPowerSats[index].showLabel = !newPowerSats[index].showLabel;
+      setPowerSats(() => [...newPowerSats]);
+    } else {
+      const index2 = isSelectedCustomer(sat);
+      if (index2 !== -1) {
+        const newCustomerSats = customers;
+        newCustomerSats[index2].showLabel = !newCustomerSats[index2]
+          .showLabel;
+        setCustomers(() => [...newCustomerSats]);
+      }
+    }
   }
 
   useEffect(() => {
@@ -131,35 +204,68 @@ const App = ({ title }) => {
         'http://www.celestrak.com/NORAD/elements/active.txt'
       ),
       defaultStationOptions
-    )
-      .then((results) => {
-        addSatellites([results[69], results[1]]);
-        addCustomers(results[1330]);
-      })
-      .then(setLoaded(() => true));
+    ).then((results) => {
+      setAllStations(() => [...results]);
+      addCustomerSat(results[56]);
+      addCustomerSat(results[57]);
+      addCustomerSat(results[58]);
+      addCustomerSat(results[59]);
+      addPowerSat(results[70]);
+      addPowerSat(results[71]);
+      addPowerSat(results[72]);
+    });
   }, []);
 
   return (
     <Wrapper className="app">
       <h1>{title}</h1>
-      <Canvas className="canvas">
-        <OrbitControls enableZoom={false} />
-        <ambientLight color={0x333333} />
-        <directionalLight
-          color={0xffffff}
-          intensity={1}
-          position={[5, 3, 5]}
-        />
-        <Suspense fallback={null}>
-          <Earth />
-          <Satellites
-            sats={satellites}
-            customers={customers}
-            initialDate={currentDate}
-            getOrbitAtTime={getOrbitAtTime}
+      <Search
+        stations={allStations}
+        onResultClick={addPowerSat}
+        isCustomer={false}
+      />
+      <Selected
+        selected={powerSats}
+        onRemoveStation={removePowerSat}
+        onRemoveAll={removeAllPowerSats}
+        onStationClick={toggleLabel}
+        isCustomer={false}
+      />
+      <Search
+        stations={allStations}
+        onResultClick={addCustomerSat}
+        isCustomer
+      />
+      <Selected
+        selected={customers}
+        onRemoveStation={removeCustomerSat}
+        onRemoveAll={removeAllCustomerSats}
+        onStationClick={toggleLabel}
+        isCustomer
+      />
+      <Context.Provider>
+        <Canvas className="canvas">
+          <OrbitControls enableZoom={false} enablePan={false} />
+          <ambientLight color={0x333333} />
+          <directionalLight
+            color={0xffffff}
+            intensity={1}
+            position={[149597870.7 / context.earthRadius, 0, 0]}
           />
-        </Suspense>
-      </Canvas>
+          <Suspense fallback={null}>
+            <Earth ref={earthRef} />
+            <Suspense id="satellites">
+              <Satellites
+                sats={powerSats}
+                customers={customers}
+                initialDate={currentDate}
+                getOrbitAtTime={getOrbitAtTime}
+                toggleLabel={toggleLabel}
+              />
+            </Suspense>
+          </Suspense>
+        </Canvas>
+      </Context.Provider>
     </Wrapper>
   );
 };
@@ -167,13 +273,18 @@ const App = ({ title }) => {
 const Wrapper = styled.div`
   position: relative;
   background: #070b34;
+  height: 1200px;
+  width: 100vw;
+  font-family: sans-serif;
+  padding-top: 2.5rem;
   h1 {
     color: white;
     text-align: center;
+    font-family: serif;
   }
 
   canvas {
-    height: 1200px;
+    height: 60rem;
   }
 `;
 
@@ -181,4 +292,4 @@ App.propTypes = {
   title: PropTypes.string.isRequired,
 };
 
-export default App;
+export { App, Context };

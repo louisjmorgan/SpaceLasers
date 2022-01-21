@@ -7,7 +7,8 @@
     "start": "webpack serve --config build-utils/webpack.config.js --env env=dev",
     "build": "webpack --config build-utils/webpack.config.js --env env=prod",
     "build:analyze": "npm run build -- --env addon=bundleanalyze",
-    "test": "echo \"Error: no test specified\" && exit 0"
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "deploy": "gh-pages -d dist"
   },
   "keywords": [],
   "author": "Louis Morgan",
@@ -39,7 +40,11 @@
   "dependencies": {
     "@react-three/drei": "^8.4.0",
     "@react-three/fiber": "^7.0.24",
+    "cors": "^2.8.5",
+    "cross-fetch": "^3.1.4",
+    "gh-pages": "^3.2.3",
     "html-webpack-plugin": "^5.5.0",
+    "node-fetch": "^3.1.1",
     "prop-types": "^15.7.2",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
