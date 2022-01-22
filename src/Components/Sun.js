@@ -6,59 +6,33 @@ import { useFrame } from '@react-three/fiber';
 import React, { useContext, useRef } from 'react';
 import { Context } from '../App';
 
-const Sun = ({ initialDate }) => {
+const Sun = ({ simTime, initialDate }) => {
   const context = useContext(Context);
   const ref = useRef();
-  function getJD(date) {
-    return date.getTime() / 86400000 + 2440587 - 2451545;
-  }
-  function getNumberOfDays(date) {
-    const dayCount = [
-      0,
-      31,
-      59,
-      90,
-      120,
-      151,
-      181,
-      212,
-      243,
-      273,
-      304,
-      334,
-    ];
-    const mn = date.getMonth();
-    const dn = date.getDate();
-    const dayOfYear = dayCount[mn] + dn;
-    let sinceSolstice = dayOfYear - 9;
-    if (dayOfYear > 354) sinceSolstice = dayOfYear - 354;
-    // if (mn > 1 && this.isLeapYear()) dayOfYear++;
-    return sinceSolstice;
-  }
-  function getSunAngle(date) {
-    const maxTilt = -0.40910518;
-    const days = getNumberOfDays(date);
-    console.log(date);
-    const angle = maxTilt * Math.cos((6.28319 / 365) * (days + 10));
-    return angle;
-  }
 
   function getSunPosition(date) {
-    const angle = getSunAngle(date);
-    console.log(angle);
-    const y = Math.sin(angle) * (149597870.7 / context.earthRadius);
-    const x = Math.cos(angle) * (149597870.7 / context.earthRadius);
-    const z = 0;
+    const N = date.getTime() / 86400000 + 2440587 - 2451545;
+    let L = 4.89495042 + 0.0172027923937 * N;
+    if (L > 2 * Math.PI) L -= 2 * Math.PI;
+    let g = 6.240040768 + 0.0172019703436 * N;
+    if (g > 2 * Math.PI) g -= 2 * Math.PI;
+    const longitude =
+      L + 0.033423055 * Math.sin(g) + 0.0003490659 * Math.sin(g);
+    const distance =
+      1.00014 - 0.01671 * Math.cos(g) - 0.00014 * Math.cos(2 * g);
+    const obliquity = 0.40907027 - 6.981317008e-9 * N;
+    const y =
+      (distance * Math.sin(obliquity) * Math.sin(longitude)) /
+      context.earthRadius;
+    const x = (distance * Math.cos(longitude)) / context.earthRadius;
+    const z =
+      (distance * Math.cos(obliquity) * Math.sin(longitude)) /
+      context.earthRadius;
     return { x, y, z };
   }
 
   useFrame(({ clock }) => {
-    const temp = new Date(initialDate);
-    temp.setSeconds(
-      temp.getSeconds() +
-        clock.getElapsedTime() * context.animationSpeed
-    );
-    const date = temp;
+    const date = simTime;
     const position = getSunPosition(date);
     ref.current.position.x = position.x;
     ref.current.position.y = position.y;

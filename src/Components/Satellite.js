@@ -29,11 +29,7 @@ const Satellite = ({
   const context = useContext(Context);
   storeRef(name, satRef);
   useFrame(({ clock }) => {
-    const position = getOrbitAtTime(
-      station,
-      initialDate,
-      clock.getElapsedTime() * context.animationSpeed
-    );
+    const position = getOrbitAtTime(station);
     // if (position.z > 0) console.log(`${name} is in the sun`);
     // else console.log(`${name} no longer in the sun`);
     satRef.current.position.x = position.x;

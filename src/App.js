@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-shadow */
 /* eslint-disable react/destructuring-assignment */
@@ -23,7 +24,7 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import { OrbitControls, Html } from '@react-three/drei';
 import * as satellite from 'satellite.js/lib/index';
 import * as THREE from 'three';
 
@@ -43,7 +44,7 @@ const defaultStationOptions = {
 
 const Context = createContext({
   earthRadius,
-  animationSpeed: 600,
+  animationSpeed: 86400,
 });
 
 const App = ({ title }) => {
@@ -51,8 +52,12 @@ const App = ({ title }) => {
   const [powerSats, setPowerSats] = useState([]);
   const [customers, setCustomers] = useState([]);
   const newDate = new Date();
-  const [simTime, setSimTime] = useState({ current: newDate });
   const currentDate = newDate.valueOf();
+  const [simTime, setSimTime] = useState({ current: currentDate });
+  const [time, setTime] = useState({
+    current: new Date(currentDate),
+  });
+  const [animationSpeed, setSpeed] = useState(600);
   const earthRef = useRef();
   const context = useContext(Context);
   function getCorsFreeUrl(url) {
@@ -128,11 +133,8 @@ const App = ({ title }) => {
     return toThree(positionEcf);
   }
 
-  function getOrbitAtTime(station, initialDate, elapsedTime) {
-    const temp = new Date(initialDate);
-    temp.setSeconds(temp.getSeconds() + elapsedTime);
-    const date = temp;
-
+  function getOrbitAtTime(station) {
+    const date = simTime;
     if (!station.satrec) {
       const { tle1, tle2 } = station;
       if (!tle1 || !tle2) return null;
@@ -202,6 +204,13 @@ const App = ({ title }) => {
     }
   }
 
+  function updateTime(date) {
+    setSimTime(() => date);
+  }
+
+  function handleAnimationSpeed(e) {
+    setSpeed(e.target.value);
+  }
   useEffect(() => {
     loadTLEs(
       getCorsFreeUrl(
@@ -248,23 +257,51 @@ const App = ({ title }) => {
         onStationClick={toggleLabel}
         isCustomer
       />
+      <input
+        type="range"
+        id="speed"
+        name="speed"
+        min="600"
+        max="21110"
+        onClick={handleAnimationSpeed}
+        style={{
+          position: 'absolute',
+          bottom: '20%',
+          left: '50%',
+          right: '50%',
+          zIndex: 999,
+          width: '20rem',
+        }}
+      />
       <Context.Provider value={Context}>
         <Canvas className="canvas">
-          <Time initialDate={currentDate} />
           <OrbitControls enableZoom={false} enablePan={false} />
           <ambientLight color={0x333333} />
-          <Sun initialDate={currentDate} />
-          <Suspense fallback={null}>
-            <Earth ref={earthRef} initialDate={currentDate} />
-            <Suspense id="satellites">
-              <Satellites
-                sats={powerSats}
-                customers={customers}
-                initialDate={currentDate}
-                getOrbitAtTime={getOrbitAtTime}
-                toggleLabel={toggleLabel}
-              />
-            </Suspense>
+          <Suspense
+            fallback={
+              <Html>
+                <p style={{ color: 'white' }}>Loading...</p>
+              </Html>
+            }
+          >
+            <Time
+              initialDate={currentDate}
+              updateTime={updateTime}
+              speed={animationSpeed}
+            />
+            <Sun simTime={simTime} initialDate={currentDate} />
+            <Earth
+              ref={earthRef}
+              simTime={simTime}
+              initialDate={currentDate}
+            />
+
+            <Satellites
+              sats={powerSats}
+              customers={customers}
+              getOrbitAtTime={getOrbitAtTime}
+              toggleLabel={toggleLabel}
+            />
           </Suspense>
         </Canvas>
       </Context.Provider>

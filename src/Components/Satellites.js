@@ -21,7 +21,6 @@ import { Context } from '../App';
 const Satellites = ({
   sats,
   customers,
-  initialDate,
   getOrbitAtTime,
   toggleLabel,
   setTime,
@@ -110,7 +109,6 @@ const Satellites = ({
             key={sat.name}
             name={sat.name}
             station={sat}
-            initialDate={initialDate}
             getOrbitAtTime={getOrbitAtTime}
             toggleLabel={toggleLabel}
           />
@@ -123,7 +121,6 @@ const Satellites = ({
             key={sat.name}
             name={sat.name}
             station={sat}
-            initialDate={initialDate}
             getOrbitAtTime={getOrbitAtTime}
             toggleLabel={toggleLabel}
           />

@@ -7,19 +7,24 @@ import { Html } from '@react-three/drei';
 import * as satellite from 'satellite.js/lib/index';
 import { Context } from '../App';
 
-const Time = ({ initialDate }) => {
+const Time = ({ initialDate, updateTime, speed }) => {
   const [time, setTime] = useState({
     current: new Date(initialDate),
   });
   const context = useContext(Context);
-  useFrame(({ clock }) => {
-    const temp = new Date(initialDate);
-    temp.setSeconds(
-      temp.getSeconds() +
-        clock.getElapsedTime() * context.animationSpeed
+  useFrame(({ clock }, delta) => {
+    // const temp = new Date(initialDate);
+    // console.log(delta);
+    // temp.setSeconds(
+    //   temp.getSeconds() + clock.getElapsedTime() * speed
+    // );
+    // const date = temp;
+    const temp = time.current;
+    const date = new Date(
+      temp.setSeconds(temp.getSeconds() + delta * speed)
     );
-    const date = temp;
-    setTime(date);
+    setTime({ current: date });
+    updateTime(date);
   });
 
   return (
@@ -32,7 +37,7 @@ const Time = ({ initialDate }) => {
           width: '20rem',
         }}
       >
-        {`${time}`}
+        {`${time.current}`}
       </p>
     </Html>
   );
