@@ -46,7 +46,7 @@ const defaultStationOptions = {
 const Context = createContext({
   earthRadius,
   animationSpeed: 86400,
-  startDate: new Date(2022, 2, 20),
+  startDate: new Date(),
 });
 
 const App = ({ title }) => {
