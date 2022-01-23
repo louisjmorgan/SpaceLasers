@@ -50,13 +50,19 @@ const StationCard = ({
       onClick={(e) => onClick(station)}
     >
       <p>
-        <span title={noradId ? `NORAD ID: ${noradId}` : null}>
+        <span
+          className="Name"
+          title={noradId ? `NORAD ID: ${noradId}` : null}
+        >
           {station.name}
         </span>
         {onRemoveClick && (
           <span
             className="RemoveButton"
-            onClick={(e) => onRemoveClick(station)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemoveClick(station);
+            }}
           >
             x
           </span>
@@ -85,19 +91,14 @@ const Search = ({ stations, onResultClick, isCustomer }) => {
   };
 
   return (
-    <SearchWrapper
-      style={{
-        position: 'absolute',
-        left: isCustomer ? '' : '5%',
-        right: isCustomer ? '5%' : '',
-      }}
-      className="Search"
-    >
-      <SearchBox
-        value={searchText}
-        onChange={handleSearchChanged}
-        placeholder={isCustomer ? 'Add Customer' : 'Add Power'}
-      />
+    <SearchWrapper className="Search">
+      <div className="SearchBoxContainer">
+        <SearchBox
+          value={searchText}
+          onChange={handleSearchChanged}
+          placeholder={isCustomer ? 'Add Customer' : 'Add Power'}
+        />
+      </div>
       <SearchResults
         stations={stations}
         searchText={searchText}
@@ -108,24 +109,45 @@ const Search = ({ stations, onResultClick, isCustomer }) => {
 };
 
 const SearchWrapper = styled.div`
-  background-color: white;
-  max-width: 15rem;
-  overflow-x: hidden;
-  z-index: 999;
-  .SearchBox {
-    padding: 1rem;
+  max-width: 100%;
+  .SearchBoxContainer {
+    overflow-x: hidden;
+    padding: 1.5rem 1.5rem 1.5rem;
+    z-index: 999;
+    width: 17rem;
+    max-width: 100%;
+    background-color: white;
+    .SearchBox {
+      padding: 1rem;
+      width: 15rem;
+      max-width: 100%;
+    }
   }
+
   .ResultsWrapper {
-    max-height: 50rem;
+    position: relative;
+    top: -1.5rem;
+    left: 1.5rem;
+    z-index: 9999;
+    background-color: white;
+    border: solid black 2px;
+    border-bottom: 1px;
+    max-height: 20rem;
     overflow-y: scroll;
+    overflow-x: hidden;
     line-height: 1;
-    max-width: 14.5rem;
+    width: 17rem;
+    max-width: 100%;
   }
 
   .Result {
     border-bottom: 1px solid black;
-    padding-bottom: 0.5rem;
-    overflow-x: hidden;
+    padding: 0.5rem;
+    width: 100%;
+    p span {
+      overflow-x: hidden;
+      width: 100%;
+    }
     cursor: pointer;
     :hover {
       background-color: yellow;

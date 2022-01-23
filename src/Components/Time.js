@@ -27,20 +27,7 @@ const Time = ({ initialDate, updateTime, speed }) => {
     updateTime(date);
   });
 
-  return (
-    <Html position={[0, 3, 0]}>
-      <p
-        style={{
-          fontFamily: 'sans-serif',
-          color: 'white',
-          fontSize: '1rem',
-          width: '20rem',
-        }}
-      >
-        {`${time.current}`}
-      </p>
-    </Html>
-  );
+  return null;
 };
 
 export default Time;

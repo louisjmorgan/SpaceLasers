@@ -29,10 +29,11 @@ import * as satellite from 'satellite.js/lib/index';
 import * as THREE from 'three';
 
 import { earthRadius, tumin } from 'satellite.js/lib/constants';
+import GlobalStyles from './GlobalStyles';
 import Earth from './Components/Earth';
 import Satellites from './Components/Satellites';
-import { Search } from './Components/Search';
-import Selected from './Components/Selected';
+import UI from './Components/UI';
+import Controls from './Components/Controls';
 import Time from './Components/Time';
 import Sun from './Components/Sun';
 
@@ -179,6 +180,7 @@ const App = ({ title }) => {
   }
 
   function removeCustomerSat(sat) {
+    console.log('remove');
     const newCustomers = customers.filter((s) => s !== sat);
     setCustomers(() => [...newCustomers]);
   }
@@ -231,47 +233,24 @@ const App = ({ title }) => {
 
   return (
     <Wrapper className="app">
+      <GlobalStyles />
       <h1>{title}</h1>
-
-      <Search
-        stations={allStations}
-        onResultClick={addPowerSat}
-        isCustomer={false}
+      <Controls
+        simTime={simTime}
+        handleAnimationSpeed={handleAnimationSpeed}
       />
-      <Selected
-        selected={powerSats}
-        onRemoveStation={removePowerSat}
-        onRemoveAll={removeAllPowerSats}
-        onStationClick={toggleLabel}
-        isCustomer={false}
-      />
-      <Search
-        stations={allStations}
-        onResultClick={addCustomerSat}
-        isCustomer
-      />
-      <Selected
-        selected={customers}
-        onRemoveStation={removeCustomerSat}
-        onRemoveAll={removeAllCustomerSats}
-        onStationClick={toggleLabel}
-        isCustomer
-      />
-      <input
-        type="range"
-        id="speed"
-        name="speed"
-        min="600"
-        max="21110"
-        onClick={handleAnimationSpeed}
-        style={{
-          position: 'absolute',
-          bottom: '20%',
-          left: '50%',
-          right: '50%',
-          zIndex: 999,
-          width: '20rem',
-        }}
+      <UI
+        allStations={allStations}
+        powerSats={powerSats}
+        addPowerSat={addPowerSat}
+        removePowerSat={removePowerSat}
+        removeAllPowerSats={removeAllPowerSats}
+        customerSats={customers}
+        addCustomerSat={addCustomerSat}
+        removeCustomerSat={removeCustomerSat}
+        removeAllCustomerSats={removeAllCustomerSats}
+        toggleLabel={toggleLabel}
+        handleAnimationSpeed={handleAnimationSpeed}
       />
       <Context.Provider value={Context}>
         <Canvas className="canvas">
@@ -320,6 +299,8 @@ const Wrapper = styled.div`
     color: white;
     text-align: center;
     font-family: serif;
+    font-weight: bold;
+    font-size: 2rem;
   }
 
   canvas {

@@ -9,14 +9,16 @@ import * as THREE from 'three';
 import earthTexture from '../Assets/earth-texture.jpg';
 import earthBump from '../Assets/earth-bump.jpg';
 import earthSpecular from '../Assets/earth-specular.png';
+import cloudsTexture from '../Assets/fair_clouds_4k.png';
 import { Context } from '../App';
 
 const Earth = forwardRef(({ initialDate, simTime }, ref) => {
   const colorMap = useLoader(TextureLoader, earthTexture);
   const bumpMap = useLoader(TextureLoader, earthBump);
   const specularMap = useLoader(TextureLoader, earthSpecular);
-  const context = useContext(Context);
   const texture = [colorMap, bumpMap, specularMap];
+  const clouds = useLoader(TextureLoader, cloudsTexture);
+  const cloudsRef = useRef();
   texture.forEach((map) => {
     map.wrapS = THREE.RepeatWrapping;
     map.offset.x = 0.7;
@@ -28,25 +30,49 @@ const Earth = forwardRef(({ initialDate, simTime }, ref) => {
 
   useFrame(({ clock }) => {
     const date = simTime;
-    ref.current.rotation.y = getEarthRotationAngle(date);
+    const angle = getEarthRotationAngle(date);
+    ref.current.rotation.y = angle;
+    cloudsRef.current.rotation.y = angle;
   });
   return (
-    <mesh
-      ref={ref}
-      position={[0, 0, 0]}
-      rotation={[0, getEarthRotationAngle(new Date(initialDate)), 0]}
-    >
-      <sphereGeometry attach="geometry" args={[1, 32, 32]} />
-      <meshPhongMaterial
-        attach="material"
-        map={colorMap}
-        bumpMap={bumpMap}
-        bumpScale={0.005}
-        specularMap={specularMap}
-        specular="grey"
-        offset={[]}
-      />
-    </mesh>
+    <>
+      <mesh
+        ref={ref}
+        position={[0, 0, 0]}
+        rotation={[
+          0,
+          getEarthRotationAngle(new Date(initialDate)),
+          0,
+        ]}
+      >
+        <sphereGeometry attach="geometry" args={[1, 32, 32]} />
+        <meshPhongMaterial
+          attach="material"
+          map={colorMap}
+          bumpMap={bumpMap}
+          bumpScale={0.005}
+          specularMap={specularMap}
+          specular="grey"
+          offset={[]}
+        />
+      </mesh>
+      <mesh
+        position={[0, 0, 0]}
+        ref={cloudsRef}
+        rotation={[
+          0,
+          getEarthRotationAngle(new Date(initialDate)),
+          0,
+        ]}
+      >
+        <sphereGeometry attach="geometry" args={[1.01, 32, 32]} />
+        <meshPhongMaterial
+          attach="material"
+          map={clouds}
+          transparent
+        />
+      </mesh>
+    </>
   );
 });
 
