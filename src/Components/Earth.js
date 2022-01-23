@@ -21,10 +21,10 @@ const Earth = forwardRef(({ initialDate, simTime }, ref) => {
   const cloudsRef = useRef();
   texture.forEach((map) => {
     map.wrapS = THREE.RepeatWrapping;
-    map.offset.x = 0.7;
+    map.offset.x = 0.5;
   });
   function getEarthRotationAngle(date) {
-    const JD = date.getTime() / 86400000 + 2440587.5 - 2451545;
+    const JD = date.getTime() / 86400000 + 2440587 - 2451545;
     return 2 * Math.PI * (0.779057273264 + 1.00273781191135448 * JD);
   }
 

@@ -28,7 +28,7 @@ import { OrbitControls, Html } from '@react-three/drei';
 import * as satellite from 'satellite.js/lib/index';
 import * as THREE from 'three';
 
-import { earthRadius, tumin } from 'satellite.js/lib/constants';
+import { earthRadius } from 'satellite.js/lib/constants';
 import GlobalStyles from './GlobalStyles';
 import Earth from './Components/Earth';
 import Satellites from './Components/Satellites';
@@ -46,21 +46,21 @@ const defaultStationOptions = {
 const Context = createContext({
   earthRadius,
   animationSpeed: 86400,
+  startDate: new Date(2022, 2, 20),
 });
 
 const App = ({ title }) => {
   const [allStations, setAllStations] = useState([]);
   const [powerSats, setPowerSats] = useState([]);
   const [customers, setCustomers] = useState([]);
-  const newDate = new Date();
-  const currentDate = newDate.valueOf();
+  const context = useContext(Context);
+  const currentDate = context.startDate.valueOf();
   const [simTime, setSimTime] = useState({ current: currentDate });
   const [time, setTime] = useState({
     current: new Date(currentDate),
   });
   const [animationSpeed, setSpeed] = useState(600);
   const earthRef = useRef();
-  const context = useContext(Context);
   function getCorsFreeUrl(url) {
     return `https://api.allorigins.win/raw?url=${url}`;
   }

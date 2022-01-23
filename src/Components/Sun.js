@@ -26,7 +26,7 @@ const Sun = ({ simTime, initialDate }) => {
       context.earthRadius;
     const x = (distance * Math.cos(longitude)) / context.earthRadius;
     const z =
-      (distance * Math.cos(obliquity) * Math.sin(longitude)) /
+      -(distance * Math.cos(obliquity) * Math.sin(longitude)) /
       context.earthRadius;
     return { x, y, z };
   }
