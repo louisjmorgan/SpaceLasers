@@ -1,11 +1,13 @@
 /* eslint-disable react/prop-types */
-import React from 'react';
+import React, { Suspense } from 'react';
 import styled from 'styled-components';
 
 const Controls = ({ simTime, handleAnimationSpeed }) => {
   return (
     <ControlsWrapper>
-      <p>{simTime.toString()}</p>
+      <Suspense fallback={null}>
+        <p>{simTime.toString()}</p>
+      </Suspense>
       <input
         type="range"
         id="speed"

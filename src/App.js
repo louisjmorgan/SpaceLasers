@@ -24,7 +24,11 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Html } from '@react-three/drei';
+import {
+  OrbitControls,
+  Html,
+  useContextBridge,
+} from '@react-three/drei';
 import * as satellite from 'satellite.js/lib/index';
 import * as THREE from 'three';
 
@@ -41,6 +45,12 @@ const defaultStationOptions = {
   orbitMinutes: 1200,
   satelliteSize: 50,
   showLabel: false,
+  battery: {
+    capacity: 14, // Ampere hours
+    dischargeCurrent: 6.17, // Amperes
+    chargeCurrent: 5.14, // Amperes
+    chargeState: 0.9, // Percent charged
+  },
 };
 
 const Context = createContext({
@@ -53,14 +63,17 @@ const App = ({ title }) => {
   const [allStations, setAllStations] = useState([]);
   const [powerSats, setPowerSats] = useState([]);
   const [customers, setCustomers] = useState([]);
+
   const context = useContext(Context);
+  const ContextBridge = useContextBridge(Context);
+
   const currentDate = context.startDate.valueOf();
   const [simTime, setSimTime] = useState({ current: currentDate });
-  const [time, setTime] = useState({
-    current: new Date(currentDate),
-  });
   const [animationSpeed, setSpeed] = useState(600);
+
   const earthRef = useRef();
+  const sunRef = useRef();
+
   function getCorsFreeUrl(url) {
     return `https://api.allorigins.win/raw?url=${url}`;
   }
@@ -213,6 +226,64 @@ const App = ({ title }) => {
   function handleAnimationSpeed(e) {
     setSpeed(e.target.value);
   }
+
+  function isEclipsed(satRef) {
+    const sunPosition = sunRef.current.position;
+    const earthPosition = earthRef.current.position;
+    const satPosition = satRef.current.position;
+
+    const sunEarth = new THREE.Vector3();
+    sunEarth.subVectors(earthPosition, sunPosition);
+
+    const sunSat = new THREE.Vector3();
+    sunSat.subVectors(satPosition, earthPosition);
+
+    const angle = sunEarth.angleTo(sunSat);
+
+    const sunEarthDistance = sunPosition.distanceTo(earthPosition);
+    const sunSatDistance = sunPosition.distanceTo(satPosition);
+
+    const limbAngle = Math.atan2(
+      context.earthRadius,
+      sunEarthDistance
+    );
+
+    if (angle > limbAngle || sunSatDistance < sunEarthDistance) {
+      return false;
+    }
+
+    return true;
+  }
+
+  function chargeBattery(sat, delta) {
+    const { chargeState, capacity, chargeCurrent } = sat.battery;
+    const newChargeState =
+      (chargeState * capacity +
+        delta * animationSpeed * (1 / 3600) * chargeCurrent) /
+      capacity;
+    const index = isSelectedCustomer(sat);
+    if (index !== -1) {
+      const newCustomerSats = customers;
+      newCustomerSats[index].battery.chargeState = newChargeState;
+      setCustomers(() => newCustomerSats);
+    }
+  }
+
+  function dischargeBattery(sat, delta) {
+    const { chargeState, capacity, dischargeCurrent } = sat.battery;
+
+    const newChargeState =
+      (chargeState * capacity -
+        delta * animationSpeed * (1 / 3600) * dischargeCurrent) /
+      capacity;
+    const index = isSelectedCustomer(sat);
+    if (index !== -1) {
+      const newCustomerSats = customers;
+      newCustomerSats[index].battery.chargeState = newChargeState;
+      setCustomers(() => newCustomerSats);
+    }
+  }
+
   useEffect(() => {
     loadTLEs(
       getCorsFreeUrl(
@@ -221,13 +292,12 @@ const App = ({ title }) => {
       defaultStationOptions
     ).then((results) => {
       setAllStations(() => [...results]);
-      addCustomerSat(results[56]);
-      addCustomerSat(results[57]);
       addCustomerSat(results[58]);
       addCustomerSat(results[59]);
+      addCustomerSat(results[60]);
+      addPowerSat(results[69]);
       addPowerSat(results[70]);
       addPowerSat(results[71]);
-      addPowerSat(results[72]);
     });
   }, []);
 
@@ -254,34 +324,43 @@ const App = ({ title }) => {
       />
       <Context.Provider value={Context}>
         <Canvas className="canvas">
-          <OrbitControls enableZoom={false} enablePan={false} />
-          <ambientLight color={0x333333} />
-          <Suspense
-            fallback={
-              <Html>
-                <p style={{ color: 'white' }}>Loading...</p>
-              </Html>
-            }
-          >
-            <Time
-              initialDate={currentDate}
-              updateTime={updateTime}
-              speed={animationSpeed}
-            />
-            <Sun simTime={simTime} initialDate={currentDate} />
-            <Earth
-              ref={earthRef}
-              simTime={simTime}
-              initialDate={currentDate}
-            />
+          <ContextBridge>
+            <OrbitControls enableZoom={false} enablePan={false} />
+            <ambientLight color={0x333333} />
+            <Suspense
+              fallback={
+                <Html>
+                  <p style={{ color: 'white' }}>Loading...</p>
+                </Html>
+              }
+            >
+              <Time
+                initialDate={currentDate}
+                updateTime={updateTime}
+                speed={animationSpeed}
+              />
+              <Sun
+                simTime={simTime}
+                initialDate={currentDate}
+                ref={sunRef}
+              />
+              <Earth
+                ref={earthRef}
+                simTime={simTime}
+                initialDate={currentDate}
+              />
 
-            <Satellites
-              sats={powerSats}
-              customers={customers}
-              getOrbitAtTime={getOrbitAtTime}
-              toggleLabel={toggleLabel}
-            />
-          </Suspense>
+              <Satellites
+                sats={powerSats}
+                customers={customers}
+                getOrbitAtTime={getOrbitAtTime}
+                toggleLabel={toggleLabel}
+                isEclipsed={isEclipsed}
+                chargeBattery={chargeBattery}
+                dischargeBattery={dischargeBattery}
+              />
+            </Suspense>
+          </ContextBridge>
         </Canvas>
       </Context.Provider>
     </Wrapper>

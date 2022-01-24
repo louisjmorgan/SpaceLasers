@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable import/no-cycle */
 /* eslint-disable react/forbid-prop-types */
 /* eslint-disable react/prop-types */
@@ -23,19 +24,24 @@ const Satellite = ({
   storeRef,
   name,
   toggleLabel,
+  isEclipsed,
+  chargeBattery,
+  dischargeBattery,
 }) => {
   const satRef = useRef();
   const textRef = useRef();
   const context = useContext(Context);
   storeRef(name, satRef);
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, delta) => {
     const position = getOrbitAtTime(station);
-    // if (position.z > 0) console.log(`${name} is in the sun`);
-    // else console.log(`${name} no longer in the sun`);
+
     satRef.current.position.x = position.x;
     satRef.current.position.y = position.y;
     satRef.current.position.z = position.z;
     // orbitRef.current.points = points;
+    const charge = !isEclipsed(satRef);
+    if (charge) chargeBattery(station, delta);
+    if (!charge) dischargeBattery(station, delta);
   });
 
   return (
@@ -63,6 +69,8 @@ const Satellite = ({
               }}
             >
               {station.name}
+              {' Charge: '}
+              {`${station.battery.chargeState * 100}%`}
             </h1>
           </Html>
         ) : (

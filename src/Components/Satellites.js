@@ -23,16 +23,14 @@ const Satellites = ({
   customers,
   getOrbitAtTime,
   toggleLabel,
-  setTime,
+  isEclipsed,
+  chargeBattery,
+  dischargeBattery,
 }) => {
-  // const [satRefs, setSatRefs] = useState([]);
-  // const [customerRefs, setCustomerRefs] = useState([]);
   const satRefs = new Map();
   const customerRefs = new Map();
   const beamRefs = new Map();
-  // const beamRefs = new Array(sats.length * customers.length)
-  //   .fill()
-  //   .map(() => useRef());
+
   const context = useContext(Context);
 
   function initiateBeams() {
@@ -111,6 +109,9 @@ const Satellites = ({
             station={sat}
             getOrbitAtTime={getOrbitAtTime}
             toggleLabel={toggleLabel}
+            isEclipsed={isEclipsed}
+            chargeBattery={chargeBattery}
+            dischargeBattery={dischargeBattery}
           />
         );
       })}
@@ -123,6 +124,9 @@ const Satellites = ({
             station={sat}
             getOrbitAtTime={getOrbitAtTime}
             toggleLabel={toggleLabel}
+            isEclipsed={isEclipsed}
+            chargeBattery={chargeBattery}
+            dischargeBattery={dischargeBattery}
           />
         );
       })}

@@ -1,14 +1,14 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable import/no-cycle */
 /* eslint-disable react/destructuring-assignment */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import { useFrame } from '@react-three/fiber';
-import React, { useContext, useRef } from 'react';
+import React, { useContext, useRef, forwardRef } from 'react';
 import { Context } from '../App';
 
-const Sun = ({ simTime, initialDate }) => {
+const Sun = forwardRef(({ simTime, initialDate }, ref) => {
   const context = useContext(Context);
-  const ref = useRef();
 
   function getSunPosition(date) {
     const N = date.getTime() / 86400000 + 2440587 - 2451545;
@@ -46,6 +46,6 @@ const Sun = ({ simTime, initialDate }) => {
       position={[getSunPosition(new Date(initialDate)), 0, 0]}
     />
   );
-};
+});
 
 export default Sun;
