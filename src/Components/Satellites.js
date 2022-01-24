@@ -1,42 +1,44 @@
-/* eslint-disable no-unused-expressions */
 /* eslint-disable import/no-cycle */
-/* eslint-disable no-return-assign */
-/* eslint-disable prefer-destructuring */
-/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import React, {
-  Suspense,
-  useRef,
-  useState,
-  useEffect,
-  useContext,
-  forwardRef,
-} from 'react';
+import React, { useContext } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Select } from '@react-three/drei';
-import Satellite from './Satellite';
+import PowerSats from './PowerSats';
+import CustomerSats from './CustomerSats';
 import Beam from './Beam';
 import { Context } from '../App';
 
 const Satellites = ({
-  sats,
+  powerSats,
   customers,
   getOrbitAtTime,
   toggleLabel,
   isEclipsed,
-  chargeBattery,
-  dischargeBattery,
+  animationSpeed,
 }) => {
-  const satRefs = new Map();
-  const customerRefs = new Map();
-  const beamRefs = new Map();
-
   const context = useContext(Context);
 
-  function initiateBeams() {
+  // Callbacks to store refs from child components
+  const customerRefs = new Map();
+  function storeCustomerRef(key, ref) {
+    customerRefs.set(key, ref);
+  }
+
+  const powerRefs = new Map();
+  function storePowerRef(key, ref) {
+    powerRefs.set(key, ref);
+  }
+
+  const beamRefs = new Map();
+  function storeBeamRef(key, ref) {
+    beamRefs.set(key, ref);
+  }
+
+  // Initialize beams for each power-customer pair
+
+  function initializeBeams() {
     const beams = [];
-    sats.forEach((sat, satIndex) => {
-      customers.forEach((customer, customerIndex) => {
+    powerSats.forEach((sat) => {
+      customers.forEach((customer) => {
         beams.push({
           satellite: sat.name,
           customer: customer.name,
@@ -46,7 +48,9 @@ const Satellites = ({
     return beams;
   }
 
-  const beams = initiateBeams();
+  const beams = initializeBeams();
+
+  // Check distance to determine if beam should be rendered
 
   function getDistance(sat1, sat2) {
     const a =
@@ -59,22 +63,10 @@ const Satellites = ({
     return Math.sqrt(a * a + b * b + c * c);
   }
 
-  function storeSatRef(key, ref) {
-    // setSatRefs((refs) => [...refs, ref]);
-    satRefs.set(key, ref);
-  }
+  // Animate beams
 
-  function storeCustomerRef(key, ref) {
-    // setCustomerRefs((refs) => [...refs, ref]);
-    customerRefs.set(key, ref);
-  }
-
-  function storeBeamRef(key, ref) {
-    beamRefs.set(key, ref);
-  }
-
-  useFrame(({ clock }) => {
-    satRefs.forEach((satRef, satName) => {
+  useFrame(() => {
+    powerRefs.forEach((satRef, satName) => {
       customerRefs.forEach((customerRef, customerName) => {
         const distance = getDistance(
           satRef.current,
@@ -97,40 +89,28 @@ const Satellites = ({
       });
     });
   });
+
   return (
     <>
-      {sats.map((sat, index) => {
-        return (
-          <Satellite
-            color="yellow"
-            storeRef={storeSatRef}
-            key={sat.name}
-            name={sat.name}
-            station={sat}
-            getOrbitAtTime={getOrbitAtTime}
-            toggleLabel={toggleLabel}
-            isEclipsed={isEclipsed}
-            chargeBattery={chargeBattery}
-            dischargeBattery={dischargeBattery}
-          />
-        );
-      })}
-      {customers.map((sat, index) => {
-        return (
-          <Satellite
-            storeRef={storeCustomerRef}
-            key={sat.name}
-            name={sat.name}
-            station={sat}
-            getOrbitAtTime={getOrbitAtTime}
-            toggleLabel={toggleLabel}
-            isEclipsed={isEclipsed}
-            chargeBattery={chargeBattery}
-            dischargeBattery={dischargeBattery}
-          />
-        );
-      })}
-      {beams.map((beam, index) => {
+      <CustomerSats
+        customers={customers}
+        storeRef={storeCustomerRef}
+        getOrbitAtTime={getOrbitAtTime}
+        toggleLabel={toggleLabel}
+        isEclipsed={isEclipsed}
+        animationSpeed={animationSpeed}
+      />
+      <PowerSats
+        powerSats={powerSats}
+        customers={customers}
+        storePowerRef={storePowerRef}
+        powerRefs={powerRefs}
+        customerRefs={customerRefs}
+        getOrbitAtTime={getOrbitAtTime}
+        toggleLabel={toggleLabel}
+        isEclipsed={isEclipsed}
+      />
+      {beams.map((beam) => {
         return (
           <Beam
             key={`${beam.satellite}-${beam.customer}`}

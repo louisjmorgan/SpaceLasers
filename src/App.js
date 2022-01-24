@@ -31,7 +31,6 @@ import {
 } from '@react-three/drei';
 import * as satellite from 'satellite.js/lib/index';
 import * as THREE from 'three';
-
 import { earthRadius } from 'satellite.js/lib/constants';
 import GlobalStyles from './GlobalStyles';
 import Earth from './Components/Earth';
@@ -45,34 +44,33 @@ const defaultStationOptions = {
   orbitMinutes: 1200,
   satelliteSize: 50,
   showLabel: false,
-  battery: {
-    capacity: 14, // Ampere hours
-    dischargeCurrent: 6.17, // Amperes
-    chargeCurrent: 5.14, // Amperes
-    chargeState: 0.9, // Percent charged
-  },
 };
 
 const Context = createContext({
   earthRadius,
-  animationSpeed: 86400,
   startDate: new Date(),
 });
 
 const App = ({ title }) => {
+  // Initialize satellite state
   const [allStations, setAllStations] = useState([]);
   const [powerSats, setPowerSats] = useState([]);
-  const [customers, setCustomers] = useState([]);
+  const [customerSats, setCustomers] = useState([]);
 
+  // Initialize context (global constants)
   const context = useContext(Context);
   const ContextBridge = useContextBridge(Context);
 
+  // Initialize simulation parameters
   const currentDate = context.startDate.valueOf();
   const [simTime, setSimTime] = useState({ current: currentDate });
   const [animationSpeed, setSpeed] = useState(600);
 
+  // Create references for sun and earth 3d models
   const earthRef = useRef();
   const sunRef = useRef();
+
+  // TLE functions
 
   function getCorsFreeUrl(url) {
     return `https://api.allorigins.win/raw?url=${url}`;
@@ -159,12 +157,7 @@ const App = ({ title }) => {
     return new THREE.Vector3(pos.x, pos.y, pos.z);
   }
 
-  function isSelectedCustomer(sat) {
-    const index = customers.findIndex(
-      (entry) => entry.name === sat.name
-    );
-    return index;
-  }
+  // Find sat indices
 
   function isSelectedPower(sat) {
     const index = powerSats.findIndex(
@@ -172,6 +165,15 @@ const App = ({ title }) => {
     );
     return index;
   }
+
+  function isSelectedCustomer(sat) {
+    const index = customerSats.findIndex(
+      (entry) => entry.name === sat.name
+    );
+    return index;
+  }
+
+  // Update power sat state
 
   function addPowerSat(sat) {
     if (isSelectedPower(sat) === -1 && isSelectedCustomer(sat) === -1)
@@ -187,6 +189,8 @@ const App = ({ title }) => {
     setPowerSats(() => []);
   }
 
+  // Update customer sat state
+
   function addCustomerSat(sat) {
     if (isSelectedCustomer(sat) === -1 && isSelectedPower(sat) === -1)
       setCustomers((sats) => [...sats, sat]);
@@ -194,7 +198,7 @@ const App = ({ title }) => {
 
   function removeCustomerSat(sat) {
     console.log('remove');
-    const newCustomers = customers.filter((s) => s !== sat);
+    const newCustomers = customerSats.filter((s) => s !== sat);
     setCustomers(() => [...newCustomers]);
   }
 
@@ -202,30 +206,7 @@ const App = ({ title }) => {
     setCustomers(() => []);
   }
 
-  function toggleLabel(sat) {
-    const index = isSelectedPower(sat);
-    if (index !== -1) {
-      const newPowerSats = powerSats;
-      newPowerSats[index].showLabel = !newPowerSats[index].showLabel;
-      setPowerSats(() => [...newPowerSats]);
-    } else {
-      const index2 = isSelectedCustomer(sat);
-      if (index2 !== -1) {
-        const newCustomerSats = customers;
-        newCustomerSats[index2].showLabel = !newCustomerSats[index2]
-          .showLabel;
-        setCustomers(() => [...newCustomerSats]);
-      }
-    }
-  }
-
-  function updateTime(date) {
-    setSimTime(() => date);
-  }
-
-  function handleAnimationSpeed(e) {
-    setSpeed(e.target.value);
-  }
+  // Battery simulation functions
 
   function isEclipsed(satRef) {
     const sunPosition = sunRef.current.position;
@@ -255,34 +236,34 @@ const App = ({ title }) => {
     return true;
   }
 
-  function chargeBattery(sat, delta) {
-    const { chargeState, capacity, chargeCurrent } = sat.battery;
-    const newChargeState =
-      (chargeState * capacity +
-        delta * animationSpeed * (1 / 3600) * chargeCurrent) /
-      capacity;
-    const index = isSelectedCustomer(sat);
+  // UI handlers
+
+  function toggleLabel(sat) {
+    const index = isSelectedPower(sat);
     if (index !== -1) {
-      const newCustomerSats = customers;
-      newCustomerSats[index].battery.chargeState = newChargeState;
-      setCustomers(() => newCustomerSats);
+      const newPowerSats = powerSats;
+      newPowerSats[index].showLabel = !newPowerSats[index].showLabel;
+      setPowerSats(() => [...newPowerSats]);
+    } else {
+      const index2 = isSelectedCustomer(sat);
+      if (index2 !== -1) {
+        const newCustomerSats = customerSats;
+        newCustomerSats[index2].showLabel = !newCustomerSats[index2]
+          .showLabel;
+        setCustomers(() => [...newCustomerSats]);
+      }
     }
   }
 
-  function dischargeBattery(sat, delta) {
-    const { chargeState, capacity, dischargeCurrent } = sat.battery;
-
-    const newChargeState =
-      (chargeState * capacity -
-        delta * animationSpeed * (1 / 3600) * dischargeCurrent) /
-      capacity;
-    const index = isSelectedCustomer(sat);
-    if (index !== -1) {
-      const newCustomerSats = customers;
-      newCustomerSats[index].battery.chargeState = newChargeState;
-      setCustomers(() => newCustomerSats);
-    }
+  function updateTime(date) {
+    setSimTime(() => date);
   }
+
+  function handleAnimationSpeed(e) {
+    setSpeed(e.target.value);
+  }
+
+  // Load TLEs into memory and initialize default sats
 
   useEffect(() => {
     loadTLEs(
@@ -292,9 +273,9 @@ const App = ({ title }) => {
       defaultStationOptions
     ).then((results) => {
       setAllStations(() => [...results]);
+      addCustomerSat(results[65]);
       addCustomerSat(results[58]);
-      addCustomerSat(results[59]);
-      addCustomerSat(results[60]);
+      addCustomerSat(results[61]);
       addPowerSat(results[69]);
       addPowerSat(results[70]);
       addPowerSat(results[71]);
@@ -315,54 +296,50 @@ const App = ({ title }) => {
         addPowerSat={addPowerSat}
         removePowerSat={removePowerSat}
         removeAllPowerSats={removeAllPowerSats}
-        customerSats={customers}
+        customerSats={customerSats}
         addCustomerSat={addCustomerSat}
         removeCustomerSat={removeCustomerSat}
         removeAllCustomerSats={removeAllCustomerSats}
         toggleLabel={toggleLabel}
         handleAnimationSpeed={handleAnimationSpeed}
       />
-      <Context.Provider value={Context}>
-        <Canvas className="canvas">
-          <ContextBridge>
-            <OrbitControls enableZoom={false} enablePan={false} />
-            <ambientLight color={0x333333} />
-            <Suspense
-              fallback={
-                <Html>
-                  <p style={{ color: 'white' }}>Loading...</p>
-                </Html>
-              }
-            >
-              <Time
-                initialDate={currentDate}
-                updateTime={updateTime}
-                speed={animationSpeed}
-              />
-              <Sun
-                simTime={simTime}
-                initialDate={currentDate}
-                ref={sunRef}
-              />
-              <Earth
-                ref={earthRef}
-                simTime={simTime}
-                initialDate={currentDate}
-              />
-
-              <Satellites
-                sats={powerSats}
-                customers={customers}
-                getOrbitAtTime={getOrbitAtTime}
-                toggleLabel={toggleLabel}
-                isEclipsed={isEclipsed}
-                chargeBattery={chargeBattery}
-                dischargeBattery={dischargeBattery}
-              />
-            </Suspense>
-          </ContextBridge>
-        </Canvas>
-      </Context.Provider>
+      <Canvas className="canvas">
+        <ContextBridge>
+          <OrbitControls enableZoom={false} enablePan={false} />
+          <ambientLight color={0x333333} />
+          <Suspense
+            fallback={
+              <Html>
+                <p style={{ color: 'white' }}>Loading...</p>
+              </Html>
+            }
+          >
+            <Time
+              initialDate={currentDate}
+              updateTime={updateTime}
+              speed={animationSpeed}
+            />
+            <Sun
+              simTime={simTime}
+              initialDate={currentDate}
+              ref={sunRef}
+            />
+            <Earth
+              ref={earthRef}
+              simTime={simTime}
+              initialDate={currentDate}
+            />
+            <Satellites
+              powerSats={powerSats}
+              customers={customerSats}
+              getOrbitAtTime={getOrbitAtTime}
+              toggleLabel={toggleLabel}
+              isEclipsed={isEclipsed}
+              animationSpeed={animationSpeed}
+            />
+          </Suspense>
+        </ContextBridge>
+      </Canvas>
     </Wrapper>
   );
 };

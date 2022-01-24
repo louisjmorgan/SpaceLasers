@@ -19,19 +19,40 @@ import { Context } from '../App';
 const Satellite = ({
   color,
   station,
-  initialDate,
   getOrbitAtTime,
   storeRef,
   name,
   toggleLabel,
   isEclipsed,
-  chargeBattery,
-  dischargeBattery,
+  battery,
+  animationSpeed,
 }) => {
+  // Create ref for satellite and store with parent component
   const satRef = useRef();
-  const textRef = useRef();
-  const context = useContext(Context);
   storeRef(name, satRef);
+
+  // Battery simulation functions
+  const [chargeState, setChargeState] = useState(0.8);
+  function chargeBattery(delta) {
+    const { capacity, chargeCurrent } = battery;
+    const newChargeState =
+      (chargeState * capacity +
+        delta * animationSpeed * (1 / 3600) * chargeCurrent) /
+      capacity;
+    setChargeState(() => newChargeState);
+  }
+
+  function dischargeBattery(delta) {
+    const { capacity, chargeCurrent } = battery;
+    const newChargeState =
+      (chargeState * capacity -
+        delta * animationSpeed * (1 / 3600) * chargeCurrent) /
+      capacity;
+    setChargeState(() => newChargeState);
+  }
+
+  // Animate satellite position
+
   useFrame(({ clock }, delta) => {
     const position = getOrbitAtTime(station);
 
@@ -39,9 +60,11 @@ const Satellite = ({
     satRef.current.position.y = position.y;
     satRef.current.position.z = position.z;
     // orbitRef.current.points = points;
-    const charge = !isEclipsed(satRef);
-    if (charge) chargeBattery(station, delta);
-    if (!charge) dischargeBattery(station, delta);
+    if (battery) {
+      const charge = !isEclipsed(satRef);
+      if (charge) chargeBattery(delta);
+      if (!charge) dischargeBattery(delta);
+    }
   });
 
   return (
@@ -70,7 +93,7 @@ const Satellite = ({
             >
               {station.name}
               {' Charge: '}
-              {`${station.battery.chargeState * 100}%`}
+              {`${chargeState.toFixed(3) * 100}%`}
             </h1>
           </Html>
         ) : (
