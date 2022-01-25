@@ -12,11 +12,9 @@ import Satellite from './Satellite';
 const PowerSats = ({
   powerSats,
   getOrbitAtTime,
-  storePowerRef,
+  storeRef,
   toggleLabel,
   isEclipsed,
-  chargeBattery,
-  dischargeBattery,
 }) => {
   return (
     <>
@@ -24,7 +22,7 @@ const PowerSats = ({
         return (
           <Satellite
             color="yellow"
-            storeRef={storePowerRef}
+            storeRef={storeRef}
             key={sat.name}
             name={sat.name}
             station={sat}

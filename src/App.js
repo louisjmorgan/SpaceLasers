@@ -135,14 +135,7 @@ const App = ({ title }) => {
     );
 
     const positionEci = positionVelocity.position;
-    if (type === 2) return toThree(positionEci);
-
-    const gmst = satellite.gstime(date);
-
-    if (!positionEci) return null; // Ignore
-
-    const positionEcf = satellite.eciToEcf(positionEci, gmst);
-    return toThree(positionEcf);
+    return toThree(positionEci);
   }
 
   function getOrbitAtTime(station) {
@@ -211,7 +204,7 @@ const App = ({ title }) => {
   function isEclipsed(satRef) {
     const sunPosition = sunRef.current.position;
     const earthPosition = earthRef.current.position;
-    const satPosition = satRef.current.position;
+    const satPosition = satRef.position;
 
     const sunEarth = new THREE.Vector3();
     sunEarth.subVectors(earthPosition, sunPosition);
@@ -275,10 +268,10 @@ const App = ({ title }) => {
       setAllStations(() => [...results]);
       addCustomerSat(results[65]);
       addCustomerSat(results[58]);
-      addCustomerSat(results[61]);
+      addCustomerSat(results[71]);
       addPowerSat(results[69]);
       addPowerSat(results[70]);
-      addPowerSat(results[71]);
+      addPowerSat(results[61]);
     });
   }, []);
 

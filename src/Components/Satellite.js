@@ -3,37 +3,36 @@
 /* eslint-disable react/forbid-prop-types */
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import React, {
-  useRef,
-  useState,
-  useContext,
-  forwardRef,
-} from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
-import styled from 'styled-components';
-import { Context } from '../App';
 
 const Satellite = ({
   color,
   station,
   getOrbitAtTime,
   storeRef,
-  name,
   toggleLabel,
   isEclipsed,
+  hasBeam,
   battery,
   animationSpeed,
 }) => {
+  const [satRef, setSatRef] = useState();
   // Create ref for satellite and store with parent component
-  const satRef = useRef();
-  storeRef(name, satRef);
+  const ref = useCallback((node) => {
+    if (node !== null) {
+      storeRef(station.name, node);
+      setSatRef(node);
+    }
+  }, []);
 
   // Battery simulation functions
   const [chargeState, setChargeState] = useState(0.8);
   function chargeBattery(delta) {
+    if (chargeState >= 1) return;
     const { capacity, chargeCurrent } = battery;
     const newChargeState =
       (chargeState * capacity +
@@ -43,6 +42,7 @@ const Satellite = ({
   }
 
   function dischargeBattery(delta) {
+    if (chargeState <= 0) return;
     const { capacity, chargeCurrent } = battery;
     const newChargeState =
       (chargeState * capacity -
@@ -56,21 +56,20 @@ const Satellite = ({
   useFrame(({ clock }, delta) => {
     const position = getOrbitAtTime(station);
 
-    satRef.current.position.x = position.x;
-    satRef.current.position.y = position.y;
-    satRef.current.position.z = position.z;
-    // orbitRef.current.points = points;
+    satRef.position.x = position.x;
+    satRef.position.y = position.y;
+    satRef.position.z = position.z;
     if (battery) {
-      const charge = !isEclipsed(satRef);
-      if (charge) chargeBattery(delta);
-      if (!charge) dischargeBattery(delta);
+      const hasSun = !isEclipsed(satRef);
+      if (hasSun || hasBeam) chargeBattery(delta);
+      if (!hasSun && !hasBeam) dischargeBattery(delta);
     }
   });
 
   return (
     <>
       <mesh
-        ref={satRef}
+        ref={ref}
         onClick={() => {
           toggleLabel(station);
         }}
@@ -93,7 +92,7 @@ const Satellite = ({
             >
               {station.name}
               {' Charge: '}
-              {`${chargeState.toFixed(3) * 100}%`}
+              {`${(chargeState * 100).toFixed(1)}%`}
             </h1>
           </Html>
         ) : (

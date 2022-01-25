@@ -24,26 +24,35 @@ const CustomerSats = ({
   storeRef,
   toggleLabel,
   isEclipsed,
+  beams,
   animationSpeed,
 }) => {
   const battery = {
-    chargeCurrent: 6,
-    dischargeCurrent: 4.5,
+    chargeCurrent: 4.5,
+    dischargeCurrent: 6,
     capacity: 14,
   };
+
+  function hasBeam(name) {
+    return beams.reduce((total, beam) => {
+      const isActive = beam.active && beam.customer === name;
+      return total || isActive;
+    }, false);
+  }
+
   return (
     <>
-      {customers.map((sat, index) => {
+      {customers.map((customer, index) => {
         return (
           <Satellite
             storeRef={storeRef}
-            key={sat.name}
-            name={sat.name}
-            station={sat}
+            key={customer.name}
+            station={customer}
             getOrbitAtTime={getOrbitAtTime}
             toggleLabel={toggleLabel}
             isEclipsed={isEclipsed}
             battery={battery}
+            hasBeam={hasBeam(customer.name)}
             animationSpeed={animationSpeed}
           />
         );
