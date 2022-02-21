@@ -4,10 +4,10 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import { useFrame } from '@react-three/fiber';
-import React, { useContext, useRef, forwardRef } from 'react';
+import React, { useContext, forwardRef } from 'react';
 import { Context } from '../App';
 
-const Sun = forwardRef(({ simTime, initialDate }, ref) => {
+const Sun = forwardRef(({ time, initialDate }, ref) => {
   const context = useContext(Context);
 
   function getSunPosition(date) {
@@ -32,7 +32,7 @@ const Sun = forwardRef(({ simTime, initialDate }, ref) => {
   }
 
   useFrame(({ clock }) => {
-    const date = simTime;
+    const date = time;
     const position = getSunPosition(date);
     ref.current.position.x = position.x;
     ref.current.position.y = position.y;

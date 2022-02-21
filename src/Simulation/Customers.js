@@ -1,0 +1,71 @@
+/* eslint-disable no-unused-expressions */
+/* eslint-disable import/no-cycle */
+/* eslint-disable no-return-assign */
+/* eslint-disable prefer-destructuring */
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
+import React, {
+  Suspense,
+  useRef,
+  useState,
+  useEffect,
+  useContext,
+  forwardRef,
+} from 'react';
+import * as THREE from 'three';
+import { useFrame } from '@react-three/fiber';
+import { Instances } from '@react-three/drei';
+import Satellite from './Satellite';
+import Beam from './Beam';
+
+const CustomerSats = ({
+  customers,
+  getOrbitAtTime,
+  time,
+  storeRef,
+  uiMap,
+  dispatch,
+  isEclipsed,
+  beams,
+  animationSpeed,
+}) => {
+  function hasBeam(name) {
+    return beams.reduce((total, beam) => {
+      const isActive = beam.active && beam.customer === name;
+      return total || isActive;
+    }, false);
+  }
+  const satellites = customers.map((customer, index) => {
+    return (
+      <Satellite
+        id={customer.name}
+        storeRef={storeRef}
+        time={time}
+        dispatch={dispatch}
+        key={customer.name}
+        station={customer}
+        getOrbitAtTime={getOrbitAtTime}
+        showLabel={uiMap.get(customer.name).showLabel}
+        isEclipsed={isEclipsed}
+        hasBeam={hasBeam(customer.name)}
+        animationSpeed={animationSpeed}
+      />
+    );
+  });
+  return (
+    <>
+      <Instances>
+        <boxGeometry attach="geometry" args={[0.1, 0.1, 0.1]} />
+        <meshPhongMaterial
+          attach="material"
+          color="red"
+          flatShading={false}
+          side={THREE.DoubleSide}
+        />
+        {satellites}
+      </Instances>
+    </>
+  );
+};
+
+export default CustomerSats;

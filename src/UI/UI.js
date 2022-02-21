@@ -7,29 +7,23 @@ import Selected from './Selected';
 const UI = ({
   allStations,
   powerSats,
-  addPowerSat,
-  removePowerSat,
-  removeAllPowerSats,
+  dispatch,
   customerSats,
-  addCustomerSat,
-  removeCustomerSat,
-  removeAllCustomerSats,
-  toggleLabel,
+  uiMap,
 }) => {
   return (
     <UIWrapper>
       <PowerWrapper>
         <Selected
           selected={powerSats}
-          onRemoveStation={removePowerSat}
-          onRemoveAll={removeAllPowerSats}
-          onStationClick={toggleLabel}
+          dispatch={dispatch}
           isCustomer={false}
+          uiMap={uiMap}
           key="power-selection"
         />
         <Search
           stations={allStations}
-          onResultClick={addPowerSat}
+          dispatch={dispatch}
           isCustomer={false}
           key="power-search"
         />
@@ -37,15 +31,14 @@ const UI = ({
       <CustomerWrapper>
         <Selected
           selected={customerSats}
-          onRemoveStation={removeCustomerSat}
-          onRemoveAll={removeAllCustomerSats}
-          onStationClick={toggleLabel}
+          dispatch={dispatch}
           isCustomer
+          uiMap={uiMap}
           key="customer-selection"
         />
         <Search
           stations={allStations}
-          onResultClick={addCustomerSat}
+          dispatch={dispatch}
           isCustomer
           key="customer-search"
         />

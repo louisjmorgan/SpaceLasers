@@ -1,6 +1,8 @@
+/* eslint-disable no-console */
 /* eslint-disable react/no-array-index-key */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable react/jsx-no-bind */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import React, { useState } from 'react';
@@ -22,7 +24,6 @@ const filterResults = (stations, searchText) => {
 const SearchResults = ({ stations, searchText, onResultClick }) => {
   const results = filterResults(stations, searchText);
   if (!results) return null;
-
   return (
     <div className="ResultsWrapper">
       {results.map((result, i) => (
@@ -56,6 +57,7 @@ const StationCard = ({
         >
           {station.name}
         </span>
+        <span />
         {onRemoveClick && (
           <span
             className="RemoveButton"
@@ -83,9 +85,16 @@ const SearchBox = ({ value, onChange, placeholder }) => {
   );
 };
 
-const Search = ({ stations, onResultClick, isCustomer }) => {
+const Search = ({ stations, dispatch, isCustomer }) => {
   const [searchText, setSearchText] = useState('');
-
+  function onResultClick(station) {
+    console.log(station);
+    dispatch({
+      type: 'add satellite',
+      isCustomer,
+      sat: station,
+    });
+  }
   const handleSearchChanged = (val) => {
     setSearchText(val);
   };

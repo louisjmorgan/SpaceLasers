@@ -1,20 +1,82 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable react/no-array-index-key */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+/* eslint-disable react/jsx-no-bind */
 /* eslint-disable react/prop-types */
 import React from 'react';
 import styled from 'styled-components';
-import { StationCard } from './Search';
+
+const StationCard = ({
+  station,
+  onClick,
+  onRemoveClick,
+  className,
+  isCustomer,
+  ui,
+}) => {
+  return (
+    <div
+      className={`Result ${className || ''}`}
+      onClick={(e) => onClick(station)}
+    >
+      <p>
+        <span className="Name">{station.name}</span>
+
+        {onRemoveClick && (
+          <span
+            className="RemoveButton"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemoveClick(station);
+            }}
+          >
+            x
+          </span>
+        )}
+      </p>
+      {isCustomer ? (
+        <div className="performance">
+          <p>{`${ui.chargeState}%`}</p>
+          <p>{`${ui.currentDuty}`}</p>
+        </div>
+      ) : (
+        ''
+      )}
+    </div>
+  );
+};
 
 export default function Selected({
   selected,
   isCustomer,
-  onRemoveStation,
-  onRemoveAll,
-  onStationClick,
+  dispatch,
+  uiMap,
 }) {
   if (!selected || selected.length === 0) return null;
 
+  function toggleLabel(sat) {
+    dispatch({
+      type: 'toggle label',
+      name: sat.name,
+    });
+  }
+
+  const onRemoveAll = () => {
+    dispatch({
+      type: 'remove all',
+      isCustomer,
+    });
+  };
+
+  const onRemoveStation = (station) => {
+    dispatch({
+      type: 'remove satellite',
+      isCustomer,
+      sat: station,
+    });
+  };
   return (
     <Wrapper>
       <div className="Selected">
@@ -29,8 +91,12 @@ export default function Selected({
                 station={station}
                 key={station.name}
                 onRemoveClick={onRemoveStation}
-                onClick={onStationClick}
-                className={station.showLabel ? 'active' : ''}
+                onClick={toggleLabel}
+                className={
+                  uiMap.get(station.name).showLabel ? 'active' : ''
+                }
+                ui={uiMap.get(station.name)}
+                isCustomer={isCustomer}
               />
             );
           })}

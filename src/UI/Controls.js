@@ -2,11 +2,17 @@
 import React, { Suspense } from 'react';
 import styled from 'styled-components';
 
-const Controls = ({ simTime, handleAnimationSpeed }) => {
+const Controls = ({ dispatch, time }) => {
+  const handleAnimationSpeed = (e) => {
+    dispatch({
+      type: 'set speed',
+      speed: e.target.value,
+    });
+  };
   return (
     <ControlsWrapper>
       <Suspense fallback={null}>
-        <p>{simTime.toString()}</p>
+        <p>{time.toString()}</p>
       </Suspense>
       <input
         type="range"

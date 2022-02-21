@@ -1,21 +1,24 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable import/no-cycle */
 /* eslint-disable react/prop-types */
-import React, { useContext, useEffect, useState } from 'react';
+/* eslint-disable react/jsx-no-bind */
+import React, { useContext, useEffect, useState, memo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import PowerSats from './PowerSats';
-import CustomerSats from './CustomerSats';
+import PowerSats from './Power';
+import CustomerSats from './Customers';
 import Beam from './Beam';
-import { Context } from '../App';
+import { getOrbitAtTime } from '../Model/SatReducer';
 
 const Satellites = ({
+  time,
   powerSats,
   customers,
-  getOrbitAtTime,
-  toggleLabel,
+  uiMap,
+  dispatch,
   isEclipsed,
   animationSpeed,
 }) => {
+  // console.log('rendering satellites');
   // Callbacks to store refs from child components
   const [refs, setRefs] = useState({
     customerRefs: new Map(),
@@ -39,7 +42,6 @@ const Satellites = ({
     const newRefs = refs;
     newRefs.beamRefs.set(key, ref);
     setRefs(() => newRefs);
-    console.log(newRefs);
   }
 
   // Initialize beams for each power-customer pair
@@ -60,6 +62,7 @@ const Satellites = ({
 
     return beams;
   }
+
   const [beams, setBeams] = useState([]);
 
   useEffect(() => {
@@ -96,19 +99,23 @@ const Satellites = ({
     <>
       <CustomerSats
         customers={customers}
+        time={time}
         storeRef={storeCustomerRef}
         getOrbitAtTime={getOrbitAtTime}
-        toggleLabel={toggleLabel}
+        uiMap={uiMap}
+        dispatch={dispatch}
         isEclipsed={isEclipsed}
         beams={beams}
         animationSpeed={animationSpeed}
       />
       <PowerSats
+        dispatch={dispatch}
         powerSats={powerSats}
+        time={time}
+        uiMap={uiMap}
         customers={customers}
         storeRef={storePowerRef}
         getOrbitAtTime={getOrbitAtTime}
-        toggleLabel={toggleLabel}
         isEclipsed={isEclipsed}
       />
       {beams.map((beam) => {
@@ -126,4 +133,4 @@ const Satellites = ({
   );
 };
 
-export default Satellites;
+export default memo(Satellites);
