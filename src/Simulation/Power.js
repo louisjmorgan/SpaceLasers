@@ -17,6 +17,7 @@ const PowerSats = ({
   storeRef,
   uiMap,
   dispatch,
+  dispatchUI,
   isEclipsed,
 }) => {
   const satellites = powerSats.map((sat, index) => {
@@ -25,6 +26,7 @@ const PowerSats = ({
         color="yellow"
         storeRef={storeRef}
         dispatch={dispatch}
+        dispatchUI={dispatchUI}
         key={sat.name}
         name={sat.name}
         station={sat}

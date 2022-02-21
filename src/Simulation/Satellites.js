@@ -15,6 +15,7 @@ const Satellites = ({
   customers,
   uiMap,
   dispatch,
+  dispatchUI,
   isEclipsed,
   animationSpeed,
 }) => {
@@ -104,12 +105,14 @@ const Satellites = ({
         getOrbitAtTime={getOrbitAtTime}
         uiMap={uiMap}
         dispatch={dispatch}
+        dispatchUI={dispatchUI}
         isEclipsed={isEclipsed}
         beams={beams}
         animationSpeed={animationSpeed}
       />
       <PowerSats
         dispatch={dispatch}
+        dispatchUI={dispatchUI}
         powerSats={powerSats}
         time={time}
         uiMap={uiMap}

@@ -1,3 +1,5 @@
+/* eslint-disable no-useless-return */
+/* eslint-disable default-case */
 /* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-shadow */
@@ -103,6 +105,54 @@ const App = ({ title }) => {
     return true;
   }
 
+  const ui = useRef(new Map());
+  const defaultUI = {
+    showLabel: false,
+    chargeState: 0.3,
+    currentDuty: 'powerStoring',
+  };
+
+  function dispatchUI(action) {
+    switch (action.type) {
+      case 'add satellite': {
+        ui.current.set(action.name, defaultUI);
+        console.log(ui.current);
+        return;
+      }
+
+      case 'remove satellite': {
+        ui.current.delete(action.name);
+        return;
+      }
+
+      case 'toggle label': {
+        const prev = ui.current.get(action.name);
+        ui.current.set(action.name, {
+          ...prev,
+          showLabel: !prev.showLabel,
+        });
+        return;
+      }
+
+      case 'update charge state': {
+        const prev = ui.current.get(action.name);
+        ui.current.set(action.name, {
+          ...prev,
+          chargeState: action.chargeState,
+        });
+        return;
+      }
+
+      case 'update current duty': {
+        const prev = ui.current.get(action.name);
+        ui.current.set(action.name, {
+          ...prev,
+          currentDuty: action.currentDuty,
+        });
+        return;
+      }
+    }
+  }
   const [isLoaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -148,10 +198,11 @@ const App = ({ title }) => {
 
       <UI
         dispatch={dispatch}
+        dispatchUI={dispatchUI}
         allStations={state.orbits}
         powerSats={state.powers}
         customerSats={state.customers}
-        uiMap={state.ui}
+        uiMap={ui.current}
       />
       <Canvas className="canvas" mode="concurrent">
         <ContextBridge>
@@ -179,7 +230,8 @@ const App = ({ title }) => {
               powerSats={state.powers}
               customers={state.customers}
               dispatch={dispatch}
-              uiMap={state.ui}
+              dispatchUI={dispatchUI}
+              uiMap={ui.current}
               isEclipsed={isEclipsed}
               animationSpeed={state.simulation.speed}
             />

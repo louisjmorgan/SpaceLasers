@@ -17,17 +17,15 @@ import { useFrame } from '@react-three/fiber';
 import { Html, Instance } from '@react-three/drei';
 
 const Satellite = ({
-  color,
   station,
   time,
   dispatch,
+  dispatchUI,
   getOrbitAtTime,
   storeRef,
   showLabel,
   isEclipsed,
   hasBeam,
-  pvArray,
-  battery,
   animationSpeed,
 }) => {
   const [satRef, setSatRef] = useState();
@@ -91,13 +89,9 @@ const Satellite = ({
     chargeState.current = newChargeState;
   }
 
-  async function asyncDispatch(action) {
-    dispatch(action);
-  }
-
   // update UI
   useEffect(() => {
-    dispatch({
+    dispatchUI({
       type: 'update charge state',
       name: station.name,
       chargeState: (chargeState.current * 100).toFixed(1),
@@ -106,7 +100,7 @@ const Satellite = ({
   }, [chargeState.current]);
 
   useEffect(() => {
-    dispatch({
+    dispatchUI({
       type: 'update current duty',
       name: station.name,
       currentDuty: currentDuty.current,
@@ -162,7 +156,7 @@ const Satellite = ({
     <Instance
       ref={ref}
       onClick={() => {
-        dispatch({
+        dispatchUI({
           type: 'toggle label',
           name: station.name,
         });
@@ -190,13 +184,10 @@ const Satellite = ({
 };
 
 Satellite.propTypes = {
-  color: PropTypes.number,
   station: PropTypes.object.isRequired,
   getOrbitAtTime: PropTypes.func.isRequired,
 };
 
-Satellite.defaultProps = {
-  color: 0xff0000,
-};
+Satellite.defaultProps = {};
 
 export default memo(Satellite);

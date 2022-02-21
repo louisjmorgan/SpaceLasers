@@ -52,12 +52,13 @@ export default function Selected({
   selected,
   isCustomer,
   dispatch,
+  dispatchUI,
   uiMap,
 }) {
   if (!selected || selected.length === 0) return null;
 
   function toggleLabel(sat) {
-    dispatch({
+    dispatchUI({
       type: 'toggle label',
       name: sat.name,
     });
@@ -72,6 +73,11 @@ export default function Selected({
 
   const onRemoveStation = (station) => {
     dispatch({
+      type: 'remove satellite',
+      isCustomer,
+      sat: station,
+    });
+    dispatchUI({
       type: 'remove satellite',
       isCustomer,
       sat: station,

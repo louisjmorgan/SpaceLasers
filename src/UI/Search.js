@@ -85,7 +85,7 @@ const SearchBox = ({ value, onChange, placeholder }) => {
   );
 };
 
-const Search = ({ stations, dispatch, isCustomer }) => {
+const Search = ({ stations, dispatch, dispatchUI, isCustomer }) => {
   const [searchText, setSearchText] = useState('');
   function onResultClick(station) {
     console.log(station);
@@ -93,6 +93,10 @@ const Search = ({ stations, dispatch, isCustomer }) => {
       type: 'add satellite',
       isCustomer,
       sat: station,
+    });
+    dispatchUI({
+      type: 'add satellite',
+      name: station.name,
     });
   }
   const handleSearchChanged = (val) => {

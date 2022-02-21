@@ -8,6 +8,7 @@ const UI = ({
   allStations,
   powerSats,
   dispatch,
+  dispatchUI,
   customerSats,
   uiMap,
 }) => {
@@ -17,6 +18,7 @@ const UI = ({
         <Selected
           selected={powerSats}
           dispatch={dispatch}
+          dispatchUI={dispatchUI}
           isCustomer={false}
           uiMap={uiMap}
           key="power-selection"
@@ -24,6 +26,7 @@ const UI = ({
         <Search
           stations={allStations}
           dispatch={dispatch}
+          dispatchUI={dispatchUI}
           isCustomer={false}
           key="power-search"
         />
@@ -32,6 +35,7 @@ const UI = ({
         <Selected
           selected={customerSats}
           dispatch={dispatch}
+          dispatchUI={dispatchUI}
           isCustomer
           uiMap={uiMap}
           key="customer-selection"
@@ -39,6 +43,7 @@ const UI = ({
         <Search
           stations={allStations}
           dispatch={dispatch}
+          dispatchUI={dispatchUI}
           isCustomer
           key="customer-search"
         />

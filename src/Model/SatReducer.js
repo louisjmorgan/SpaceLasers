@@ -127,11 +127,6 @@ const defaultLoad = {
   },
 };
 
-const defaultPerformance = {
-  chargeState: 0.3, // %
-  currentDuty: 'powerStoring',
-};
-
 const defaultUI = {
   showLabel: false,
   chargeState: 0.3,
@@ -227,7 +222,6 @@ async function initializeState() {
     },
     customers: [],
     powers: [],
-    ui: new Map(),
   };
 }
 
@@ -259,14 +253,10 @@ function satReducer(state, action) {
         }
       }
 
-      const newUI = new Map(state.ui);
-      newUI.set(action.sat.name, defaultUI);
-
       return {
         ...state,
         customers: newCustomers,
         powers: newPowers,
-        ui: newUI,
       };
     }
 
@@ -281,14 +271,10 @@ function satReducer(state, action) {
         newPowers = state.powers.filter((s) => s !== action.sat);
       }
 
-      const newUI = new Map(state.ui);
-      newUI.delete(action.sat.name);
-
       return {
         ...state,
         customers: newCustomers,
         powers: newPowers,
-        ui: newUI,
       };
     }
 
@@ -304,19 +290,6 @@ function satReducer(state, action) {
         ...state,
         customers: newCustomers,
         powers: newPowers,
-      };
-    }
-
-    case 'toggle label': {
-      const prev = state.ui.get(action.name);
-      const newUI = new Map(state.ui);
-      newUI.set(action.name, {
-        ...prev,
-        showLabel: !prev.showLabel,
-      });
-      return {
-        ...state,
-        ui: newUI,
       };
     }
 
@@ -340,32 +313,6 @@ function satReducer(state, action) {
           ...state.simulation,
           speed: action.speed,
         },
-      };
-    }
-
-    case 'update charge state': {
-      const prev = state.ui.get(action.name);
-      const newUI = new Map(state.ui);
-      newUI.set(action.name, {
-        ...prev,
-        chargeState: action.chargeState,
-      });
-      return {
-        ...state,
-        ui: newUI,
-      };
-    }
-
-    case 'update current duty': {
-      const prev = state.ui.get(action.name);
-      const newUI = new Map(state.ui);
-      newUI.set(action.name, {
-        ...prev,
-        currentDuty: action.currentDuty,
-      });
-      return {
-        ...state,
-        ui: newUI,
       };
     }
   }

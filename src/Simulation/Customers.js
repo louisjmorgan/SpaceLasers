@@ -25,6 +25,7 @@ const CustomerSats = ({
   storeRef,
   uiMap,
   dispatch,
+  dispatchUI,
   isEclipsed,
   beams,
   animationSpeed,
@@ -42,6 +43,7 @@ const CustomerSats = ({
         storeRef={storeRef}
         time={time}
         dispatch={dispatch}
+        dispatchUI={dispatchUI}
         key={customer.name}
         station={customer}
         getOrbitAtTime={getOrbitAtTime}
