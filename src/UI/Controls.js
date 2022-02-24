@@ -23,7 +23,7 @@ const Controls = ({ time }) => {
         id="speed"
         name="speed"
         min="1"
-        max="600"
+        max="3600"
         onInput={handleAnimationSpeed}
       />
     </ControlsWrapper>
