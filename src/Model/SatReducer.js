@@ -8,6 +8,7 @@
 import * as satelliteUtils from 'satellite.js/lib/index';
 import * as THREE from 'three';
 import { earthRadius } from 'satellite.js/lib/constants';
+import { twoline2satrec } from '../Utils/TLE';
 
 function getCorsFreeUrl(url) {
   return `https://api.allorigins.win/raw?url=${url}`;
@@ -69,7 +70,7 @@ function getPositionFromTLE(station, date, type = 2) {
   if (!station.orbit) {
     const { tle1, tle2 } = station.orbit;
     if (!tle1 || !tle2) return null;
-    station.orbit = satelliteUtils.twoline2satrec(tle1, tle2);
+    station.orbit = twoline2satrec(tle1, tle2);
   }
 
   const positionVelocity = satelliteUtils.propagate(
@@ -86,7 +87,7 @@ function getOrbitAtTime(station, time) {
   if (!station.orbit) {
     const { tle1, tle2 } = station.tles;
     if (!tle1 || !tle2) return null;
-    station.orbit = satelliteUtils.twoline2satrec(tle1, tle2);
+    station.orbit = twoline2satrec(tle1, tle2);
   }
 
   const pos = getPositionFromTLE(station, date);
@@ -101,10 +102,22 @@ const defaultBattery = {
 const defaultPV = {
   profiles: {
     // current density multipliers
-    sunOnly: 1,
-    beamOnly: 1,
-    sunAndBeam: 1.5,
-    eclipsed: 0,
+    sunOnly: {
+      name: 'sun only',
+      efficiency: 1,
+    },
+    beamOnly: {
+      name: 'beam only',
+      efficiency: 1,
+    },
+    sunAndBeam: {
+      name: 'sun and beam',
+      efficiency: 1.5,
+    },
+    eclipsed: {
+      name: 'eclipsed',
+      efficiency: 0,
+    },
   },
   voltage: 4.7, // V at mpp
   currentDensity: 170.5, // A/m^2
@@ -113,6 +126,7 @@ const defaultPV = {
 
 const defaultLoad = {
   powerStoring: {
+    name: 'power storing',
     default: true,
     duration: null,
     consumption: 1.2, // W
@@ -120,6 +134,7 @@ const defaultLoad = {
   },
 
   overPower: {
+    name: 'overpower',
     default: false,
     duration: 600, // s
     consumption: 3.2, // W
@@ -137,15 +152,16 @@ function generateProfiles(pv, load, battery) {
   const { area, voltage, currentDensity } = pv;
   const newPowerProfiles = new Map();
   Object.entries(pv.profiles).forEach((powerProfile) => {
-    const current = currentDensity * powerProfile[1] * area;
+    const current =
+      currentDensity * powerProfile[1].efficiency * area;
     const pvPower = current * voltage;
     const loadProfiles = new Map();
     Object.entries(load).forEach((loadProfile) => {
       const netPower = pvPower - loadProfile[1].consumption;
       const netCurrent = netPower / battery.voltage;
-      loadProfiles.set(loadProfile[0], netCurrent);
+      loadProfiles.set(loadProfile[1].name, netCurrent);
     });
-    newPowerProfiles.set(powerProfile[0], loadProfiles);
+    newPowerProfiles.set(powerProfile[1].name, loadProfiles);
   });
   return newPowerProfiles;
 }
@@ -188,10 +204,11 @@ function createSatellite(
   }
 
   // const performance = defaultPerformance;
+
   const profiles = generateProfiles(pv, load, battery);
-  const orbit = satelliteUtils.twoline2satrec(tles.tle1, tles.tle2);
+  console.log(profiles);
+  const orbit = twoline2satrec(tles.tle1, tles.tle2);
   orbit.period = (2 * Math.PI * 60) / orbit.no;
-  console.log(orbit.period);
   return {
     name,
     orbit,
@@ -205,11 +222,15 @@ function createSatellite(
 async function initializeState() {
   const initialDate = new Date();
   const animationSpeed = 600;
-  const orbits = await loadTLEs(
+  const results = await loadTLEs(
     getCorsFreeUrl(
-      'http://www.celestrak.com/NORAD/elements/active.txt'
+      'https://celestrak.com/NORAD/elements/supplemental/oneweb.txt'
     )
   );
+  const orbits = new Map();
+  results.forEach((result) => {
+    orbits.set(result.name, result);
+  });
   console.log(orbits);
   return {
     orbits,
@@ -233,18 +254,19 @@ function satReducer(state, action) {
 
     case 'add satellite': {
       const cIndex = state.customers.findIndex(
-        (entry) => entry.name === action.sat.name
+        (entry) => entry.name === action.name
       );
       const pIndex = state.powers.findIndex(
-        (entry) => entry.name === action.sat.name
+        (entry) => entry.name === action.name
       );
 
       const newCustomers = [...state.customers];
       const newPowers = [...state.powers];
       if (cIndex === -1 && pIndex === -1) {
         const newSatellite = createSatellite(
-          action.sat.name,
-          action.sat.tles
+          action.name,
+          action.tles,
+          action.size
         );
         if (action.isCustomer === true) {
           newCustomers.push(newSatellite);

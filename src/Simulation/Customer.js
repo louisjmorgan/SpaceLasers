@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-console */
 /* eslint-disable consistent-return */
 /* eslint-disable import/no-cycle */
@@ -16,14 +17,14 @@ import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { Html, Instance } from '@react-three/drei';
 
-const Satellite = ({
+const Customer = ({
   station,
   time,
-  dispatch,
   dispatchUI,
   getOrbitAtTime,
   storeRef,
   showLabel,
+  attachCamera,
   isEclipsed,
   hasBeam,
   animationSpeed,
@@ -40,7 +41,7 @@ const Satellite = ({
 
   // Battery simulation functions
   const chargeState = useRef(0.3);
-  const currentDuty = useRef('powerStoring');
+  const currentDuty = useRef('power storing');
   const updateDelta = useRef(0);
   const duties = useRef(new Map());
 
@@ -57,7 +58,7 @@ const Satellite = ({
           nextCompletion: null,
           nextStart,
         };
-        duties.current.set(loadProfile[0], newDuty);
+        duties.current.set(loadProfile[1].name, newDuty);
       }
     });
   }
@@ -109,12 +110,17 @@ const Satellite = ({
 
   // Animate satellite position
 
-  useFrame(({ clock }, delta) => {
+  useFrame(({ clock, camera, controls }, delta) => {
     // update satellite position
     const position = getOrbitAtTime(station, time.current);
     satRef.position.x = position.x;
     satRef.position.y = position.y;
     satRef.position.z = position.z;
+    if (attachCamera) {
+      camera.position
+        .fromArray([position.x, position.y, position.z])
+        .multiplyScalar(1.3);
+    }
 
     // simulate power system
     duties.current.forEach((duty, name) => {
@@ -134,7 +140,7 @@ const Satellite = ({
         }
       } else if (currentDuty.current === name) {
         if (time.current.valueOf() >= duty.nextCompletion) {
-          currentDuty.current = 'powerStoring';
+          currentDuty.current = 'power storing';
           newDuty = {
             ...duty,
             nextStart: time.current.valueOf() + duty.interval * 1000,
@@ -146,10 +152,18 @@ const Satellite = ({
     });
 
     const hasSun = !isEclipsed(satRef);
-    if (hasSun && hasBeam) chargeBattery(delta, 'sunAndBeam');
-    if (hasSun && !hasBeam) chargeBattery(delta, 'sunOnly');
-    if (!hasSun && hasBeam) chargeBattery(delta, 'beamOnly');
-    if (!hasSun && !hasBeam) chargeBattery(delta, 'eclipsed');
+
+    let sources;
+    if (hasSun && hasBeam) sources = 'sun and beam';
+    if (hasSun && !hasBeam) sources = 'sun only';
+    if (!hasSun && hasBeam) sources = 'beam only';
+    if (!hasSun && !hasBeam) sources = 'eclipsed';
+    chargeBattery(delta, sources);
+    dispatchUI({
+      type: 'update charging',
+      name: station.name,
+      sources,
+    });
   });
 
   return (
@@ -172,8 +186,8 @@ const Satellite = ({
             }}
           >
             {station.name}
-            {' Charge: '}
-            {`${(chargeState.current * 100).toFixed(1)}%`}
+            {/* {' Charge: '}
+            {`${(chargeState.current * 100).toFixed(1)}%`} */}
           </h1>
         </Html>
       ) : (
@@ -183,11 +197,11 @@ const Satellite = ({
   );
 };
 
-Satellite.propTypes = {
+Customer.propTypes = {
   station: PropTypes.object.isRequired,
   getOrbitAtTime: PropTypes.func.isRequired,
 };
 
-Satellite.defaultProps = {};
+Customer.defaultProps = {};
 
-export default memo(Satellite);
+export default memo(Customer);

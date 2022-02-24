@@ -1,10 +1,9 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 /* eslint-disable import/no-cycle */
 /* eslint-disable react/prop-types */
 import React, { useState, useContext } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Html } from '@react-three/drei';
-import * as satellite from 'satellite.js/lib/index';
 import { Context } from '../App';
 
 const Time = ({ dispatch, time, speed }) => {

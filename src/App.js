@@ -32,12 +32,14 @@ import {
   OrbitControls,
   Html,
   useContextBridge,
+  PerspectiveCamera,
 } from '@react-three/drei';
 import * as satelliteUtils from 'satellite.js/lib/index';
-import * as THREE from 'three';
 import { earthRadius } from 'satellite.js/lib/constants';
+import * as THREE from 'three';
 import { initializeState, satReducer } from './Model/SatReducer';
 import GlobalStyles from './GlobalStyles';
+import Camera from './Simulation/Camera';
 import Earth from './Simulation/Earth';
 import Satellites from './Simulation/Satellites';
 import UI from './UI/UI';
@@ -51,9 +53,15 @@ const defaultStationOptions = {
   showLabel: false,
 };
 
-const Context = createContext({
-  earthRadius,
-});
+const defaultUI = {
+  showLabel: false,
+  chargeState: 0.3,
+  currentDuty: 'power storing',
+  chargeSources: 'eclipsed',
+  attachCamera: false,
+};
+
+const Context = createContext(null);
 
 const App = ({ title }) => {
   const [state, dispatch] = useReducer(satReducer, {
@@ -66,52 +74,37 @@ const App = ({ title }) => {
     powers: null,
     ui: null,
   });
-
   // Initialize context (global constants)
-  const context = useContext(Context);
   const ContextBridge = useContextBridge(Context);
 
   // Create references for sun and earth 3d models
   const earthRef = useRef();
   const sunRef = useRef();
-
-  // Battery simulation functions
-
-  function isEclipsed(satRef) {
-    const sunPosition = sunRef.current.position;
-    const earthPosition = earthRef.current.position;
-    const satPosition = satRef.position;
-
-    const sunEarth = new THREE.Vector3();
-    sunEarth.subVectors(earthPosition, sunPosition);
-
-    const sunSat = new THREE.Vector3();
-    sunSat.subVectors(satPosition, earthPosition);
-
-    const angle = sunEarth.angleTo(sunSat);
-
-    const sunEarthDistance = sunPosition.distanceTo(earthPosition);
-    const sunSatDistance = sunPosition.distanceTo(satPosition);
-
-    const limbAngle = Math.atan2(
-      context.earthRadius,
-      sunEarthDistance
-    );
-
-    if (angle > limbAngle || sunSatDistance < sunEarthDistance) {
-      return false;
+  const controlsRef = useRef();
+  const refs = useRef({
+    customerRefs: new Map(),
+    powerRefs: new Map(),
+    beamRefs: new Map(),
+  });
+  function dispatchRef(action) {
+    switch (action.type) {
+      case 'add customer': {
+        refs.current.customerRefs.set(action.name, action.ref);
+        return;
+      }
+      case 'add power': {
+        refs.current.powerRefs.set(action.name, action.ref);
+        return;
+      }
+      case 'add beam': {
+        refs.current.beamRefs.set(action.name, action.ref);
+        return;
+      }
     }
-
-    return true;
   }
 
   const ui = useRef(new Map());
-  const defaultUI = {
-    showLabel: false,
-    chargeState: 0.3,
-    currentDuty: 'powerStoring',
-  };
-
+  const cameraTarget = useRef('earth');
   function dispatchUI(action) {
     switch (action.type) {
       case 'add satellite': {
@@ -134,6 +127,11 @@ const App = ({ title }) => {
         return;
       }
 
+      case 'attach camera': {
+        cameraTarget.current = action.name;
+        return;
+      }
+
       case 'update charge state': {
         const prev = ui.current.get(action.name);
         ui.current.set(action.name, {
@@ -151,8 +149,44 @@ const App = ({ title }) => {
         });
         return;
       }
+
+      case 'update charging': {
+        const prev = ui.current.get(action.name);
+        ui.current.set(action.name, {
+          ...prev,
+          chargeSources: action.sources,
+        });
+        return;
+      }
     }
   }
+
+  // Battery simulation functions
+
+  function isEclipsed(satRef) {
+    const sunPosition = sunRef.current.position;
+    const earthPosition = earthRef.current.position;
+    const satPosition = satRef.position;
+
+    const sunEarth = new THREE.Vector3();
+    sunEarth.subVectors(earthPosition, sunPosition);
+
+    const sunSat = new THREE.Vector3();
+    sunSat.subVectors(satPosition, earthPosition);
+
+    const angle = sunEarth.angleTo(sunSat);
+
+    const sunEarthDistance = sunPosition.distanceTo(earthPosition);
+    const sunSatDistance = sunPosition.distanceTo(satPosition);
+    const limbAngle = Math.atan2(earthRadius, sunEarthDistance);
+
+    if (angle > limbAngle || sunSatDistance < sunEarthDistance) {
+      return false;
+    }
+
+    return true;
+  }
+
   const [isLoaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -165,6 +199,47 @@ const App = ({ title }) => {
       setLoaded(() => true);
     });
   }, []);
+
+  useEffect(() => {
+    if (isLoaded) {
+      let newSat = 'ONEWEB-0144';
+      dispatch({
+        type: 'add satellite',
+        name: state.orbits.get(newSat).name,
+        tles: state.orbits.get(newSat).tles,
+        size: 1,
+        isCustomer: false,
+      });
+      dispatchUI({
+        type: 'add satellite',
+        name: newSat,
+      });
+      newSat = 'ONEWEB-0145';
+      dispatch({
+        type: 'add satellite',
+        name: state.orbits.get(newSat).name,
+        tles: state.orbits.get(newSat).tles,
+        size: 1,
+        isCustomer: false,
+      });
+      dispatchUI({
+        type: 'add satellite',
+        name: newSat,
+      });
+      newSat = 'ONEWEB-0146';
+      dispatch({
+        type: 'add satellite',
+        name: state.orbits.get(newSat).name,
+        tles: state.orbits.get(newSat).tles,
+        size: 1,
+        isCustomer: false,
+      });
+      dispatchUI({
+        type: 'add satellite',
+        name: newSat,
+      });
+    }
+  }, [isLoaded]);
 
   // Load TLEs into memory and initialize default sats
 
@@ -188,25 +263,25 @@ const App = ({ title }) => {
 
   return isLoaded ? (
     <Wrapper className="app">
-      <GlobalStyles />
-      <h1>{title}</h1>
+      <Context.Provider value={{ dispatch, dispatchUI }}>
+        <GlobalStyles />
+        <h1>{title}</h1>
 
-      <Controls
-        time={state.simulation.time.current}
-        dispatch={dispatch}
-      />
+        <Controls time={state.simulation.time.current} />
 
-      <UI
-        dispatch={dispatch}
-        dispatchUI={dispatchUI}
-        allStations={state.orbits}
-        powerSats={state.powers}
-        customerSats={state.customers}
-        uiMap={ui.current}
-      />
+        <UI
+          allStations={state.orbits}
+          powerSats={state.powers}
+          customerSats={state.customers}
+          uiMap={ui.current}
+        />
+      </Context.Provider>
       <Canvas className="canvas" mode="concurrent">
         <ContextBridge>
-          <OrbitControls enableZoom={false} enablePan={false} />
+          <Camera
+            target={cameraTarget.current}
+            refs={refs.current.customerRefs}
+          />
           <ambientLight color={0x333333} />
           <Suspense
             fallback={
@@ -229,8 +304,10 @@ const App = ({ title }) => {
               time={state.simulation.time}
               powerSats={state.powers}
               customers={state.customers}
+              refs={refs.current}
               dispatch={dispatch}
               dispatchUI={dispatchUI}
+              dispatchRef={dispatchRef}
               uiMap={ui.current}
               isEclipsed={isEclipsed}
               animationSpeed={state.simulation.speed}
@@ -246,7 +323,6 @@ const App = ({ title }) => {
 
 const Wrapper = styled.div`
   position: relative;
-  background: #070b34;
   height: 1200px;
   width: 100vw;
   font-family: sans-serif;
@@ -260,7 +336,7 @@ const Wrapper = styled.div`
   }
 
   canvas {
-    height: 60rem;
+    height: 30rem;
   }
 `;
 

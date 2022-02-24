@@ -1,3 +1,5 @@
+/* eslint-disable import/no-cycle */
+/* eslint-disable no-undef */
 /* eslint-disable no-console */
 /* eslint-disable react/no-array-index-key */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
@@ -5,8 +7,9 @@
 /* eslint-disable react/jsx-no-bind */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import styled from 'styled-components';
+import { Context } from '../App';
 
 const MaxSearchResults = 50;
 
@@ -85,7 +88,9 @@ const SearchBox = ({ value, onChange, placeholder }) => {
   );
 };
 
-const Search = ({ stations, dispatch, dispatchUI, isCustomer }) => {
+const Search = ({ stations, isCustomer }) => {
+  const { dispatch, dispatchUI } = useContext(Context);
+
   const [searchText, setSearchText] = useState('');
   function onResultClick(station) {
     console.log(station);

@@ -4,7 +4,7 @@
 /* eslint-disable react/jsx-no-bind */
 import React, { useContext, useEffect, useState, memo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import PowerSats from './Power';
+import PowerSats from './Powers';
 import CustomerSats from './Customers';
 import Beam from './Beam';
 import { getOrbitAtTime } from '../Model/SatReducer';
@@ -14,35 +14,37 @@ const Satellites = ({
   powerSats,
   customers,
   uiMap,
+  refs,
   dispatch,
   dispatchUI,
+  dispatchRef,
   isEclipsed,
   animationSpeed,
 }) => {
   // console.log('rendering satellites');
   // Callbacks to store refs from child components
-  const [refs, setRefs] = useState({
-    customerRefs: new Map(),
-    powerRefs: new Map(),
-    beamRefs: new Map(),
-  });
-
   function storeCustomerRef(key, ref) {
-    const newRefs = refs;
-    newRefs.customerRefs.set(key, ref);
-    setRefs(() => newRefs);
+    dispatchRef({
+      type: 'add customer',
+      name: key,
+      ref,
+    });
   }
 
   function storePowerRef(key, ref) {
-    const newRefs = refs;
-    newRefs.powerRefs.set(key, ref);
-    setRefs(() => newRefs);
+    dispatchRef({
+      type: 'add power',
+      name: key,
+      ref,
+    });
   }
 
   function storeBeamRef(key, ref) {
-    const newRefs = refs;
-    newRefs.beamRefs.set(key, ref);
-    setRefs(() => newRefs);
+    dispatchRef({
+      type: 'add beam',
+      name: key,
+      ref,
+    });
   }
 
   // Initialize beams for each power-customer pair
@@ -75,7 +77,7 @@ const Satellites = ({
   }, [powerSats, customers]);
 
   function activateBeam(beam) {
-    const newBeams = beams;
+    const newBeams = [...beams];
     const index = beams.findIndex(
       (entry) => entry.customer === beam.customer
     );
@@ -86,7 +88,7 @@ const Satellites = ({
   }
 
   function deactivateBeam(beam) {
-    const newBeams = beams;
+    const newBeams = [...beams];
     const index = beams.findIndex(
       (entry) => entry.customer === beam.customer
     );

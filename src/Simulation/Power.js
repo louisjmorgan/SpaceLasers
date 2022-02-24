@@ -1,55 +1,72 @@
-/* eslint-disable import/named */
-/* eslint-disable no-unused-expressions */
+/* eslint-disable no-console */
+/* eslint-disable consistent-return */
 /* eslint-disable import/no-cycle */
-/* eslint-disable no-return-assign */
-/* eslint-disable prefer-destructuring */
-/* eslint-disable no-unused-vars */
+/* eslint-disable react/forbid-prop-types */
 /* eslint-disable react/prop-types */
-import React, { useContext } from 'react';
+/* eslint-disable no-unused-vars */
+import React, { useState, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import * as THREE from 'three';
-import { Instances } from '@react-three/drei';
-import Satellite from './Satellite';
+import { useFrame } from '@react-three/fiber';
+import { Html, Instance } from '@react-three/drei';
 
-const PowerSats = ({
-  powerSats,
+const Power = ({
+  station,
   time,
+  dispatchUI,
   getOrbitAtTime,
   storeRef,
-  uiMap,
-  dispatch,
-  dispatchUI,
-  isEclipsed,
+  showLabel,
 }) => {
-  const satellites = powerSats.map((sat, index) => {
-    return (
-      <Satellite
-        color="yellow"
-        storeRef={storeRef}
-        dispatch={dispatch}
-        dispatchUI={dispatchUI}
-        key={sat.name}
-        name={sat.name}
-        station={sat}
-        time={time}
-        getOrbitAtTime={getOrbitAtTime}
-        showLabel={uiMap.get(sat.name).showLabel}
-        isEclipsed={isEclipsed}
-        battery={null}
-      />
-    );
+  const [satRef, setSatRef] = useState();
+
+  // Create ref for satellite and store with parent component
+  const ref = useCallback((node) => {
+    if (node !== null) {
+      storeRef(station.name, node);
+      setSatRef(node);
+    }
+  }, []);
+
+  // Animate satellite position
+
+  useFrame(({ clock }, delta) => {
+    // update satellite position
+    const position = getOrbitAtTime(station, time.current);
+    satRef.position.x = position.x;
+    satRef.position.y = position.y;
+    satRef.position.z = position.z;
   });
+
   return (
-    <Instances>
-      <boxGeometry attach="geometry" args={[0.1, 0.1, 0.1]} />
-      <meshPhongMaterial
-        attach="material"
-        color="yellow"
-        flatShading={false}
-        side={THREE.DoubleSide}
-      />
-      {satellites}
-    </Instances>
+    <Instance
+      ref={ref}
+      onClick={() => {
+        dispatchUI({
+          type: 'toggle label',
+          name: station.name,
+        });
+      }}
+    >
+      {showLabel ? (
+        <Html>
+          <h1
+            style={{
+              fontFamily: 'sans-serif',
+              color: 'white',
+              fontSize: '1rem',
+            }}
+          >
+            {station.name}
+            {/* {' Charge: '}
+            {`${(chargeState.current * 100).toFixed(1)}%`} */}
+          </h1>
+        </Html>
+      ) : (
+        ' '
+      )}
+    </Instance>
   );
 };
 
-export default PowerSats;
+export default Power;

@@ -4,12 +4,10 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import { useFrame } from '@react-three/fiber';
-import React, { useContext, forwardRef } from 'react';
-import { Context } from '../App';
+import React, { forwardRef } from 'react';
+import { earthRadius } from 'satellite.js/lib/constants';
 
 const Sun = forwardRef(({ time, initialDate }, ref) => {
-  const context = useContext(Context);
-
   function getSunPosition(date) {
     const N = date.getTime() / 86400000 + 2440587 - 2451545;
     let L = 4.89495042 + 0.0172027923937 * N;
@@ -23,11 +21,11 @@ const Sun = forwardRef(({ time, initialDate }, ref) => {
     const obliquity = 0.40907027 - 6.981317008e-9 * N;
     const y =
       (distance * Math.sin(obliquity) * Math.sin(longitude)) /
-      context.earthRadius;
-    const x = (distance * Math.cos(longitude)) / context.earthRadius;
+      earthRadius;
+    const x = (distance * Math.cos(longitude)) / earthRadius;
     const z =
       -(distance * Math.cos(obliquity) * Math.sin(longitude)) /
-      context.earthRadius;
+      earthRadius;
     return { x, y, z };
   }
 

@@ -15,7 +15,7 @@ import React, {
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { Instances } from '@react-three/drei';
-import Satellite from './Satellite';
+import Customer from './Customer';
 import Beam from './Beam';
 
 const CustomerSats = ({
@@ -38,7 +38,7 @@ const CustomerSats = ({
   }
   const satellites = customers.map((customer, index) => {
     return (
-      <Satellite
+      <Customer
         id={customer.name}
         storeRef={storeRef}
         time={time}
@@ -48,6 +48,7 @@ const CustomerSats = ({
         station={customer}
         getOrbitAtTime={getOrbitAtTime}
         showLabel={uiMap.get(customer.name).showLabel}
+        attachCamera={uiMap.get(customer.name).attachCamera}
         isEclipsed={isEclipsed}
         hasBeam={hasBeam(customer.name)}
         animationSpeed={animationSpeed}

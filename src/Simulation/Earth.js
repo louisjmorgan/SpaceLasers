@@ -6,7 +6,7 @@ import React, { useContext, useRef, forwardRef } from 'react';
 import { useLoader, useFrame } from '@react-three/fiber';
 import { TextureLoader } from 'three/src/loaders/TextureLoader';
 import * as THREE from 'three';
-import earthTexture from '../Assets/Textures/earth-texture.jpg';
+import earthTexture from '../Assets/Textures/earth-texture-1k.jpg';
 import earthBump from '../Assets/Textures/earth-bump.jpg';
 import earthSpecular from '../Assets/Textures/earth-specular.png';
 import cloudsTexture from '../Assets/Textures/fair_clouds_4k.png';
@@ -32,7 +32,7 @@ const Earth = forwardRef(({ initialDate, time }, ref) => {
     const date = time;
     const angle = getEarthRotationAngle(date);
     ref.current.rotation.y = angle;
-    cloudsRef.current.rotation.y = angle;
+    // cloudsRef.current.rotation.y = angle;
   });
   return (
     <>
@@ -45,18 +45,18 @@ const Earth = forwardRef(({ initialDate, time }, ref) => {
           0,
         ]}
       >
-        <sphereGeometry attach="geometry" args={[1, 32, 32]} />
+        <sphereGeometry attach="geometry" args={[1, 64, 64]} />
         <meshPhongMaterial
           attach="material"
           map={colorMap}
-          bumpMap={bumpMap}
-          bumpScale={0.005}
-          specularMap={specularMap}
-          specular={0x111111}
-          offset={[]}
+          // bumpMap={bumpMap}
+          // bumpScale={0.005}
+          // specularMap={specularMap}
+          // specular={0x111111}
+          // offset={[]}
         />
       </mesh>
-      <mesh
+      {/* <mesh
         position={[0, 0, 0]}
         ref={cloudsRef}
         rotation={[
@@ -71,7 +71,7 @@ const Earth = forwardRef(({ initialDate, time }, ref) => {
           map={clouds}
           transparent
         />
-      </mesh>
+      </mesh> */}
     </>
   );
 });

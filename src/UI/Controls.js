@@ -1,8 +1,12 @@
+/* eslint-disable import/no-cycle */
+/* eslint-disable no-undef */
 /* eslint-disable react/prop-types */
-import React, { Suspense } from 'react';
+import React, { Suspense, useContext } from 'react';
 import styled from 'styled-components';
+import { Context } from '../App';
 
-const Controls = ({ dispatch, time }) => {
+const Controls = ({ time }) => {
+  const { dispatch } = useContext(Context);
   const handleAnimationSpeed = (e) => {
     dispatch({
       type: 'set speed',
@@ -18,8 +22,8 @@ const Controls = ({ dispatch, time }) => {
         type="range"
         id="speed"
         name="speed"
-        min="600"
-        max="21110"
+        min="1"
+        max="600"
         onInput={handleAnimationSpeed}
       />
     </ControlsWrapper>
@@ -34,7 +38,7 @@ const ControlsWrapper = styled.div`
   right: 0;
   text-align: center;
   top: 20%;
-  z-index: 99999;
+  z-index: 999;
   width: 20rem;
   p {
     font-family: 'sans-serif';

@@ -8,11 +8,9 @@ import React, {
   useState,
 } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Context } from '../App';
+import { earthRadius } from 'satellite.js/lib/constants';
 
 const Beam = ({ beam, activateBeam, deactivateBeam, storeRef }) => {
-  const context = useContext(Context);
-
   const [beamRef, setBeamRef] = useState();
   const ref = useCallback((node) => {
     if (node !== null) {
@@ -22,12 +20,9 @@ const Beam = ({ beam, activateBeam, deactivateBeam, storeRef }) => {
   }, []);
 
   function getDistance(sat1, sat2) {
-    const a =
-      (sat1.position.x - sat2.position.x) * context.earthRadius;
-    const b =
-      (sat1.position.y - sat2.position.y) * context.earthRadius;
-    const c =
-      (sat1.position.z - sat2.position.z) * context.earthRadius;
+    const a = (sat1.position.x - sat2.position.x) * earthRadius;
+    const b = (sat1.position.y - sat2.position.y) * earthRadius;
+    const c = (sat1.position.z - sat2.position.z) * earthRadius;
 
     return Math.sqrt(a * a + b * b + c * c);
   }
