@@ -1,3 +1,4 @@
+/* eslint-disable array-callback-return */
 /* eslint-disable import/named */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable import/no-cycle */
@@ -7,7 +8,8 @@
 /* eslint-disable react/prop-types */
 import React, { useContext } from 'react';
 import * as THREE from 'three';
-import { Instances } from '@react-three/drei';
+import { Instances, useGLTF } from '@react-three/drei';
+import SatelliteGLB from '../Assets/Mesh/satellite.glb';
 import Power from './Power';
 
 const PowerSats = ({
@@ -17,33 +19,36 @@ const PowerSats = ({
   storeRef,
   uiMap,
   dispatchUI,
+  sunRef,
 }) => {
-  const satellites = powerSats.map((sat, index) => {
-    return (
+  const obj = useGLTF(SatelliteGLB);
+  const satellites = [];
+  powerSats.map((sat, index) => {
+    satellites.push(
       <Power
         color="red"
+        obj={obj}
         id={sat.name}
         storeRef={storeRef}
         time={time}
         dispatchUI={dispatchUI}
         key={sat.name}
         station={sat}
+        sunRef={sunRef}
         getOrbitAtTime={getOrbitAtTime}
         showLabel={uiMap.get(sat.name).showLabel}
       />
     );
   });
   return (
-    <Instances>
-      <boxGeometry attach="geometry" args={[0.1, 0.1, 0.1]} />
-      <meshPhongMaterial
-        attach="material"
-        color="yellow"
-        flatShading={false}
-        side={THREE.DoubleSide}
-      />
-      {satellites}
-    </Instances>
+    <>
+      <Instances
+        geometry={obj.nodes.Cubesat.geometry}
+        material={obj.materials.Texture}
+      >
+        {satellites}
+      </Instances>
+    </>
   );
 };
 

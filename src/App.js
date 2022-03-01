@@ -202,7 +202,7 @@ const App = ({ title }) => {
 
   useEffect(() => {
     if (isLoaded) {
-      let newSat = 'ONEWEB-0144';
+      let newSat = 'ONEWEB-0012';
       dispatch({
         type: 'add satellite',
         name: state.orbits.get(newSat).name,
@@ -309,6 +309,7 @@ const App = ({ title }) => {
               dispatchUI={dispatchUI}
               dispatchRef={dispatchRef}
               uiMap={ui.current}
+              sunRef={sunRef.current}
               isEclipsed={isEclipsed}
               animationSpeed={state.simulation.speed}
             />

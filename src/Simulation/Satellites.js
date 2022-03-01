@@ -3,7 +3,8 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react/jsx-no-bind */
 import React, { useContext, useEffect, useState, memo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useLoader } from '@react-three/fiber';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
 import PowerSats from './Powers';
 import CustomerSats from './Customers';
 import Beam from './Beam';
@@ -15,6 +16,7 @@ const Satellites = ({
   customers,
   uiMap,
   refs,
+  sunRef,
   dispatch,
   dispatchUI,
   dispatchRef,
@@ -121,6 +123,7 @@ const Satellites = ({
         customers={customers}
         storeRef={storePowerRef}
         getOrbitAtTime={getOrbitAtTime}
+        sunRef={sunRef}
         isEclipsed={isEclipsed}
       />
       {beams.map((beam) => {

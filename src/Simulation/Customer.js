@@ -28,6 +28,7 @@ const Customer = ({
   isEclipsed,
   hasBeam,
   animationSpeed,
+  obj,
 }) => {
   const [satRef, setSatRef] = useState();
 
@@ -169,6 +170,8 @@ const Customer = ({
   return (
     <Instance
       ref={ref}
+      key={station.name}
+      scale={0.0005}
       onClick={() => {
         dispatchUI({
           type: 'toggle label',

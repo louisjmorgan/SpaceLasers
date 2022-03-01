@@ -1,3 +1,6 @@
+/* eslint-disable react/no-children-prop */
+/* eslint-disable prefer-const */
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable import/no-cycle */
 /* eslint-disable no-return-assign */
@@ -11,12 +14,14 @@ import React, {
   useEffect,
   useContext,
   forwardRef,
+  useMemo,
 } from 'react';
 import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
-import { Instances } from '@react-three/drei';
-import Customer from './Customer';
+import { useLoader, useFrame } from '@react-three/fiber';
+import { Instances, useGLTF } from '@react-three/drei';
+import SatelliteGLB from '../Assets/Mesh/satellite.glb';
 import Beam from './Beam';
+import Customer from './Customer';
 
 const CustomerSats = ({
   customers,
@@ -30,16 +35,19 @@ const CustomerSats = ({
   beams,
   animationSpeed,
 }) => {
+  const obj = useGLTF(SatelliteGLB);
   function hasBeam(name) {
     return beams.reduce((total, beam) => {
       const isActive = beam.active && beam.customer === name;
       return total || isActive;
     }, false);
   }
-  const satellites = customers.map((customer, index) => {
-    return (
+  const satellites = [];
+  customers.map((customer, index) => {
+    return satellites.push(
       <Customer
         id={customer.name}
+        obj={obj}
         storeRef={storeRef}
         time={time}
         dispatch={dispatch}
@@ -55,16 +63,13 @@ const CustomerSats = ({
       />
     );
   });
+  const ref = useRef();
   return (
     <>
-      <Instances>
-        <boxGeometry attach="geometry" args={[0.1, 0.1, 0.1]} />
-        <meshPhongMaterial
-          attach="material"
-          color="red"
-          flatShading={false}
-          side={THREE.DoubleSide}
-        />
+      <Instances
+        geometry={obj.nodes.Cubesat.geometry}
+        material={obj.materials.Texture}
+      >
         {satellites}
       </Instances>
     </>

@@ -32,17 +32,13 @@ const Sun = forwardRef(({ time, initialDate }, ref) => {
   useFrame(({ clock }) => {
     const date = time;
     const position = getSunPosition(date);
-    ref.current.position.x = position.x;
-    ref.current.position.y = position.y;
-    ref.current.position.z = position.z;
+    ref.current.position.x = position.x * 149597871;
+    ref.current.position.y = position.y * 149597871;
+    ref.current.position.z = position.z * 149597871;
+    console.log(ref.current.position);
   });
   return (
-    <directionalLight
-      ref={ref}
-      color={0xffffff}
-      intensity={1}
-      position={[getSunPosition(new Date(initialDate)), 0, 0]}
-    />
+    <directionalLight ref={ref} color={0xffffff} intensity={1} />
   );
 });
 

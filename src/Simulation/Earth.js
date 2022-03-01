@@ -28,7 +28,7 @@ const Earth = forwardRef(({ initialDate, time }, ref) => {
       map.wrapS = THREE.RepeatWrapping;
       map.offset.x = 0.5;
     });
-  }, []);
+  }, [texture]);
 
   function getEarthRotationAngle(date) {
     const JD = date.getTime() / 86400000 + 2440587 - 2451545;
