@@ -19,7 +19,7 @@ import React, {
 import * as THREE from 'three';
 import { useLoader, useFrame } from '@react-three/fiber';
 import { Instances, useGLTF } from '@react-three/drei';
-import SatelliteGLB from '../Assets/Mesh/satellite.glb';
+import SatelliteGLB from '../Assets/Mesh/lowpolysat.glb';
 import Beam from './Beam';
 import Customer from './Customer';
 
@@ -66,10 +66,8 @@ const CustomerSats = ({
   const ref = useRef();
   return (
     <>
-      <Instances
-        geometry={obj.nodes.Cubesat.geometry}
-        material={obj.materials.Texture}
-      >
+      <Instances geometry={obj.nodes.Satellite.geometry}>
+        <meshToonMaterial color="red" />
         {satellites}
       </Instances>
     </>

@@ -9,7 +9,7 @@
 import React, { useContext } from 'react';
 import * as THREE from 'three';
 import { Instances, useGLTF } from '@react-three/drei';
-import SatelliteGLB from '../Assets/Mesh/satellite.glb';
+import SatelliteGLB from '../Assets/Mesh/lowpolysat.glb';
 import Power from './Power';
 
 const PowerSats = ({
@@ -43,9 +43,10 @@ const PowerSats = ({
   return (
     <>
       <Instances
-        geometry={obj.nodes.Cubesat.geometry}
-        material={obj.materials.Texture}
+        geometry={obj.nodes.Satellite.geometry}
+        // material={obj.materials.Texture}
       >
+        <meshToonMaterial color="yellow" />
         {satellites}
       </Instances>
     </>

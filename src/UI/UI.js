@@ -57,6 +57,7 @@ const UIWrapper = styled.div`
   display: flex;
   z-index: 999;
   justify-content: space-between;
+  font-family: 'Barlow';
   width: 100%;
 `;
 

@@ -117,6 +117,10 @@ const Customer = ({
     satRef.position.x = position.x;
     satRef.position.y = position.y;
     satRef.position.z = position.z;
+    const earth = new THREE.Vector3(0, 0, 0);
+    const lookAt = satRef.localToWorld(earth);
+    satRef.up.set(1, 0, 0);
+    satRef.lookAt(earth);
     if (attachCamera) {
       camera.position
         .fromArray([position.x, position.y, position.z])
@@ -171,7 +175,7 @@ const Customer = ({
     <Instance
       ref={ref}
       key={station.name}
-      scale={0.0005}
+      scale={0.01}
       onClick={() => {
         dispatchUI({
           type: 'toggle label',

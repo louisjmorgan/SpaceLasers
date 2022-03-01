@@ -28,7 +28,9 @@ footer, header, hgroup, menu, nav, section {
 body {
 	line-height: 1;
   overflow-x: hidden;
-  background: #070b34;
+  background: rgb(132,7,210);
+/* background: radial-gradient(circle at bottom, rgba(132,7,210,1) 0%, rgba(39,0,130,1) 43%, rgba(6,6,18,1) 100%); */
+background: radial-gradient(circle at bottom, #FC9918 0%, rgb(241, 74, 22) 25%, rgb(55, 6, 101)  100%); 
 }
 ol, ul {
 	list-style: none;
@@ -44,6 +46,7 @@ q:before, q:after {
 table {
 	border-collapse: collapse;
 	border-spacing: 0;
-}`;
+}
+`;
 
 export default GlobalStyles;

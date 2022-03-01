@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 
 import { App } from './App';
 
-const title = 'Space Lasers';
+const title = 'Space Power';
 
 ReactDOM.render(
   <App title={title} />,

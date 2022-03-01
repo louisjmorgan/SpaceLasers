@@ -16,7 +16,7 @@ const Controls = ({ time }) => {
   return (
     <ControlsWrapper>
       <Suspense fallback={null}>
-        <p>{time.toString()}</p>
+        <p>{time.toString().slice(0, 24)}</p>
       </Suspense>
       <input
         type="range"
@@ -41,10 +41,11 @@ const ControlsWrapper = styled.div`
   z-index: 999;
   width: 20rem;
   p {
-    font-family: 'sans-serif';
+    font-family: 'Barlow';
     color: white;
     font-size: 1rem;
     margin: 0 auto;
+    width: 100%;
   }
   input {
     width: 80%;

@@ -4,7 +4,7 @@
 /* eslint-disable react/forbid-prop-types */
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useLayoutEffect } from 'react';
 import PropTypes from 'prop-types';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
@@ -17,11 +17,8 @@ const Power = ({
   getOrbitAtTime,
   storeRef,
   showLabel,
-  sunRef,
-  obj,
 }) => {
   const [satRef, setSatRef] = useState();
-  console.log(obj);
   // Create ref for satellite and store with parent component
   const ref = useCallback((node) => {
     if (node !== null) {
@@ -35,18 +32,19 @@ const Power = ({
   useFrame(({ clock }, delta) => {
     // update satellite position
     const position = getOrbitAtTime(station, time.current);
-    const lookAt = sunRef.getWorldPosition(new THREE.Vector3());
-    // const lookAt = new THREE.Vector3().fromArray([0, 0, 0]);
-    satRef.lookAt(lookAt);
     satRef.position.x = position.x;
     satRef.position.y = position.y;
     satRef.position.z = position.z;
+    const earth = new THREE.Vector3(0, 0, 0);
+    const lookAt = satRef.localToWorld(earth);
+    satRef.up.set(1, 0, 0);
+    satRef.lookAt(earth);
   });
   return (
     <Instance
       ref={ref}
-      scale={0.0005}
-      up={[0, 0, 0]}
+      scale={0.01}
+      // up={[1, 0, -1]}
       onClick={() => {
         dispatchUI({
           type: 'toggle label',

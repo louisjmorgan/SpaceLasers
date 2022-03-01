@@ -43,32 +43,32 @@ const Earth = forwardRef(({ initialDate, time }, ref) => {
   });
   return (
     <>
-      <mesh
-        ref={ref}
-        position={[0, 0, 0]}
-        rotation={[
-          0,
-          getEarthRotationAngle(new Date(initialDate)),
-          0,
-        ]}
-      >
-        <sphereGeometry attach="geometry" args={[1, 64, 64]} />
-        <meshPhongMaterial
+      <mesh ref={ref} position={[0, 0, 0]}>
+        <sphereGeometry attach="geometry" args={[1, 32, 32]} />
+        {/* <meshToonMaterial
+          attach="material"
+          wireframe
+          color="purple"
+        /> */}
+        <meshToonMaterial
           attach="material"
           map={colorMap}
-          bumpMap={bumpMap}
-          bumpScale={0.005}
-          specularMap={specularMap}
-          specular={0x111111}
-          offset={[]}
+          // setHSL={[1, 10, 1]}
+          // bumpMap={bumpMap}
+          // bumpScale={0.5}
+          // specularMap={specularMap}
+          // specular={0x00000
         />
       </mesh>
       <mesh position={[0, 0, 0]} ref={cloudsRef} rotation={[0, 0, 0]}>
-        <sphereGeometry attach="geometry" args={[1.03, 32, 32]} />
-        <meshPhongMaterial
+        <sphereGeometry attach="geometry" args={[1.01, 64, 64]} />
+        <meshBasicMaterial
           attach="material"
-          map={clouds}
+          // map={clouds}
+          wireframe
+          color="#FC9918"
           transparent
+          wireframeLinewidth="0.2"
         />
       </mesh>
     </>

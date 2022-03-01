@@ -33,6 +33,7 @@ import {
   Html,
   useContextBridge,
   PerspectiveCamera,
+  Stars,
 } from '@react-three/drei';
 import * as satelliteUtils from 'satellite.js/lib/index';
 import { earthRadius } from 'satellite.js/lib/constants';
@@ -46,6 +47,7 @@ import UI from './UI/UI';
 import Controls from './UI/Controls';
 import Time from './Simulation/Time';
 import Sun from './Simulation/Sun';
+import Skybox from './Simulation/Skybox';
 
 const defaultStationOptions = {
   orbitMinutes: 1200,
@@ -276,6 +278,7 @@ const App = ({ title }) => {
           uiMap={ui.current}
         />
       </Context.Provider>
+
       <Canvas className="canvas" mode="concurrent">
         <ContextBridge>
           <Camera
@@ -283,6 +286,7 @@ const App = ({ title }) => {
             refs={refs.current.customerRefs}
           />
           <ambientLight color={0x333333} />
+
           <Suspense
             fallback={
               <Html>
@@ -294,6 +298,14 @@ const App = ({ title }) => {
               dispatch={dispatch}
               time={state.simulation.time}
               speed={state.simulation.speed}
+            />
+            <Stars
+              radius={100} // Radius of the inner sphere (default=100)
+              depth={50} // Depth of area where stars should fit (default=50)
+              count={5000} // Amount of stars (default=5000)
+              factor={4} // Size factor (default=4)
+              saturation={1} // Saturation 0-1 (default=0)
+              fade
             />
             <Sun time={state.simulation.time.current} ref={sunRef} />
             <Earth
@@ -326,13 +338,13 @@ const Wrapper = styled.div`
   position: relative;
   height: 1200px;
   width: 100vw;
-  font-family: sans-serif;
   padding-top: 2.5rem;
   h1 {
     color: white;
     text-align: center;
     font-family: serif;
     font-weight: bold;
+    font-family: 'Barlow';
     font-size: 2rem;
   }
 
