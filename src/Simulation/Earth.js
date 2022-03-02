@@ -16,7 +16,7 @@ import earthBump from '../Assets/Textures/earth-bump.jpg';
 import earthSpecular from '../Assets/Textures/earth-specular.png';
 import cloudsTexture from '../Assets/Textures/fair_clouds_4k.png';
 
-const Earth = forwardRef(({ initialDate, time }, ref) => {
+const Earth = forwardRef(({ time }, ref) => {
   const colorMap = useLoader(TextureLoader, earthTexture);
   const bumpMap = useLoader(TextureLoader, earthBump);
   const specularMap = useLoader(TextureLoader, earthSpecular);
@@ -36,14 +36,17 @@ const Earth = forwardRef(({ initialDate, time }, ref) => {
   }
 
   useFrame(({ clock }) => {
-    const date = time;
+    const date = time.current;
     const angle = getEarthRotationAngle(date);
     ref.current.rotation.y = angle;
     cloudsRef.current.rotation.y = angle;
   });
   return (
     <>
-      <mesh ref={ref} position={[0, 0, 0]}>
+      <mesh
+        ref={ref}
+        rotation={[0, getEarthRotationAngle(time.initial), 0]}
+      >
         <sphereGeometry attach="geometry" args={[1, 32, 32]} />
         {/* <meshToonMaterial
           attach="material"
@@ -60,7 +63,10 @@ const Earth = forwardRef(({ initialDate, time }, ref) => {
           // specular={0x00000
         />
       </mesh>
-      <mesh position={[0, 0, 0]} ref={cloudsRef} rotation={[0, 0, 0]}>
+      <mesh
+        ref={cloudsRef}
+        rotation={[0, getEarthRotationAngle(time.initial), 0]}
+      >
         <sphereGeometry attach="geometry" args={[1.01, 64, 64]} />
         <meshBasicMaterial
           attach="material"

@@ -7,7 +7,7 @@ import { useFrame } from '@react-three/fiber';
 import React, { forwardRef } from 'react';
 import { earthRadius } from 'satellite.js/lib/constants';
 
-const Sun = forwardRef(({ time, initialDate }, ref) => {
+const Sun = forwardRef(({ time }, ref) => {
   function getSunPosition(date) {
     const N = date.getTime() / 86400000 + 2440587 - 2451545;
     let L = 4.89495042 + 0.0172027923937 * N;
@@ -30,14 +30,19 @@ const Sun = forwardRef(({ time, initialDate }, ref) => {
   }
 
   useFrame(({ clock }) => {
-    const date = time;
+    const date = time.current;
     const position = getSunPosition(date);
     ref.current.position.x = position.x;
     ref.current.position.y = position.y;
     ref.current.position.z = position.z;
   });
   return (
-    <directionalLight ref={ref} color={0xffffff} intensity={1} />
+    <directionalLight
+      ref={ref}
+      color={0xffffff}
+      intensity={1}
+      position={getSunPosition(time.initial)}
+    />
   );
 });
 

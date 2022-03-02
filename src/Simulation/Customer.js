@@ -118,8 +118,10 @@ const Customer = ({
     satRef.position.y = position.y;
     satRef.position.z = position.z;
     const earth = new THREE.Vector3(0, 0, 0);
-    const lookAt = satRef.localToWorld(earth);
-    satRef.up.set(1, 0, 0);
+    const lookAt = earth.clone().sub(satRef.position);
+    const up = new THREE.Vector3(0, 0, 1);
+    up.applyQuaternion(satRef.quaternion);
+    satRef.up.set(up.x, up.y, up.z);
     satRef.lookAt(earth);
     if (attachCamera) {
       camera.position

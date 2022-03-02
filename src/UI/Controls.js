@@ -16,14 +16,14 @@ const Controls = ({ time }) => {
   return (
     <ControlsWrapper>
       <Suspense fallback={null}>
-        <p>{time.toString().slice(0, 24)}</p>
+        <p>{time.toString().slice(0, 21)}</p>
       </Suspense>
       <input
         type="range"
         id="speed"
         name="speed"
         min="1"
-        max="60000"
+        max="6000000"
         onInput={handleAnimationSpeed}
       />
     </ControlsWrapper>

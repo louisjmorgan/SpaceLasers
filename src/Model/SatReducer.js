@@ -262,6 +262,7 @@ function satReducer(state, action) {
 
       const newCustomers = [...state.customers];
       const newPowers = [...state.powers];
+
       if (cIndex === -1 && pIndex === -1) {
         const newSatellite = createSatellite(
           action.name,
@@ -274,7 +275,6 @@ function satReducer(state, action) {
           newPowers.push(newSatellite);
         }
       }
-
       return {
         ...state,
         customers: newCustomers,

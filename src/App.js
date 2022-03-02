@@ -285,7 +285,7 @@ const App = ({ title }) => {
             target={cameraTarget.current}
             refs={refs.current.customerRefs}
           />
-          <ambientLight color={0x333333} />
+          {/* <ambientLight color="white" intensity={0.3} /> */}
 
           <Suspense
             fallback={
@@ -307,11 +307,8 @@ const App = ({ title }) => {
               saturation={1} // Saturation 0-1 (default=0)
               fade
             />
-            <Sun time={state.simulation.time.current} ref={sunRef} />
-            <Earth
-              ref={earthRef}
-              time={state.simulation.time.current}
-            />
+            <Sun time={state.simulation.time} ref={sunRef} />
+            <Earth ref={earthRef} time={state.simulation.time} />
             <Satellites
               time={state.simulation.time}
               powerSats={state.powers}
@@ -339,6 +336,7 @@ const Wrapper = styled.div`
   height: 1200px;
   width: 100vw;
   padding-top: 2.5rem;
+  font-family: 'Barlow';
   h1 {
     color: white;
     text-align: center;

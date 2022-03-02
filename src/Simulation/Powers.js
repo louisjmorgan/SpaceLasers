@@ -6,10 +6,9 @@
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import React, { useContext } from 'react';
+import React, { useEffect } from 'react';
 import * as THREE from 'three';
 import { Instances, useGLTF } from '@react-three/drei';
-import SatelliteGLB from '../Assets/Mesh/lowpolysat.glb';
 import Power from './Power';
 
 const PowerSats = ({
@@ -20,8 +19,8 @@ const PowerSats = ({
   uiMap,
   dispatchUI,
   sunRef,
+  obj,
 }) => {
-  const obj = useGLTF(SatelliteGLB);
   const satellites = [];
   powerSats.map((sat, index) => {
     satellites.push(
@@ -44,6 +43,7 @@ const PowerSats = ({
     <>
       <Instances
         geometry={obj.nodes.Satellite.geometry}
+
         // material={obj.materials.Texture}
       >
         <meshToonMaterial color="yellow" />

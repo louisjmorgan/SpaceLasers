@@ -19,7 +19,6 @@ import React, {
 import * as THREE from 'three';
 import { useLoader, useFrame } from '@react-three/fiber';
 import { Instances, useGLTF } from '@react-three/drei';
-import SatelliteGLB from '../Assets/Mesh/lowpolysat.glb';
 import Beam from './Beam';
 import Customer from './Customer';
 
@@ -34,8 +33,8 @@ const CustomerSats = ({
   isEclipsed,
   beams,
   animationSpeed,
+  obj,
 }) => {
-  const obj = useGLTF(SatelliteGLB);
   function hasBeam(name) {
     return beams.reduce((total, beam) => {
       const isActive = beam.active && beam.customer === name;

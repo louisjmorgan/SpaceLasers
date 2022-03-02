@@ -4,7 +4,8 @@
 /* eslint-disable react/jsx-no-bind */
 import React, { useContext, useEffect, useState, memo } from 'react';
 import { useFrame, useLoader } from '@react-three/fiber';
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
+import { useGLTF } from '@react-three/drei';
+import SatelliteGLB from '../Assets/Mesh/lowpolysat.glb';
 import PowerSats from './Powers';
 import CustomerSats from './Customers';
 import Beam from './Beam';
@@ -23,7 +24,14 @@ const Satellites = ({
   isEclipsed,
   animationSpeed,
 }) => {
-  // console.log('rendering satellites');
+  const obj = useGLTF(SatelliteGLB);
+
+  useEffect(() => {
+    obj.nodes.Satellite.geometry.rotateY((3 * Math.PI) / 2);
+    // obj.nodes.Satellite.up.set(0, 0, -1);
+    // obj.nodes.Satellite.geometry.rotateX(Math.PI / 2);
+  }, [obj]);
+
   // Callbacks to store refs from child components
   function storeCustomerRef(key, ref) {
     dispatchRef({
@@ -113,6 +121,7 @@ const Satellites = ({
         isEclipsed={isEclipsed}
         beams={beams}
         animationSpeed={animationSpeed}
+        obj={obj}
       />
       <PowerSats
         dispatch={dispatch}
@@ -125,6 +134,7 @@ const Satellites = ({
         getOrbitAtTime={getOrbitAtTime}
         sunRef={sunRef}
         isEclipsed={isEclipsed}
+        obj={obj}
       />
       {beams.map((beam) => {
         return (
