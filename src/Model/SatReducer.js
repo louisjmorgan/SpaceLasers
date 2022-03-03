@@ -206,7 +206,6 @@ function createSatellite(
   // const performance = defaultPerformance;
 
   const profiles = generateProfiles(pv, load, battery);
-  console.log(profiles);
   const orbit = twoline2satrec(tles.tle1, tles.tle2);
   orbit.period = (2 * Math.PI * 60) / orbit.no;
   return {
@@ -238,6 +237,7 @@ async function initializeState() {
       time: {
         initial: initialDate,
         current: initialDate,
+        paused: false,
       },
       speed: animationSpeed,
     },
@@ -334,6 +334,19 @@ function satReducer(state, action) {
         simulation: {
           ...state.simulation,
           speed: action.speed,
+        },
+      };
+    }
+
+    case 'pause time': {
+      return {
+        ...state,
+        simulation: {
+          ...state.simulation,
+          time: {
+            ...state.simulation.time,
+            paused: action.paused,
+          },
         },
       };
     }

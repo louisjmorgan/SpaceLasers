@@ -1,63 +1,86 @@
+/* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
 /* eslint-disable import/no-cycle */
 /* eslint-disable react/prop-types */
-import React, {
-  useRef,
-  useCallback,
-  useContext,
-  useState,
-} from 'react';
-import { useFrame } from '@react-three/fiber';
+import React, { useRef, useCallback, useMemo, useState } from 'react';
+import * as THREE from 'three';
+import { useFrame, useThree } from '@react-three/fiber';
 import { earthRadius } from 'satellite.js/lib/constants';
+import VolumetricSpotLightMaterial from './Shaders/VolumetricSpotLightMaterial';
+import {
+  LaserBeam,
+  generateLaserBodyCanvas,
+} from './Shaders/LaserBeam';
 
 const Beam = ({ beam, activateBeam, deactivateBeam, storeRef }) => {
-  const [beamRef, setBeamRef] = useState();
+  const beamRef = useRef();
   const ref = useCallback((node) => {
     if (node !== null) {
       storeRef(`${beam.satellite}-${beam.customer}`, node);
-      setBeamRef(node);
+      beamRef.current = node;
     }
   }, []);
 
   function getDistance(sat1, sat2) {
-    const a = (sat1.position.x - sat2.position.x) * earthRadius;
-    const b = (sat1.position.y - sat2.position.y) * earthRadius;
-    const c = (sat1.position.z - sat2.position.z) * earthRadius;
+    const sat1pos = sat1.position.clone();
+    const sat2pos = sat2.position.clone();
+    const a = sat1pos.x - sat2pos.x;
+    const b = sat1pos.y - sat2pos.y;
+    const c = sat1pos.z - sat2pos.z;
 
     return Math.sqrt(a * a + b * b + c * c);
   }
 
+  const distance = useRef();
   useFrame(() => {
-    if (beamRef.geometry) {
-      const distance = getDistance(beam.powerRef, beam.customerRef);
-      if (distance < 5000) {
-        beamRef.geometry.setFromPoints([
-          beam.powerRef.position,
-          beam.customerRef.position,
-        ]);
-        if (beam.active !== true) activateBeam(beam);
-      } else {
-        beamRef.geometry.setFromPoints([
-          [0, 0, 0],
-          [0, 0, 0],
-        ]);
-        if (beam.active === true) deactivateBeam(beam);
-      }
-    }
+    const dist = getDistance(beam.powerRef, beam.customerRef);
+    if (dist * earthRadius < 5000) {
+      distance.current = dist;
+      beamRef.current.position.copy(beam.powerRef.position);
+      beamRef.current.lookAt(beam.customerRef.position);
+      beamRef.current.rotateY(-Math.PI / 2);
+    } else distance.current = null;
   });
 
-  return (
-    <line ref={ref}>
-      <bufferGeometry attach="geometry" />
-      <lineBasicMaterial
-        attach="material"
-        color="yellow"
-        linewidth={1}
-        linecap="round"
-        linejoin="round"
-      />
-    </line>
-  );
+  // const mat = useMemo(() => {
+  //   const material = VolumetricSpotLightMaterial();
+  //   material.uniforms.lightColor.value.set('yellow');
+  //   material.uniforms.anglePower.value = 5;
+  //   material.uniforms.attenuation.value = 3;
+  //   return material;
+  // }, []);
+
+  // const geom = useMemo(() => {
+  //   if (distance.current === null) return false;
+  //   const height = distance.current;
+  //   const geometry = new THREE.CylinderGeometry(
+  //     0.005,
+  //     0.01,
+  //     height,
+  //     64,
+  //     20,
+  //     true
+  //   );
+  //   geometry.applyMatrix4(
+  //     new THREE.Matrix4().makeTranslation(0, -height / 2, 0)
+  //   );
+  //   geometry.applyMatrix4(
+  //     new THREE.Matrix4().makeRotationX(-Math.PI / 2)
+  //   );
+  //   return geometry;
+  // }, [distance.current]);
+
+  const texture = useMemo(() => {
+    return generateLaserBodyCanvas();
+  }, []);
+
+  const laser = useMemo(() => {
+    if (distance.current === null) return false;
+    const object = LaserBeam(distance.current, 0.01, texture);
+    return object;
+  }, [distance.current, texture]);
+
+  return laser && <primitive object={laser} ref={ref} />;
 };
 
 export default Beam;

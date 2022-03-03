@@ -2,8 +2,8 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable import/no-cycle */
 /* eslint-disable react/prop-types */
-import React, { useState, useContext } from 'react';
-import { useFrame } from '@react-three/fiber';
+import React, { useState, useContext, useEffect } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
 import { Context } from '../App';
 
 const Time = ({ dispatch, time, speed }) => {
@@ -13,7 +13,7 @@ const Time = ({ dispatch, time, speed }) => {
     // temp.setSeconds(
     //   temp.getSeconds() + clock.getElapsedTime() * speed
     // );
-    // const date = temp;
+    // const date = temp
 
     const temp = time.current;
     const date = new Date(
@@ -24,6 +24,13 @@ const Time = ({ dispatch, time, speed }) => {
       time: date,
     });
   });
+
+  const { clock } = useThree();
+
+  useEffect(() => {
+    if (time.paused === true) clock.stop();
+    else clock.start();
+  }, [time.paused]);
 
   return null;
 };

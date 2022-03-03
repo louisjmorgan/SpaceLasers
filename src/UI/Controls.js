@@ -7,6 +7,14 @@ import { Context } from '../App';
 
 const Controls = ({ time }) => {
   const { dispatch } = useContext(Context);
+
+  const handlePause = () => {
+    dispatch({
+      type: 'pause time',
+      paused: !time.paused,
+    });
+  };
+
   const handleAnimationSpeed = (e) => {
     dispatch({
       type: 'set speed',
@@ -16,16 +24,19 @@ const Controls = ({ time }) => {
   return (
     <ControlsWrapper>
       <Suspense fallback={null}>
-        <p>{time.toString().slice(0, 21)}</p>
+        <p>{time.current.toString().slice(0, 21)}</p>
       </Suspense>
       <input
         type="range"
         id="speed"
         name="speed"
-        min="1"
-        max="6000000"
+        min={600}
+        max={6000}
         onInput={handleAnimationSpeed}
       />
+      <button type="button" onClick={handlePause}>
+        {time.paused ? 'Resume' : 'Pause'}
+      </button>
     </ControlsWrapper>
   );
 };
@@ -48,7 +59,7 @@ const ControlsWrapper = styled.div`
     width: 100%;
   }
   input {
-    width: 80%;
+    width: 75%;
   }
 
   @media only screen and (max-width: 1200px) {

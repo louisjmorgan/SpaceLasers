@@ -4,7 +4,7 @@
 /* eslint-disable react/forbid-prop-types */
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import React, { useState, useCallback, useLayoutEffect } from 'react';
+import React, { useRef, useCallback, useLayoutEffect } from 'react';
 import PropTypes from 'prop-types';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
@@ -18,12 +18,12 @@ const Power = ({
   storeRef,
   showLabel,
 }) => {
-  const [satRef, setSatRef] = useState();
+  const satRef = useRef();
   // Create ref for satellite and store with parent component
   const ref = useCallback((node) => {
     if (node !== null) {
       storeRef(station.name, node);
-      setSatRef(node);
+      satRef.current = node;
     }
   }, []);
 
@@ -31,16 +31,18 @@ const Power = ({
 
   useFrame(({ clock }, delta) => {
     // update satellite position
-    const position = getOrbitAtTime(station, time.current);
-    satRef.position.x = position.x;
-    satRef.position.y = position.y;
-    satRef.position.z = position.z;
-    const earth = new THREE.Vector3(0, 0, 0);
-    const lookAt = earth.clone().sub(satRef.position);
-    const up = new THREE.Vector3(0, 0, 1);
-    up.applyQuaternion(satRef.quaternion);
-    satRef.up.set(up.x, up.y, up.z);
-    satRef.lookAt(earth);
+    if (clock.running === true) {
+      const position = getOrbitAtTime(station, time.current);
+      satRef.current.position.copy(position);
+      const earth = new THREE.Vector3(0, 0, 0);
+
+      const lookAt = earth.clone();
+      // .sub(satRef.position);
+      // const up = new THREE.Vector3(0, 0, 1);
+      // earth.applyQuaternion(satRef.current.quaternion);
+      // satRef.current.up.set(up.x, up.y, up.z);
+      satRef.current.lookAt(earth);
+    }
   });
   return (
     <Instance

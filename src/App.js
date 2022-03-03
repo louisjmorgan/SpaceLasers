@@ -111,7 +111,6 @@ const App = ({ title }) => {
     switch (action.type) {
       case 'add satellite': {
         ui.current.set(action.name, defaultUI);
-        console.log(ui.current);
         return;
       }
 
@@ -269,7 +268,7 @@ const App = ({ title }) => {
         <GlobalStyles />
         <h1>{title}</h1>
 
-        <Controls time={state.simulation.time.current} />
+        <Controls time={state.simulation.time} />
 
         <UI
           allStations={state.orbits}

@@ -30,13 +30,13 @@ const Customer = ({
   animationSpeed,
   obj,
 }) => {
-  const [satRef, setSatRef] = useState();
+  const satRef = useRef();
 
   // Create ref for satellite and store with parent component
   const ref = useCallback((node) => {
     if (node !== null) {
       storeRef(station.name, node);
-      setSatRef(node);
+      satRef.current = node;
     }
   }, []);
 
@@ -113,19 +113,23 @@ const Customer = ({
 
   useFrame(({ clock, camera, controls }, delta) => {
     // update satellite position
-    const position = getOrbitAtTime(station, time.current);
-    satRef.position.x = position.x;
-    satRef.position.y = position.y;
-    satRef.position.z = position.z;
-    const earth = new THREE.Vector3(0, 0, 0);
-    const lookAt = earth.clone().sub(satRef.position);
-    const up = new THREE.Vector3(0, 0, 1);
-    up.applyQuaternion(satRef.quaternion);
-    satRef.up.set(up.x, up.y, up.z);
-    satRef.lookAt(earth);
+    if (clock.running === true) {
+      const position = getOrbitAtTime(station, time.current);
+      satRef.current.position.copy(position);
+      const earth = new THREE.Vector3(0, 0, 0);
+      const lookAt = earth.clone().sub(satRef.current.position);
+      // const up = new THREE.Vector3(0, 0, 1);
+      // up.applyQuaternion(satRef.current.quaternion);
+      // satRef.current.up.set(up.x, up.y, up.z);
+      satRef.current.lookAt(earth);
+    }
     if (attachCamera) {
       camera.position
-        .fromArray([position.x, position.y, position.z])
+        .fromArray([
+          satRef.current.position.x,
+          satRef.current.position.y,
+          satRef.current.position.z,
+        ])
         .multiplyScalar(1.3);
     }
 
@@ -158,7 +162,7 @@ const Customer = ({
       duties.current.set(name, newDuty);
     });
 
-    const hasSun = !isEclipsed(satRef);
+    const hasSun = !isEclipsed(satRef.current);
 
     let sources;
     if (hasSun && hasBeam) sources = 'sun and beam';

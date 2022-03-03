@@ -2,7 +2,7 @@
 /* eslint-disable import/no-cycle */
 /* eslint-disable react/prop-types */
 /* eslint-disable react/jsx-no-bind */
-import React, { useContext, useEffect, useState, memo } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useFrame, useLoader } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import SatelliteGLB from '../Assets/Mesh/lowpolysat.glb';
@@ -68,7 +68,7 @@ const Satellites = ({
           powerRef: refs.powerRefs.get(sat.name),
           customer: customer.name,
           customerRef: refs.customerRefs.get(customer.name),
-          active: false,
+          // active: false,
         });
       });
     });
@@ -76,37 +76,50 @@ const Satellites = ({
     return beams;
   }
 
-  const [beams, setBeams] = useState([]);
+  const beams = useRef([]);
 
   useEffect(() => {
     let initBeams = [];
     if (powerSats.length > 0 && customers.length > 0) {
       initBeams = initializeBeams();
     }
-    setBeams(() => initBeams);
+    beams.current = initBeams;
   }, [powerSats, customers]);
 
-  function activateBeam(beam) {
-    const newBeams = [...beams];
-    const index = beams.findIndex(
-      (entry) => entry.customer === beam.customer
-    );
-    if (index !== -1) {
-      newBeams[index].active = true;
-      setBeams(() => newBeams);
-    }
-  }
+  // function activateBeam(beam) {
+  //   const newBeams = [...beams];
+  //   const index = beams.findIndex(
+  //     (entry) => entry.customer === beam.customer
+  //   );
+  //   if (index !== -1) {
+  //     newBeams[index].active = true;
+  //     setBeams(() => newBeams);
+  //   }
+  // }
 
-  function deactivateBeam(beam) {
-    const newBeams = [...beams];
-    const index = beams.findIndex(
-      (entry) => entry.customer === beam.customer
-    );
-    if (index !== -1) {
-      newBeams[index].active = false;
-      setBeams(() => newBeams);
-    }
-  }
+  // function deactivateBeam(beam) {
+  //   const newBeams = [...beams];
+  //   const index = beams.findIndex(
+  //     (entry) => entry.customer === beam.customer
+  //   );
+  //   if (index !== -1) {
+  //     newBeams[index].active = false;
+  //     setBeams(() => newBeams);
+  //   }
+  // }
+  // const beamComponents = useMemo(() => {
+  //   return beams.map((beam) => {
+  //     return (
+  //       <Beam
+  //         key={`${beam.satellite}-${beam.customer}`}
+  //         beam={beam}
+  //         activateBeam={activateBeam}
+  //         deactivateBeam={deactivateBeam}
+  //         storeRef={storeBeamRef}
+  //       />
+  //     );
+  //   });
+  // }, [beams]);
 
   return (
     <>
@@ -119,7 +132,7 @@ const Satellites = ({
         dispatch={dispatch}
         dispatchUI={dispatchUI}
         isEclipsed={isEclipsed}
-        beams={beams}
+        beams={beams.current}
         animationSpeed={animationSpeed}
         obj={obj}
       />
@@ -136,13 +149,12 @@ const Satellites = ({
         isEclipsed={isEclipsed}
         obj={obj}
       />
-      {beams.map((beam) => {
+      {/* {beamComponents} */}
+      {beams.current.map((beam) => {
         return (
           <Beam
             key={`${beam.satellite}-${beam.customer}`}
             beam={beam}
-            activateBeam={activateBeam}
-            deactivateBeam={deactivateBeam}
             storeRef={storeBeamRef}
           />
         );
@@ -151,4 +163,4 @@ const Satellites = ({
   );
 };
 
-export default memo(Satellites);
+export default Satellites;
