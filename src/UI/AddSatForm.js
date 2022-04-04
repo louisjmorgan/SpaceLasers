@@ -57,6 +57,13 @@ export default function AddSatForm({
     }
   };
 
+  const tabs = ['orbit', 'power', 'duty'];
+  const [activeTab, setActiveTab] = useState(tabs[0]);
+
+  const handleTabs = (tab) => {
+    setActiveTab(tab);
+  };
+
   const { dispatch, dispatchUI } = useContext(Context);
 
   const handleStationSelect = (e) => {
@@ -90,6 +97,34 @@ export default function AddSatForm({
     };
     const newTLE = generateTLE(orbitElements);
     const test = { orbit: twoline2satrec(newTLE.tle1, newTLE.tle2) };
+
+    const pv = {
+      voltage: values.pvVoltage,
+      currentDensity: values.currentDensity,
+      area: values.area,
+    };
+
+    const battery = {
+      voltage: values.batteryVoltage,
+      capacity: values.capacity,
+    };
+
+    const load = {
+      powerStoring: {
+        name: 'power storing',
+        default: true,
+        duration: null,
+        consumption: values.powerStoringConsumption, // W
+        cycles: null,
+      },
+      overPower: {
+        name: 'overpower',
+        default: false,
+        duration: values.overPowerDuration, // s
+        consumption: values.overPowerConsumption, // W
+        cycles: values.overPowerCycles, // per orbit
+      },
+    };
     try {
       const pos = getOrbitAtTime(test, new Date());
       dispatchUI({
@@ -100,13 +135,16 @@ export default function AddSatForm({
         type: 'add satellite',
         tles: newTLE,
         name: values.name,
+        pv,
+        battery,
+        load,
         size: values.size,
         isCustomer: true,
       });
       closeModal();
     } catch {
       return new Error(
-        'Unable to propagate orbital parameters, please try different values'
+        'Unable to propagate orbital parameters. Please try different values or select from the dropdown menu.'
       );
     }
 
@@ -129,6 +167,7 @@ export default function AddSatForm({
       .max(50, 'Too Long!')
       .required('Required'),
     size: Yup.number()
+      .integer()
       .min(1, 'Size must be 1 or more!')
       .max(6, 'Size must be 6 or less!')
       .required('Required'),
@@ -139,8 +178,8 @@ export default function AddSatForm({
       .max(1, 'Must be less than 1')
       .required('Required'),
     bstar: Yup.number()
-      .min(-1, 'Must be between -1 and 1')
-      .max(1, 'Must be between -1 and 1')
+      .min(-2, 'Must be between -2 and 2')
+      .max(2, 'Must be between -2 and 2')
       .required('Required'),
     inclination: Yup.number()
       .min(0, 'Must be 0-360°')
@@ -163,8 +202,36 @@ export default function AddSatForm({
       .max(360, 'Must be 0-360°')
       .required('Required'),
     meanMotion: Yup.number()
-      .min(0, 'Must be greater than 1')
+      .min(0, 'Must be greater than 0')
       .max(16, 'Must be less than 16')
+      .required('Required'),
+    pvVoltage: Yup.number()
+      .min(0, 'Must be positive')
+      .required('Required'),
+    currentDensity: Yup.number()
+      .min(0, 'Must be positive')
+      .required('Required'),
+    area: Yup.number()
+      .min(0, 'Must be greater than 0')
+      .required('Required'),
+    batteryVoltage: Yup.number()
+      .min(0, 'Must be positive')
+      .required('Required'),
+    capacity: Yup.number()
+      .min(0, 'Must be greater than 0')
+      .required('Required'),
+    powerStoringConsumption: Yup.number()
+      .min(0, 'Must be positive')
+      .required('Required'),
+    overPowerConsumption: Yup.number()
+      .min(0, 'Must be positive')
+      .required('Required'),
+    overPowerDuration: Yup.number()
+      .min(0, 'Must be greater than 0')
+      .required('Required'),
+    overPowerCycles: Yup.number()
+      .integer()
+      .min(1, 'Must be an integer greater than 0')
       .required('Required'),
   });
 
@@ -185,6 +252,15 @@ export default function AddSatForm({
               meanMotion: 13,
               name: '',
               size: 1,
+              pvVoltage: 4.7,
+              currentDensity: 170.5,
+              area: 0.0064,
+              batteryVoltage: 3.6,
+              capacity: 1.125,
+              powerStoringConsumption: 1.2,
+              overPowerConsumption: 3.2,
+              overPowerDuration: 600,
+              overPowerCycles: 6,
             }}
             validationSchema={SatelliteSchema}
             onSubmit={(values, { setStatus }) => {
@@ -211,135 +287,292 @@ export default function AddSatForm({
                   handleSubmit(e);
                 }}
               >
-                <fieldset>
-                  <legend>Details</legend>
-                  <label htmlFor="name">
-                    Name:
-                    <Field name="name" />
-                    <ErrorMessage
-                      component="p"
-                      className="error"
-                      name="name"
-                    />
-                  </label>
-                  <label htmlFor="size">
-                    Size:
-                    <Field name="size" type="number" />
-                    <ErrorMessage
-                      component="p"
-                      className="error"
-                      name="size"
-                    />
-                  </label>
-                </fieldset>
-                <fieldset>
-                  <legend>Orbit</legend>
-                  <label htmlFor="existing">
-                    Choose existing:
-                    <Field
-                      name="existing"
-                      as="select"
-                      onChange={(e) => {
-                        const newValues = handleStationSelect(e);
-                        console.log(newValues);
-                        Object.entries(newValues).forEach((entry) => {
-                          setFieldValue(entry[0], entry[1]);
-                        });
-                      }}
-                    >
-                      <option value="">Select orbit</option>
-                      {options}
-                    </Field>
-                  </label>
+                {' '}
+                <div className="page">
                   <fieldset>
-                    <label htmlFor="epoch">
-                      Epoch:
-                      <Field name="epoch" type="date" />
+                    <legend>
+                      <h3>Details</h3>
+                    </legend>
+                    <label htmlFor="name">
+                      Name:
+                      <Field name="name" type="text" />
                       <ErrorMessage
                         component="p"
                         className="error"
-                        name="date"
+                        name="name"
                       />
                     </label>
-                    <label htmlFor="meanMotionDot">
-                      Mean Motion 1st Derivative:
-                      <Field name="meanMotionDot" type="number" />
+                    <label htmlFor="size">
+                      Size:
+                      <Field name="size" type="number" />
+                      U
                       <ErrorMessage
                         component="p"
                         className="error"
-                        name="meanMotionDot"
-                      />
-                    </label>
-
-                    <label htmlFor="bstar">
-                      BSTAR (drag):
-                      <Field name="bstar" type="number" />
-                      <ErrorMessage
-                        component="p"
-                        className="error"
-                        name="bstar"
-                      />
-                    </label>
-
-                    <label htmlFor="inclination">
-                      Inclination (°):
-                      <Field name="inclination" type="number" />
-                      <ErrorMessage
-                        component="p"
-                        className="error"
-                        name="inclination"
-                      />
-                    </label>
-                    <label htmlFor="rightAscension">
-                      Right Ascension (°):
-                      <Field name="rightAscension" type="number" />
-                      <ErrorMessage
-                        component="p"
-                        className="error"
-                        name="rightAscension"
-                      />
-                    </label>
-
-                    <label htmlFor="eccentricity">
-                      Eccentricity:
-                      <Field name="eccentricity" type="number" />
-                      <ErrorMessage
-                        component="p"
-                        className="error"
-                        name="eccentricity"
-                      />
-                    </label>
-                    <label htmlFor="perigee">
-                      Perigee (°):
-                      <Field name="perigee" type="number" />
-                      <ErrorMessage
-                        component="p"
-                        className="error"
-                        name="perigee"
-                      />
-                    </label>
-                    <label htmlFor="meanAnomaly">
-                      Mean Anomaly (°):
-                      <Field name="meanAnomaly" type="number" />
-                      <ErrorMessage
-                        component="p"
-                        className="error"
-                        name="meanAnomaly"
-                      />
-                    </label>
-                    <label htmlFor="meanMotion">
-                      Mean Motion (revs per day):
-                      <Field name="meanMotion" type="number" />
-                      <ErrorMessage
-                        component="p"
-                        className="error"
-                        name="meanMotion"
+                        name="size"
                       />
                     </label>
                   </fieldset>
-                </fieldset>
+                </div>
+                <div className="tabs">
+                  {tabs.map((tab) => {
+                    return (
+                      <button
+                        type="button"
+                        onClick={(e) => handleTabs(tab)}
+                        className={activeTab === tab ? 'active' : ''}
+                      >
+                        <h3>{tab}</h3>
+                      </button>
+                    );
+                  })}
+                </div>
+                {activeTab === 'orbit' ? (
+                  <div className="page">
+                    <label htmlFor="existing">
+                      Choose existing:
+                      <Field
+                        name="existing"
+                        as="select"
+                        onChange={(e) => {
+                          const newValues = handleStationSelect(e);
+                          console.log(newValues);
+                          Object.entries(newValues).forEach(
+                            (entry) => {
+                              setFieldValue(entry[0], entry[1]);
+                            }
+                          );
+                        }}
+                      >
+                        <option value="">Select orbit</option>
+                        {options}
+                      </Field>
+                    </label>
+                    <fieldset>
+                      <label htmlFor="epoch">
+                        Epoch:
+                        <Field name="epoch" type="date" />
+                        <ErrorMessage
+                          component="p"
+                          className="error"
+                          name="date"
+                        />
+                      </label>
+                      <label htmlFor="meanMotionDot">
+                        Mean Motion 1st Derivative:
+                        <Field name="meanMotionDot" type="number" />
+                        <ErrorMessage
+                          component="p"
+                          className="error"
+                          name="meanMotionDot"
+                        />
+                      </label>
+
+                      <label htmlFor="bstar">
+                        BSTAR (drag):
+                        <Field name="bstar" type="number" />
+                        <ErrorMessage
+                          component="p"
+                          className="error"
+                          name="bstar"
+                        />
+                      </label>
+
+                      <label htmlFor="inclination">
+                        Inclination (°):
+                        <Field name="inclination" type="number" />
+                        <ErrorMessage
+                          component="p"
+                          className="error"
+                          name="inclination"
+                        />
+                      </label>
+                      <label htmlFor="rightAscension">
+                        Right Ascension (°):
+                        <Field name="rightAscension" type="number" />
+                        <ErrorMessage
+                          component="p"
+                          className="error"
+                          name="rightAscension"
+                        />
+                      </label>
+
+                      <label htmlFor="eccentricity">
+                        Eccentricity:
+                        <Field name="eccentricity" type="number" />
+                        <ErrorMessage
+                          component="p"
+                          className="error"
+                          name="eccentricity"
+                        />
+                      </label>
+                      <label htmlFor="perigee">
+                        Perigee (°):
+                        <Field name="perigee" type="number" />
+                        <ErrorMessage
+                          component="p"
+                          className="error"
+                          name="perigee"
+                        />
+                      </label>
+                      <label htmlFor="meanAnomaly">
+                        Mean Anomaly (°):
+                        <Field name="meanAnomaly" type="number" />
+                        <ErrorMessage
+                          component="p"
+                          className="error"
+                          name="meanAnomaly"
+                        />
+                      </label>
+                      <label htmlFor="meanMotion">
+                        Mean Motion (revs per day):
+                        <Field name="meanMotion" type="number" />
+                        <ErrorMessage
+                          component="p"
+                          className="error"
+                          name="meanMotion"
+                        />
+                      </label>
+                    </fieldset>
+                  </div>
+                ) : (
+                  ''
+                )}
+                {activeTab === 'power' ? (
+                  <div className="page">
+                    <fieldset>
+                      <legend>
+                        <h4>Photovoltaic</h4>
+                      </legend>
+                      <label htmlFor="pvVoltage">
+                        Voltage:
+                        <Field name="pvVoltage" type="number" />
+                        V
+                        <ErrorMessage
+                          component="p"
+                          className="error"
+                          name="pvVoltage"
+                        />
+                      </label>
+                      <label htmlFor="currentDensity">
+                        Current Density:
+                        <Field name="currentDensity" type="number" />
+                        A/m²
+                        <ErrorMessage
+                          component="p"
+                          className="error"
+                          name="currentDensity"
+                        />
+                      </label>
+                      <label htmlFor="area">
+                        Area
+                        <Field name="area" type="number" />
+                        m²
+                        <ErrorMessage
+                          component="p"
+                          className="error"
+                          name="area"
+                        />
+                      </label>
+                    </fieldset>
+                    <fieldset>
+                      <legend>
+                        <h4>Battery</h4>
+                      </legend>
+                      <label htmlFor="batteryVoltage">
+                        Voltage:
+                        <Field name="batteryVoltage" type="number" />
+                        V
+                        <ErrorMessage
+                          component="p"
+                          className="error"
+                          name="batteryVoltage"
+                        />
+                      </label>
+                      <label htmlFor="capacity">
+                        Capacity:
+                        <Field name="capacity" type="number" />
+                        Ah
+                        <ErrorMessage
+                          component="p"
+                          className="error"
+                          name="capacity"
+                        />
+                      </label>
+                    </fieldset>
+                  </div>
+                ) : (
+                  ''
+                )}
+                {activeTab === 'duty' ? (
+                  <div className="page">
+                    <fieldset>
+                      <legend>
+                        <h4>Power Storing</h4>
+                      </legend>
+                      <label htmlFor="powerStoringConsumption">
+                        Consumption:
+                        <Field
+                          name="powerStoringConsumption"
+                          type="number"
+                        />
+                        W
+                        <ErrorMessage
+                          component="p"
+                          className="error"
+                          name="powerStoringConsumption"
+                        />
+                      </label>
+                    </fieldset>
+                    <fieldset>
+                      <legend>
+                        <h4>Overpower</h4>
+                      </legend>
+                      <label htmlFor="overPowerConsumption">
+                        Consumption:
+                        <Field
+                          name="overPowerConsumption"
+                          type="number"
+                        />
+                        W
+                        <ErrorMessage
+                          component="p"
+                          className="error"
+                          name="overPowerConsumption"
+                        />
+                      </label>
+                      <label>
+                        Duration:
+                        <Field
+                          name="overPowerDuration"
+                          type="number"
+                        />
+                        s
+                        <ErrorMessage
+                          component="p"
+                          className="error"
+                          name="overPowerDuration"
+                        />
+                      </label>
+                      <label>
+                        Cycles:
+                        <Field name="overPowerCycles" type="number" />
+                        per orbit
+                        <ErrorMessage
+                          component="p"
+                          className="error"
+                          name="overPowerCycles"
+                        />
+                      </label>
+                    </fieldset>
+                  </div>
+                ) : (
+                  ''
+                )}
                 <div className="error">{status}</div>
-                <button type="submit">Add</button>
+                <button className="submitButton" type="submit">
+                  Add
+                </button>
               </StyledForm>
             )}
           </Formik>
@@ -350,6 +583,7 @@ export default function AddSatForm({
     </div>
   );
 }
+
 const FormContainer = styled.div`
   position: fixed;
   top: 0;
@@ -365,7 +599,8 @@ const FormContainer = styled.div`
 `;
 
 const StyledForm = styled.form`
-  width: 40rem;
+  width: 50rem;
+  padding: 2rem;
   background: white;
   display: flex;
   flex-direction: column;
@@ -375,43 +610,85 @@ const StyledForm = styled.form`
   position: relative;
   color: black;
   animation: animate 0.3s;
-  fieldset {
-    display: block;
-    width: 90%;
+
+  h3 {
+    padding: 1rem 0rem;
+    font-size: 1.25rem;
+    font-weight: bold;
+    text-transform: uppercase;
   }
+
+  h4 {
+    padding: 1rem 0rem;
+    font-size: 1.25rem;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .tabs {
+    display: flex;
+    flex-direction: row;
+    width: 75%;
+    justify-content: space-between;
+    border-bottom: 1px solid black;
+    margin: 1rem 0;
+    button {
+      border-radius: 0.25rem 0.25rem 0 0;
+      border: 1px solid grey;
+      width: 33%;
+      color: grey;
+      h3 {
+        font-size: 1.25rem;
+        font-family: 'Barlow';
+        padding: 0.5rem 1rem;
+        color: inherit;
+      }
+    }
+    .active {
+      color: black;
+      border-color: black;
+      border-width: 2px;
+    }
+  }
+
+  .page {
+    width: 80%;
+  }
+
+  fieldset {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
   label {
-    margin: 1rem;
     font-weight: bold;
     line-height: 3;
     white-space: nowrap;
-  }
-  legend {
-    padding: 1.5rem;
-    font-size: 1.5rem;
-    font-weight: bold;
+    margin: 0.5rem 0;
+    margin-right: 1rem;
   }
 
   input {
-    margin-left: 0.25rem;
-    padding: 0.25rem;
-    width: 15%;
+    width: 3rem;
+    margin: 0 0.125rem;
   }
-  input[type='date'],
-  input[type='text'] {
-    width: 30%;
+  input[type='date'] {
+    width: 5rem;
   }
+
+  input[type='text'],
   select {
-    margin-left: 0.25rem;
-    width: 25%;
+    width: 7rem;
   }
   .error {
     font-size: 0.75rem;
-    margin-left: 0.25rem;
     color: red;
     font-weight: lighter;
     display: inline-block;
   }
-  button {
+  .submitButton {
     width: 20%;
     margin: 1rem;
   }

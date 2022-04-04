@@ -215,7 +215,7 @@ const App = ({ title }) => {
         type: 'add satellite',
         name: newSat,
       });
-      newSat = 'ONEWEB-0145';
+      newSat = 'ONEWEB-0087';
       dispatch({
         type: 'add satellite',
         name: state.orbits.get(newSat).name,
@@ -227,7 +227,7 @@ const App = ({ title }) => {
         type: 'add satellite',
         name: newSat,
       });
-      newSat = 'ONEWEB-0146';
+      newSat = 'ONEWEB-0006';
       dispatch({
         type: 'add satellite',
         name: state.orbits.get(newSat).name,

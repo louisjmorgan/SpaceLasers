@@ -181,13 +181,15 @@ function createSatellite(
       dischargeCurrent: defaultBattery.dischargeCurrent * dimensions,
     };
   }
+
   if (!pv) {
     pv = {
       ...defaultPV,
       voltage: defaultPV.voltage * dimensions,
       area: defaultPV.area * dimensions,
     };
-  }
+  } else pv.profiles = defaultPV.profiles;
+
   if (!load) {
     load = {
       ...defaultLoad,
@@ -267,8 +269,12 @@ function satReducer(state, action) {
         const newSatellite = createSatellite(
           action.name,
           action.tles,
-          action.size
+          action.size,
+          action.battery,
+          action.pv,
+          action.load
         );
+        console.log(newSatellite);
         if (action.isCustomer === true) {
           newCustomers.push(newSatellite);
         } else {

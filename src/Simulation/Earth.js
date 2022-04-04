@@ -67,14 +67,14 @@ const Earth = forwardRef(({ time }, ref) => {
         ref={cloudsRef}
         rotation={[0, getEarthRotationAngle(time.initial), 0]}
       >
-        <sphereGeometry attach="geometry" args={[1.01, 64, 64]} />
+        <sphereGeometry attach="geometry" args={[1.01, 36, 36]} />
         <meshBasicMaterial
           attach="material"
           // map={clouds}
           wireframe
-          color="#FC9918"
+          color="#fff266"
           transparent
-          wireframeLinewidth="0.2"
+          wireframeLinewidth="0.1"
         />
       </mesh>
     </>

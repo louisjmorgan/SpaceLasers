@@ -62,6 +62,7 @@ const Customer = ({
         duties.current.set(loadProfile[1].name, newDuty);
       }
     });
+    console.log(duties);
   }
 
   useEffect(() => {
@@ -117,10 +118,11 @@ const Customer = ({
       const position = getOrbitAtTime(station, time.current);
       satRef.current.position.copy(position);
       const earth = new THREE.Vector3(0, 0, 0);
+
       const lookAt = earth.clone().sub(satRef.current.position);
-      // const up = new THREE.Vector3(0, 0, 1);
-      // up.applyQuaternion(satRef.current.quaternion);
-      // satRef.current.up.set(up.x, up.y, up.z);
+      const up = new THREE.Vector3(0, 0, 1);
+      up.applyQuaternion(satRef.current.quaternion);
+      satRef.current.up.set(up.x, up.y, up.z);
       satRef.current.lookAt(earth);
     }
     if (attachCamera) {

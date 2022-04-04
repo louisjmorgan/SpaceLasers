@@ -17,7 +17,7 @@ time, mark, audio, video {
 	padding: 0;
 	border: 0;
 	font-size: 100%;
-	font: inherit;
+	font-family: inherit;
 	vertical-align: baseline;
 }
 /* HTML5 display-role reset for older browsers */
@@ -25,12 +25,12 @@ article, aside, details, figcaption, figure,
 footer, header, hgroup, menu, nav, section {
 	display: block;
 }
-body {
+html {
 	line-height: 1;
-  overflow-x: hidden;
-  background: rgb(132,7,210);
+  /* overflow-x: hidden; */
+  	background: rgb(132,7,210);
 /* background: radial-gradient(circle at bottom, rgba(132,7,210,1) 0%, rgba(39,0,130,1) 43%, rgba(6,6,18,1) 100%); */
-background: radial-gradient(circle at bottom, #FC9918 0%, rgb(241, 74, 22) 25%, rgb(55, 6, 101)  100%); 
+	background: radial-gradient(circle at bottom,rgba(50,4,89,1)  21.2%, rgba(27,24,31,1) 84.8%); 
 }
 ol, ul {
 	list-style: none;

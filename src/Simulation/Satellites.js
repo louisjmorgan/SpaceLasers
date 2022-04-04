@@ -2,7 +2,7 @@
 /* eslint-disable import/no-cycle */
 /* eslint-disable react/prop-types */
 /* eslint-disable react/jsx-no-bind */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { useFrame, useLoader } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import SatelliteGLB from '../Assets/Mesh/lowpolysat.glb';
@@ -28,7 +28,7 @@ const Satellites = ({
 
   useEffect(() => {
     obj.nodes.Satellite.geometry.rotateY((3 * Math.PI) / 2);
-    // obj.nodes.Satellite.up.set(0, 0, -1);
+
     // obj.nodes.Satellite.geometry.rotateX(Math.PI / 2);
   }, [obj]);
 
@@ -72,7 +72,6 @@ const Satellites = ({
         });
       });
     });
-
     return beams;
   }
 
@@ -86,29 +85,25 @@ const Satellites = ({
     beams.current = initBeams;
   }, [powerSats, customers]);
 
-  // function activateBeam(beam) {
-  //   const newBeams = [...beams];
-  //   const index = beams.findIndex(
-  //     (entry) => entry.customer === beam.customer
-  //   );
-  //   if (index !== -1) {
-  //     newBeams[index].active = true;
-  //     setBeams(() => newBeams);
-  //   }
-  // }
+  function activateBeam(beam) {
+    const index = beams.current.findIndex(
+      (entry) => entry.customer === beam.customer
+    );
+    if (index !== -1) {
+      beams.current[index].active = true;
+    }
+  }
 
-  // function deactivateBeam(beam) {
-  //   const newBeams = [...beams];
-  //   const index = beams.findIndex(
-  //     (entry) => entry.customer === beam.customer
-  //   );
-  //   if (index !== -1) {
-  //     newBeams[index].active = false;
-  //     setBeams(() => newBeams);
-  //   }
-  // }
+  function deactivateBeam(beam) {
+    const index = beams.current.findIndex(
+      (entry) => entry.customer === beam.customer
+    );
+    if (index !== -1) {
+      beams.current[index].active = false;
+    }
+  }
   // const beamComponents = useMemo(() => {
-  //   return beams.map((beam) => {
+  //   return beams.current.map((beam) => {
   //     return (
   //       <Beam
   //         key={`${beam.satellite}-${beam.customer}`}
@@ -149,13 +144,14 @@ const Satellites = ({
         isEclipsed={isEclipsed}
         obj={obj}
       />
-      {/* {beamComponents} */}
       {beams.current.map((beam) => {
         return (
           <Beam
             key={`${beam.satellite}-${beam.customer}`}
             beam={beam}
             storeRef={storeBeamRef}
+            activateBeam={activateBeam}
+            deactivateBeam={deactivateBeam}
           />
         );
       })}

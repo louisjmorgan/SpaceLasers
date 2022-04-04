@@ -34,12 +34,17 @@ const Beam = ({ beam, activateBeam, deactivateBeam, storeRef }) => {
   const distance = useRef();
   useFrame(() => {
     const dist = getDistance(beam.powerRef, beam.customerRef);
+    console.log(dist);
     if (dist * earthRadius < 5000) {
+      activateBeam(beam);
       distance.current = dist;
       beamRef.current.position.copy(beam.powerRef.position);
       beamRef.current.lookAt(beam.customerRef.position);
       beamRef.current.rotateY(-Math.PI / 2);
-    } else distance.current = null;
+    } else {
+      distance.current = null;
+      if (beam.active === true) deactivateBeam(beam);
+    }
   });
 
   // const mat = useMemo(() => {
