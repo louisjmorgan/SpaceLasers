@@ -38,7 +38,7 @@ const Power = ({
 
       const lookAt = earth.clone().sub(satRef.current.position);
       const up = new THREE.Vector3(0, 0, 1);
-      up.applyQuaternion(satRef.current.quaternion);
+      // up.applyQuaternion(satRef.current.quaternion);
       satRef.current.up.set(up.x, up.y, up.z);
       satRef.current.lookAt(earth);
     }

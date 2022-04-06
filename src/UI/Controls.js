@@ -48,7 +48,7 @@ const ControlsWrapper = styled.div`
   left: 0;
   right: 0;
   text-align: center;
-  top: 20%;
+  top: 80%;
   z-index: 999;
   width: 20rem;
   p {

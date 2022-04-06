@@ -232,7 +232,6 @@ async function initializeState() {
   results.forEach((result) => {
     orbits.set(result.name, result);
   });
-  console.log(orbits);
   return {
     orbits,
     simulation: {
@@ -274,7 +273,6 @@ function satReducer(state, action) {
           action.pv,
           action.load
         );
-        console.log(newSatellite);
         if (action.isCustomer === true) {
           newCustomers.push(newSatellite);
         } else {

@@ -68,7 +68,6 @@ export default function AddSatForm({
 
   const handleStationSelect = (e) => {
     const { tles, name } = allStations.get(e.target.value);
-    console.log(tles);
     const newOrbit = twoline2satrec(tles.tle1, tles.tle2);
     return {
       name,
@@ -147,9 +146,6 @@ export default function AddSatForm({
         'Unable to propagate orbital parameters. Please try different values or select from the dropdown menu.'
       );
     }
-
-    // setOrbitElements(initOrbit);
-    // setDetails(initDetails);
   };
 
   const options = [];
@@ -264,7 +260,6 @@ export default function AddSatForm({
             }}
             validationSchema={SatelliteSchema}
             onSubmit={(values, { setStatus }) => {
-              console.log(values);
               const error = handleAddSatellite(values);
               if (error) setStatus(error.message);
             }}
@@ -336,7 +331,6 @@ export default function AddSatForm({
                         as="select"
                         onChange={(e) => {
                           const newValues = handleStationSelect(e);
-                          console.log(newValues);
                           Object.entries(newValues).forEach(
                             (entry) => {
                               setFieldValue(entry[0], entry[1]);
@@ -591,7 +585,7 @@ const FormContainer = styled.div`
   bottom: 0;
   right: 0;
   height: 100vh;
-  z-index: 9999;
+  z-index: 999999;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -599,6 +593,7 @@ const FormContainer = styled.div`
 `;
 
 const StyledForm = styled.form`
+  position: absolute;
   width: 50rem;
   padding: 2rem;
   background: white;
@@ -630,13 +625,15 @@ const StyledForm = styled.form`
     flex-direction: row;
     width: 75%;
     justify-content: space-between;
-    border-bottom: 1px solid black;
+    border-bottom: 2px solid black;
     margin: 1rem 0;
     button {
       border-radius: 0.25rem 0.25rem 0 0;
       border: 1px solid grey;
+      border-bottom: 0px;
       width: 33%;
       color: grey;
+      cursor: pointer;
       h3 {
         font-size: 1.25rem;
         font-family: 'Barlow';

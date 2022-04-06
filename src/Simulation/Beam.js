@@ -34,7 +34,6 @@ const Beam = ({ beam, activateBeam, deactivateBeam, storeRef }) => {
   const distance = useRef();
   useFrame(() => {
     const dist = getDistance(beam.powerRef, beam.customerRef);
-    console.log(dist);
     if (dist * earthRadius < 5000) {
       activateBeam(beam);
       distance.current = dist;

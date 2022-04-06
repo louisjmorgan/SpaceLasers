@@ -106,7 +106,10 @@ const App = ({ title }) => {
   }
 
   const ui = useRef(new Map());
-  const cameraTarget = useRef('earth');
+  const cameraTarget = useRef({
+    name: 'earth',
+    ref: earthRef.current,
+  });
   function dispatchUI(action) {
     switch (action.type) {
       case 'add satellite': {
@@ -129,7 +132,18 @@ const App = ({ title }) => {
       }
 
       case 'attach camera': {
-        cameraTarget.current = action.name;
+        cameraTarget.current = {
+          name: action.name,
+          ref: refs.current.customerRefs.get(action.name),
+        };
+        return;
+      }
+
+      case 'detach camera': {
+        cameraTarget.current = {
+          name: 'earth',
+          ref: earthRef.current,
+        };
         return;
       }
 
@@ -242,29 +256,11 @@ const App = ({ title }) => {
     }
   }, [isLoaded]);
 
-  // Load TLEs into memory and initialize default sats
-
-  // useEffect(() => {
-  //   loadTLEs(
-  //     getCorsFreeUrl(
-  //       'http://www.celestrak.com/NORAD/elements/active.txt'
-  //     ),
-  //     defaultStationOptions
-  //   ).then((results) => {
-  //     setAllStations(() => [...results]);
-  //     addCustomerSat(results[65]);
-  //     addCustomerSat(results[58]);
-  //     addCustomerSat(results[71]);
-  //     addPowerSat(results[69]);
-  //     addPowerSat(results[70]);
-  //     addPowerSat(results[61]);
-  //     console.log('loaded TLEs');
-  //   });
-  // }, []);
-
   return isLoaded ? (
     <Wrapper className="app">
-      <Context.Provider value={{ dispatch, dispatchUI }}>
+      <Context.Provider
+        value={{ dispatch, dispatchUI, cameraTarget }}
+      >
         <GlobalStyles />
         <h1>{title}</h1>
 
@@ -331,22 +327,25 @@ const App = ({ title }) => {
 };
 
 const Wrapper = styled.div`
-  position: relative;
-  height: 1200px;
   width: 100vw;
-  padding-top: 2.5rem;
+  height: 120vh;
   font-family: 'Barlow';
   h1 {
+    position: absolute;
     color: white;
     text-align: center;
     font-family: serif;
     font-weight: bold;
     font-family: 'Barlow';
     font-size: 2rem;
+    margin-top: 2.5rem;
+    z-index: 9999;
+    left: 40%;
+    right: 40%;
   }
 
   canvas {
-    height: 30rem;
+    z-index: 0;
   }
 `;
 

@@ -31,6 +31,8 @@ html {
   	background: rgb(132,7,210);
 /* background: radial-gradient(circle at bottom, rgba(132,7,210,1) 0%, rgba(39,0,130,1) 43%, rgba(6,6,18,1) 100%); */
 	background: radial-gradient(circle at bottom,rgba(50,4,89,1)  21.2%, rgba(27,24,31,1) 84.8%); 
+	background-attachment:fixed;
+height:100%;
 }
 ol, ul {
 	list-style: none;

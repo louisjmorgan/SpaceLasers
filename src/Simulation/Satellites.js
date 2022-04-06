@@ -28,7 +28,6 @@ const Satellites = ({
 
   useEffect(() => {
     obj.nodes.Satellite.geometry.rotateY((3 * Math.PI) / 2);
-
     // obj.nodes.Satellite.geometry.rotateX(Math.PI / 2);
   }, [obj]);
 
