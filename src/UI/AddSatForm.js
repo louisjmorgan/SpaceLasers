@@ -148,14 +148,16 @@ export default function AddSatForm({
     }
   };
 
-  const options = [];
-  allStations.forEach((entry, stationName) => {
-    options.push(
-      <option key={stationName} value={stationName}>
-        {stationName}
-      </option>
-    );
-  });
+  const options = useRef([]);
+  useEffect(() => {
+    allStations.forEach((entry, stationName) => {
+      options.current.push(
+        <option key={stationName} value={stationName}>
+          {stationName}
+        </option>
+      );
+    });
+  }, []);
 
   const SatelliteSchema = Yup.object().shape({
     name: Yup.string()
@@ -167,7 +169,7 @@ export default function AddSatForm({
       .min(1, 'Size must be 1 or more!')
       .max(6, 'Size must be 6 or less!')
       .required('Required'),
-    existing: Yup.string().oneOf(options),
+    existing: Yup.string().oneOf(options.current),
     epoch: Yup.date().required('Required'),
     meanMotionDot: Yup.number()
       .min(-1, 'Must be more than -1')
@@ -339,7 +341,7 @@ export default function AddSatForm({
                         }}
                       >
                         <option value="">Select orbit</option>
-                        {options}
+                        {options.current}
                       </Field>
                     </label>
                     <fieldset>

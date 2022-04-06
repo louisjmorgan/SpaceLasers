@@ -201,13 +201,13 @@ const DetailsPanel = ({ station, ui }) => {
           <button type="button" onClick={() => toggleLabel(station)}>
             Toggle Label
           </button>
-          <button type="button" onClick={() => removeStation()}>
-            Remove Satellite
-          </button>
           <button type="button" onClick={() => attachCamera(station)}>
             {cameraTarget.current.name === station.name
               ? 'Detach Camera'
               : 'Attach Camera'}
+          </button>
+          <button type="button" onClick={() => removeStation()}>
+            Remove Satellite
           </button>
         </div>
       ) : (
@@ -247,7 +247,6 @@ export default function Selected({ selected, uiMap }) {
 const Wrapper = styled.div`
   color: white;
   width: 100%;
-  margin-top: 1rem;
   padding: 0.5rem;
   padding-left: 0;
   z-index: 999;

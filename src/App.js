@@ -82,7 +82,6 @@ const App = ({ title }) => {
   // Create references for sun and earth 3d models
   const earthRef = useRef();
   const sunRef = useRef();
-  const controlsRef = useRef();
   const refs = useRef({
     customerRefs: new Map(),
     powerRefs: new Map(),
@@ -109,6 +108,7 @@ const App = ({ title }) => {
   const cameraTarget = useRef({
     name: 'earth',
     ref: earthRef.current,
+    lock: true,
   });
   function dispatchUI(action) {
     switch (action.type) {
@@ -133,6 +133,7 @@ const App = ({ title }) => {
 
       case 'attach camera': {
         cameraTarget.current = {
+          ...cameraTarget.current,
           name: action.name,
           ref: refs.current.customerRefs.get(action.name),
         };
@@ -141,8 +142,17 @@ const App = ({ title }) => {
 
       case 'detach camera': {
         cameraTarget.current = {
+          ...cameraTarget.current,
           name: 'earth',
           ref: earthRef.current,
+        };
+        return;
+      }
+
+      case 'set camera lock': {
+        cameraTarget.current = {
+          ...cameraTarget.current,
+          lock: action.lock,
         };
         return;
       }
@@ -264,7 +274,11 @@ const App = ({ title }) => {
         <GlobalStyles />
         <h1>{title}</h1>
 
-        <Controls time={state.simulation.time} />
+        <Controls
+          time={state.simulation.time}
+          satellites={state.customers}
+          cameraTarget={cameraTarget.current}
+        />
 
         <UI
           allStations={state.orbits}
@@ -276,10 +290,7 @@ const App = ({ title }) => {
 
       <Canvas className="canvas" mode="concurrent">
         <ContextBridge>
-          <Camera
-            target={cameraTarget.current}
-            refs={refs.current.customerRefs}
-          />
+          <Camera target={cameraTarget.current} />
           {/* <ambientLight color="white" intensity={0.3} /> */}
 
           <Suspense
