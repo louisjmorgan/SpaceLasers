@@ -357,4 +357,4 @@ function satReducer(state, action) {
   }
 }
 
-export { initializeState, satReducer, getOrbitAtTime };
+export { initializeState, satReducer, getOrbitAtTime, parseTLEs };

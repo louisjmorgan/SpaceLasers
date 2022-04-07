@@ -2,12 +2,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable import/no-cycle */
 /* eslint-disable no-unused-vars */
-import React, {
-  useContext,
-  useRef,
-  forwardRef,
-  useEffect,
-} from 'react';
+import React, { useRef, forwardRef, useEffect } from 'react';
 import { useLoader, useFrame } from '@react-three/fiber';
 import { TextureLoader } from 'three/src/loaders/TextureLoader';
 import * as THREE from 'three';

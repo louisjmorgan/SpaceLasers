@@ -285,6 +285,7 @@ const App = ({ title }) => {
           powerSats={state.powers}
           customerSats={state.customers}
           uiMap={ui.current}
+          time={state.simulation.time}
         />
       </Context.Provider>
 
@@ -341,6 +342,7 @@ const Wrapper = styled.div`
   width: 100vw;
   height: 120vh;
   font-family: 'Barlow';
+
   h1 {
     position: absolute;
     color: white;

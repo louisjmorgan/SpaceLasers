@@ -2,14 +2,14 @@
 /* eslint-disable import/no-cycle */
 /* eslint-disable no-undef */
 /* eslint-disable react/prop-types */
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, Suspense } from 'react';
 import styled from 'styled-components';
 import { Form } from 'formik';
 import Selected from './Selected';
 import AddSatForm from './AddSatForm';
 import { Context } from '../App';
 
-const UI = ({ allStations, customerSats, uiMap }) => {
+const UI = ({ allStations, customerSats, uiMap, time }) => {
   const [isModal, setModal] = useState(false);
   const closeModal = (e) => {
     setModal(false);
@@ -34,7 +34,17 @@ const UI = ({ allStations, customerSats, uiMap }) => {
     <>
       <UIWrapper>
         <PanelWrapper>
-          <h2>Satellites</h2>
+          <header>
+            {/* eslint-disable-next-line prettier/prettier */}
+            <h2>
+              Satellites - (
+              {`${customerSats.length}`}
+              )
+            </h2>
+            <Suspense fallback={null}>
+              <p>{time.current.toString().slice(0, 21)}</p>
+            </Suspense>
+          </header>
           <button onClick={() => setModal(true)} type="button">
             Add
           </button>
@@ -83,6 +93,17 @@ const UIWrapper = styled.div`
   width: 100%;
   backdrop-filter: blur(2px);
   padding-top: 5rem;
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    color: white;
+    p {
+      width: 18ch;
+    }
+  }
 `;
 
 const FormWrapper = styled.div`

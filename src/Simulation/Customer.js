@@ -5,13 +5,7 @@
 /* eslint-disable react/forbid-prop-types */
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import React, {
-  useEffect,
-  useState,
-  useCallback,
-  memo,
-  useRef,
-} from 'react';
+import React, { useEffect, useCallback, memo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';

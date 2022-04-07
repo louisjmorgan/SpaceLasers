@@ -6,7 +6,7 @@
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import React, { useEffect } from 'react';
+import React from 'react';
 import * as THREE from 'three';
 import { Instances, useGLTF } from '@react-three/drei';
 import Power from './Power';

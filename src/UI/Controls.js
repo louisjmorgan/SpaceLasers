@@ -83,9 +83,6 @@ const Controls = ({ time, satellites, cameraTarget }) => {
 
   return (
     <ControlsWrapper>
-      {/* <Suspense fallback={null}>
-        <p>{time.current.toString().slice(0, 21)}</p>
-      </Suspense> */}
       <button type="button" className="header" onClick={handleOpen}>
         <h3>
           <div>Controls</div>
@@ -120,7 +117,7 @@ const Controls = ({ time, satellites, cameraTarget }) => {
 
         <div className="lock">
           <label htmlFor="lock">
-            Lock:
+            Follow:
             <input
               type="radio"
               name="lock"
@@ -187,6 +184,7 @@ const ControlsWrapper = styled.div`
   }
 
   .container {
+    padding: 1rem;
     display: none;
     &.open {
       display: block;
