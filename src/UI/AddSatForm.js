@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-boolean-value */
 /* eslint-disable consistent-return */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable import/no-cycle */
@@ -20,6 +21,7 @@ import {
   setNestedObjectValues,
 } from 'formik';
 import * as Yup from 'yup';
+import { resolveConfig } from 'prettier';
 import { twoline2satrec, generateTLE } from '../Utils/TLE';
 import { getOrbitAtTime, parseTLEs } from '../Model/SatReducer';
 import { Context } from '../App';
@@ -150,7 +152,12 @@ export default function AddSatForm({
         };
         const pos = getOrbitAtTime(test, new Date());
       } catch {
-        return new Error(
+        console.log(
+          new Error(
+            'Unable to propagate orbital parameters. Please try different values or select from the dropdown menu.'
+          )
+        );
+        throw new Error(
           'Unable to propagate orbital parameters. Please try different values or select from the dropdown menu.'
         );
       }
@@ -167,7 +174,7 @@ export default function AddSatForm({
         battery,
         load,
         size: values.size,
-        isCustomer: true,
+        isCustomer: values.isCustomer,
       });
     });
     setActiveOrbitInput(() => 'manual');
@@ -198,6 +205,7 @@ export default function AddSatForm({
       .min(1, 'Size must be 1 or more!')
       .max(6, 'Size must be 6 or less!')
       .required('Required'),
+    isCustomer: Yup.boolean().required('Required'),
     orbitInput: Yup.string().oneOf(orbitInputs).required('Required'),
     existing: Yup.string().oneOf(options.current),
     epoch: Yup.date().when('orbitInput', {
@@ -290,6 +298,8 @@ export default function AddSatForm({
       .required('Required'),
   });
 
+  const sleep = (ms, cb) => new Promise((r) => setTimeout(r, ms));
+
   return (
     <div>
       {isModal ? (
@@ -299,6 +309,7 @@ export default function AddSatForm({
               name: '',
               size: 1,
               orbitInput: 'manual',
+              isCustomer: true,
               epoch: new Date().toLocaleDateString('en-ca'),
               meanMotionDot: 0.00001,
               bstar: 0.01,
@@ -319,9 +330,23 @@ export default function AddSatForm({
               overPowerCycles: 6,
             }}
             validationSchema={SatelliteSchema}
-            onSubmit={(values, { setStatus }) => {
-              const error = handleAddSatellite(values);
-              if (error) setStatus(error.message);
+            onSubmit={async (
+              values,
+              { setSubmitting, setStatus }
+            ) => {
+              setSubmitting(true);
+
+              await new Promise((resolve, reject) => {
+                setTimeout(() => {
+                  try {
+                    handleAddSatellite(values);
+                  } catch (error) {
+                    setStatus(error.message);
+                    reject();
+                  }
+                  resolve();
+                }, 500);
+              });
             }}
           >
             {({
@@ -334,15 +359,13 @@ export default function AddSatForm({
               handleSubmit,
               setFieldValue,
               isSubmitting,
-              /* and other goodies */
             }) => (
               <StyledForm
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSubmit(e);
-                }}
+                onSubmit={
+                  // e.preventDefault();
+                  handleSubmit
+                }
               >
-                {' '}
                 <div className="page">
                   <fieldset>
                     <legend>
@@ -361,6 +384,36 @@ export default function AddSatForm({
                         name="name"
                       />
                     </label>
+                    <fieldset>
+                      <label htmlFor="isCustomer">
+                        Customer
+                        <Field
+                          type="radio"
+                          name="isCustomer"
+                          checked={values.isCustomer}
+                          onChange={(e) => {
+                            setFieldValue(
+                              'isCustomer',
+                              e.target.checked
+                            );
+                          }}
+                        />
+                      </label>
+                      <label htmlFor="isPower">
+                        Power
+                        <Field
+                          type="radio"
+                          name="isCustomer"
+                          checked={!values.isCustomer}
+                          onChange={(e) => {
+                            setFieldValue(
+                              'isCustomer',
+                              !e.target.checked
+                            );
+                          }}
+                        />
+                      </label>
+                    </fieldset>
                     <label htmlFor="size">
                       Size:
                       <Field name="size" type="number" />
@@ -678,9 +731,14 @@ export default function AddSatForm({
                   ''
                 )}
                 <div className="error">{status}</div>
-                <button className="submitButton" type="submit">
+                <button
+                  className="submitButton"
+                  type="submit"
+                  disabled={isSubmitting}
+                >
                   Add
                 </button>
+                {isSubmitting ? <h3>Loading...</h3> : ''}
               </StyledForm>
             )}
           </Formik>

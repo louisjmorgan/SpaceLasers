@@ -34,7 +34,7 @@ const Beam = ({ beam, activateBeam, deactivateBeam, storeRef }) => {
   const distance = useRef();
   useFrame(() => {
     const dist = getDistance(beam.powerRef, beam.customerRef);
-    if (dist * earthRadius < 5000) {
+    if (dist * earthRadius < 1000) {
       activateBeam(beam);
       distance.current = dist;
       beamRef.current.position.copy(beam.powerRef.position);
@@ -80,7 +80,7 @@ const Beam = ({ beam, activateBeam, deactivateBeam, storeRef }) => {
 
   const laser = useMemo(() => {
     if (distance.current === null) return false;
-    const object = LaserBeam(distance.current, 0.01, texture);
+    const object = LaserBeam(distance.current, 0.005, texture);
     return object;
   }, [distance.current, texture]);
 
