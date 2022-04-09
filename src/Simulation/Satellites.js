@@ -143,7 +143,7 @@ const Satellites = ({
         isEclipsed={isEclipsed}
         obj={obj}
       />
-      {/* {beams.current.map((beam) => {
+      {beams.current.map((beam) => {
         return (
           <Beam
             key={`${beam.satellite}-${beam.customer}`}
@@ -153,7 +153,7 @@ const Satellites = ({
             deactivateBeam={deactivateBeam}
           />
         );
-      })} */}
+      })}
     </>
   );
 };
