@@ -35,7 +35,8 @@ const Customer = ({
   }, []);
 
   // Battery simulation functions
-  const chargeState = useRef(0.3);
+  const chargeStateBeam = useRef(0.3);
+  const chargeStateNoBeam = useRef(0.3);
   const currentDuty = useRef('power storing');
   const updateDelta = useRef(0);
   const duties = useRef(new Map());
@@ -62,7 +63,7 @@ const Customer = ({
     generateDuties();
   }, []);
 
-  function chargeBattery(delta, profile) {
+  function chargeBattery(delta, profile, chargeState) {
     const powerProfile = station.profiles.get(profile);
     const netCurrent = powerProfile.get(currentDuty.current);
     const { capacity } = station.battery;
@@ -90,18 +91,25 @@ const Customer = ({
     dispatchUI({
       type: 'update charge state',
       name: station.name,
-      chargeState: (chargeState.current * 100).toFixed(1),
+      chargeStateBeam: (chargeStateBeam.current * 100).toFixed(1),
+      chargeStateNoBeam: (chargeStateNoBeam.current * 100).toFixed(1),
+      time: time.current,
     });
     updateDelta.current = 0;
-  }, [chargeState.current]);
+  }, [
+    chargeStateBeam.current,
+    chargeStateNoBeam.current,
+    time.current,
+  ]);
 
   useEffect(() => {
     dispatchUI({
       type: 'update current duty',
       name: station.name,
       currentDuty: currentDuty.current,
+      time: time.current,
     });
-  }, [currentDuty.current]);
+  }, [currentDuty.current, time.current]);
 
   // Animate satellite position
 
@@ -159,16 +167,19 @@ const Customer = ({
 
     const hasSun = !isEclipsed(satRef.current);
 
-    let sources;
-    if (hasSun && hasBeam) sources = 'sun and beam';
-    if (hasSun && !hasBeam) sources = 'sun only';
-    if (!hasSun && hasBeam) sources = 'beam only';
-    if (!hasSun && !hasBeam) sources = 'eclipsed';
-    chargeBattery(delta, sources);
+    let sources = [];
+    if (hasSun && hasBeam) sources = ['sun and beam', 'sun only'];
+    if (hasSun && !hasBeam) sources = ['sun only', 'sun only'];
+    if (!hasSun && hasBeam) sources = ['beam only', 'eclipsed'];
+    if (!hasSun && !hasBeam) sources = ['eclipsed', 'eclipsed'];
+    chargeBattery(delta, sources[0], chargeStateBeam);
+    chargeBattery(delta, sources[1], chargeStateNoBeam);
+
     dispatchUI({
       type: 'update charging',
       name: station.name,
-      sources,
+      time: time.current,
+      sources: sources[0],
     });
   });
 

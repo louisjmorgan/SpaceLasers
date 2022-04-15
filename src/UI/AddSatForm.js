@@ -165,6 +165,7 @@ export default function AddSatForm({
       dispatchUI({
         type: 'add satellite',
         name: sat.name,
+        isCustomer: values.isCustomer,
       });
       dispatch({
         type: 'add satellite',
@@ -297,8 +298,6 @@ export default function AddSatForm({
       .min(1, 'Must be an integer greater than 0')
       .required('Required'),
   });
-
-  const sleep = (ms, cb) => new Promise((r) => setTimeout(r, ms));
 
   return (
     <div>

@@ -36,6 +36,7 @@ import {
   Stars,
 } from '@react-three/drei';
 import * as satelliteUtils from 'satellite.js/lib/index';
+import { format } from 'date-fns';
 import { earthRadius } from 'satellite.js/lib/constants';
 import * as THREE from 'three';
 import { initializeState, satReducer } from './Model/SatReducer';
@@ -56,11 +57,18 @@ const defaultStationOptions = {
 };
 
 const defaultUI = {
+  isCustomer: false,
   showLabel: false,
   chargeState: 0.3,
   currentDuty: 'power storing',
   chargeSources: 'eclipsed',
   attachCamera: false,
+  data: {
+    chargeStateBeam: [],
+    chargeStateNoBeam: [],
+    currentDuty: [],
+    chargeSources: [],
+  },
 };
 
 const Context = createContext(null);
@@ -87,6 +95,7 @@ const App = ({ title }) => {
     powerRefs: new Map(),
     beamRefs: new Map(),
   });
+
   function dispatchRef(action) {
     switch (action.type) {
       case 'add customer': {
@@ -110,10 +119,14 @@ const App = ({ title }) => {
     ref: earthRef.current,
     lock: true,
   });
+
   function dispatchUI(action) {
     switch (action.type) {
       case 'add satellite': {
-        ui.current.set(action.name, defaultUI);
+        ui.current.set(action.name, {
+          ...defaultUI,
+          isCustomer: action.isCustomer,
+        });
         return;
       }
 
@@ -161,7 +174,25 @@ const App = ({ title }) => {
         const prev = ui.current.get(action.name);
         ui.current.set(action.name, {
           ...prev,
-          chargeState: action.chargeState,
+          chargeStateBeam: action.chargeStateBeam,
+          chargeStateNoBeam: action.chargeStateNoBeam,
+          data: {
+            ...prev.data,
+            chargeStateBeam: [
+              ...prev.data.chargeStateBeam,
+              {
+                x: format(action.time, 'PPpp'),
+                y: +action.chargeStateBeam,
+              },
+            ],
+            chargeStateNoBeam: [
+              ...prev.data.chargeStateNoBeam,
+              {
+                x: format(action.time, 'PPpp'),
+                y: +action.chargeStateNoBeam,
+              },
+            ],
+          },
         });
         return;
       }
@@ -238,6 +269,7 @@ const App = ({ title }) => {
       dispatchUI({
         type: 'add satellite',
         name: newSat,
+        isCustomer: false,
       });
       newSat = 'ONEWEB-0087';
       dispatch({
@@ -250,6 +282,7 @@ const App = ({ title }) => {
       dispatchUI({
         type: 'add satellite',
         name: newSat,
+        isCustomer: false,
       });
       newSat = 'ONEWEB-0006';
       dispatch({
@@ -262,6 +295,7 @@ const App = ({ title }) => {
       dispatchUI({
         type: 'add satellite',
         name: newSat,
+        isCustomer: false,
       });
     }
   }, [isLoaded]);

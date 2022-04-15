@@ -17,38 +17,18 @@ import React, {
 import styled from 'styled-components';
 import { Context } from '../App';
 
-const StationCard = ({ station, onClick, active }) => {
+const StationCard = ({ station, onClick, active, chartStation }) => {
   return (
     <li
       className={`${active ? 'active' : ''} satellite`}
       onClick={(e) => onClick(station)}
     >
       <p>{station.name}</p>
-
-      {/* {onRemoveClick && (
-          <span
-            className="remove"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemoveClick(station);
-            }}
-          >
-            x
-          </span>
-        )} */}
-      {/* <div>
-        <button type="button" onClick={(e) => toggleLabel(station)}>
-          {active ? 'Hide Label' : 'Show Label'}
-        </button>
-        <button type="button" onClick={(e) => attachCamera(station)}>
-          Attach Camera
-        </button>
-      </div> */}
     </li>
   );
 };
 
-const DetailsPanel = ({ station, ui }) => {
+const DetailsPanel = ({ station, ui, chartStation, openCharts }) => {
   const { dispatch, dispatchUI, cameraTarget } = useContext(Context);
 
   function toggleLabel(sat) {
@@ -120,8 +100,12 @@ const DetailsPanel = ({ station, ui }) => {
       {activeTab === 'performance' ? (
         <div className="tab performance">
           <p>
-            Charge:
-            {` ${ui.chargeState}%`}
+            Charge (with Space Power):
+            {` ${ui.chargeStateBeam}%`}
+          </p>
+          <p>
+            Charge (without Space Power):
+            {` ${ui.chargeStateNoBeam}%`}
           </p>
           <p>
             Current Duty:
@@ -209,6 +193,15 @@ const DetailsPanel = ({ station, ui }) => {
           <button type="button" onClick={() => removeStation()}>
             Remove Satellite
           </button>
+          <button
+            type="button"
+            onClick={() => {
+              chartStation(station.name);
+              openCharts(true);
+            }}
+          >
+            Chart Satellite
+          </button>
         </div>
       ) : (
         ''
@@ -217,32 +210,43 @@ const DetailsPanel = ({ station, ui }) => {
   );
 };
 
-export default function Selected({ selected, uiMap }) {
+const SatelliteList = ({ selected, activeStation, onClick }) => {
+  return (
+    <StyledSatelliteList>
+      {selected.map((station) => {
+        return (
+          <StationCard
+            station={station}
+            key={station.name}
+            onClick={() => onClick(station)}
+            active={station.name === activeStation.name}
+          />
+        );
+      })}
+    </StyledSatelliteList>
+  );
+};
+
+const Selected = ({ selected, uiMap, chartStation, openCharts }) => {
   if (!selected || selected.length === 0) return null;
 
   const [activeStation, setActiveStation] = useState(selected[0]);
-
   return (
     <Wrapper>
-      <StyledSatelliteList>
-        {selected.map((station) => {
-          return (
-            <StationCard
-              station={station}
-              key={station.name}
-              onClick={() => setActiveStation(station)}
-              active={station.name === activeStation.name}
-            />
-          );
-        })}
-      </StyledSatelliteList>
+      <SatelliteList
+        selected={selected}
+        activeStation={activeStation}
+        onClick={setActiveStation}
+      />
       <DetailsPanel
         station={activeStation}
         ui={uiMap.get(activeStation.name)}
+        chartStation={chartStation}
+        openCharts={openCharts}
       />
     </Wrapper>
   );
-}
+};
 
 const Wrapper = styled.div`
   color: white;
@@ -279,6 +283,7 @@ const Wrapper = styled.div`
 const StyledSatelliteList = styled.ul`
   width: 10rem;
   max-width: 20%;
+  max-height: 30vh;
   overflow-y: auto;
   .satellite {
     z-index: 999;
@@ -293,6 +298,8 @@ const StyledSatelliteList = styled.ul`
 `;
 
 const StyledDetailsPanel = styled.div`
+  overflow-y: auto;
+
   width: 80%;
 
   border-left: 1px solid white;
@@ -329,6 +336,8 @@ const StyledDetailsPanel = styled.div`
   }
 
   .tab {
+    max-height: 20vh;
+    overflow-y: auto;
     padding: 1.5rem;
     display: flex;
     flex-direction: row;
@@ -360,3 +369,5 @@ const StyledDetailsPanel = styled.div`
     }
   }
 `;
+
+export { SatelliteList, Selected };

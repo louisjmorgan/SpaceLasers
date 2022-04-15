@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable no-unused-vars */
 /* eslint-disable import/no-cycle */
 /* eslint-disable no-undef */
@@ -5,8 +7,9 @@
 import React, { useState, useContext, Suspense } from 'react';
 import styled from 'styled-components';
 import { Form } from 'formik';
-import Selected from './Selected';
+import { Selected } from './Selected';
 import AddSatForm from './AddSatForm';
+import Charts from './Charts';
 import { Context } from '../App';
 
 const UI = ({ allStations, customerSats, uiMap, time }) => {
@@ -24,15 +27,33 @@ const UI = ({ allStations, customerSats, uiMap, time }) => {
   const { dispatch, dispatchUI } = useContext(Context);
 
   const onRemoveAll = () => {
+    dispatchUI({
+      type: 'detach camera',
+    });
     dispatch({
       type: 'remove all',
       isCustomer: true,
     });
   };
 
+  const [charted, setCharted] = useState(null);
+  const [isChartOpen, setChartOpen] = useState(false);
+
+  const handleChart = (station) => {
+    setCharted(station);
+  };
+
+  const handleChartOpen = (open) => {
+    if (open) {
+      setChartOpen(() => true);
+    } else {
+      setChartOpen(() => !isChartOpen);
+    }
+  };
+
   return (
     <>
-      <UIWrapper>
+      <TopWrapper>
         <PanelWrapper>
           <header>
             {/* eslint-disable-next-line prettier/prettier */}
@@ -66,14 +87,29 @@ const UI = ({ allStations, customerSats, uiMap, time }) => {
               isCustomer
               uiMap={uiMap}
               key="customer-selection"
+              chartStation={handleChart}
+              openCharts={handleChartOpen}
             />
           ) : (
             ''
           )}
         </PanelWrapper>
-
-        <FormWrapper />
-      </UIWrapper>
+      </TopWrapper>
+      {customerSats.length > 0 ? (
+        <BottomWrapper>
+          <Charts
+            sats={customerSats}
+            uiMap={uiMap}
+            charted={charted}
+            time={time.current}
+            isOpen={isChartOpen}
+            handleOpen={handleChartOpen}
+            setCharted={handleChart}
+          />
+        </BottomWrapper>
+      ) : (
+        ''
+      )}
       <AddSatForm
         isModal={isModal}
         closeModal={closeModal}
@@ -83,7 +119,7 @@ const UI = ({ allStations, customerSats, uiMap, time }) => {
   );
 };
 
-const UIWrapper = styled.div`
+const TopWrapper = styled.div`
   position: absolute;
   display: flex;
   z-index: 999;
@@ -92,8 +128,8 @@ const UIWrapper = styled.div`
   background-color: rgba(0.1, 0.1, 0.1, 0.05);
   width: 100%;
   backdrop-filter: blur(2px);
-  padding-top: 5rem;
-
+  padding-top: 2.5rem;
+  max-height: 40vh;
   header {
     display: flex;
     justify-content: space-between;
@@ -106,8 +142,20 @@ const UIWrapper = styled.div`
   }
 `;
 
-const FormWrapper = styled.div`
-  position: absolute;
+const BottomWrapper = styled.div`
+  position: fixed;
+  bottom: 0px;
+  margin-right: auto;
+  margin-left: auto;
+  display: flex;
+  z-index: 999;
+  justify-content: center;
+  font-family: 'Barlow';
+  background-color: rgba(0.1, 0.1, 0.1, 0.05);
+  width: 100%;
+  backdrop-filter: blur(2px);
+  padding: 1.5rem;
+  max-height: 40vh;
 `;
 
 const PanelWrapper = styled.div`
@@ -139,18 +187,5 @@ const PanelWrapper = styled.div`
     font-size: 1.5rem;
   }
 `;
-
-// const PowerWrapper = styled.div`
-//   display: flex;
-//   flex-direction: column;
-//   align-items: center;
-//   margin-left: 5%;
-//   max-width: 50%;
-// `;
-// const CustomerWrapper = styled(PowerWrapper)`
-//   position: absolute;
-//   margin-left: 0;
-//   margin-right: 20%;
-// `;
 
 export default UI;
