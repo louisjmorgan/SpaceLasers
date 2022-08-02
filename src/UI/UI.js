@@ -6,13 +6,18 @@
 /* eslint-disable react/prop-types */
 import React, { useState, useContext, Suspense } from 'react';
 import styled from 'styled-components';
-import { Form } from 'formik';
 import { Selected } from './Selected';
 import AddSatForm from './AddSatForm';
 import Charts from './Charts';
 import { Context } from '../App';
 
-const UI = ({ allStations, customerSats, uiMap, time }) => {
+const UI = () => {
+  const {
+    dispatch,
+    state: { orbits, customers, time },
+    data,
+  } = useContext(Context);
+
   const [isModal, setModal] = useState(false);
   const closeModal = (e) => {
     setModal(false);
@@ -24,13 +29,13 @@ const UI = ({ allStations, customerSats, uiMap, time }) => {
     setDetails(() => !isDetails);
   };
 
-  const { dispatch, dispatchUI } = useContext(Context);
-
   const onRemoveAll = () => {
-    dispatchUI({
+    dispatch({
+      target: 'sim',
       type: 'detach camera',
     });
     dispatch({
+      target: 'global',
       type: 'remove all',
       isCustomer: true,
     });
@@ -59,7 +64,7 @@ const UI = ({ allStations, customerSats, uiMap, time }) => {
             {/* eslint-disable-next-line prettier/prettier */}
             <h2>
               Satellites - (
-              {`${customerSats.length}`}
+              {`${customers.length}`}
               )
             </h2>
             <Suspense fallback={null}>
@@ -69,7 +74,7 @@ const UI = ({ allStations, customerSats, uiMap, time }) => {
           <button onClick={() => setModal(true)} type="button">
             Add
           </button>
-          {customerSats.length > 0 ? (
+          {customers.length > 0 ? (
             <>
               <button type="button" onClick={onRemoveAll}>
                 Clear all
@@ -83,9 +88,9 @@ const UI = ({ allStations, customerSats, uiMap, time }) => {
           )}
           {isDetails ? (
             <Selected
-              selected={customerSats}
+              selected={customers}
               isCustomer
-              uiMap={uiMap}
+              data={data.current}
               key="customer-selection"
               chartStation={handleChart}
               openCharts={handleChartOpen}
@@ -95,11 +100,11 @@ const UI = ({ allStations, customerSats, uiMap, time }) => {
           )}
         </PanelWrapper>
       </TopWrapper>
-      {customerSats.length > 0 ? (
+      {customers.length > 0 ? (
         <BottomWrapper>
           <Charts
-            sats={customerSats}
-            uiMap={uiMap}
+            sats={customers}
+            uiMap={data}
             charted={charted}
             time={time.current}
             isOpen={isChartOpen}
@@ -113,7 +118,7 @@ const UI = ({ allStations, customerSats, uiMap, time }) => {
       <AddSatForm
         isModal={isModal}
         closeModal={closeModal}
-        allStations={allStations}
+        allStations={orbits}
       />
     </>
   );

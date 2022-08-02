@@ -12,20 +12,26 @@ import React, {
 import styled from 'styled-components';
 import { Context } from '../App';
 
-const Controls = ({ time, satellites, cameraTarget }) => {
-  const { dispatch, dispatchUI } = useContext(Context);
+const Controls = () => {
+  const {
+    dispatch,
+    state: { customers, time },
+    sim: {
+      current: { cameraTarget },
+    },
+  } = useContext(Context);
 
   const options = useRef([]);
   useEffect(() => {
     options.current = [];
-    satellites.forEach((sat) => {
+    customers.forEach((sat) => {
       options.current.push(
         <option key={sat.name} value={sat.name}>
           {sat.name}
         </option>
       );
     });
-  }, [satellites]);
+  }, [customers]);
 
   const [isOpen, setOpen] = useState(false);
 
@@ -35,6 +41,7 @@ const Controls = ({ time, satellites, cameraTarget }) => {
 
   const handlePause = () => {
     dispatch({
+      target: 'state',
       type: 'pause time',
       paused: !time.paused,
     });
@@ -42,6 +49,7 @@ const Controls = ({ time, satellites, cameraTarget }) => {
 
   const handleAnimationSpeed = (e) => {
     dispatch({
+      target: 'state',
       type: 'set speed',
       speed: e.target.value,
     });
@@ -50,22 +58,17 @@ const Controls = ({ time, satellites, cameraTarget }) => {
   const handleAttach = (e) => {
     const target = e.target.value;
     if (target === 'earth') {
-      dispatchUI({
+      dispatch({
+        target: 'sim',
         type: 'detach camera',
       });
     } else {
-      dispatchUI({
+      dispatch({
+        target: 'sim',
         type: 'attach camera',
         name: target,
       });
     }
-  };
-
-  const handleCameraDistance = (e) => {
-    dispatchUI({
-      type: 'set camera distance',
-      distance: e.target.value,
-    });
   };
 
   const handleLock = (e) => {
@@ -75,7 +78,8 @@ const Controls = ({ time, satellites, cameraTarget }) => {
     } else {
       lock = false;
     }
-    dispatchUI({
+    dispatch({
+      target: 'sim',
       type: 'set camera lock',
       lock,
     });

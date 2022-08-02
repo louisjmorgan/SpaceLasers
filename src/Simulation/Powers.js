@@ -16,9 +16,8 @@ const PowerSats = ({
   time,
   getOrbitAtTime,
   storeRef,
-  uiMap,
-  dispatchUI,
-  sunRef,
+  data,
+  dispatch,
   obj,
 }) => {
   const satellites = [];
@@ -30,12 +29,11 @@ const PowerSats = ({
         id={sat.name}
         storeRef={storeRef}
         time={time}
-        dispatchUI={dispatchUI}
+        dispatch={dispatch}
         key={sat.name}
         station={sat}
-        sunRef={sunRef}
         getOrbitAtTime={getOrbitAtTime}
-        showLabel={uiMap.get(sat.name).showLabel}
+        showLabel={data.get(sat.name).showLabel}
       />
     );
   });

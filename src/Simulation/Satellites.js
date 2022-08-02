@@ -3,37 +3,31 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react/jsx-no-bind */
 import React, { useEffect, useRef, useMemo } from 'react';
-import { useFrame, useLoader } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import SatelliteGLB from '../Assets/Mesh/lowpolysat.glb';
 import PowerSats from './Powers';
 import CustomerSats from './Customers';
 import Beam from './Beam';
-import { getOrbitAtTime } from '../Model/SatReducer';
+import { getOrbitAtTime } from '../Utils/TLE';
 
 const Satellites = ({
   time,
   powerSats,
   customers,
-  uiMap,
-  refs,
-  sunRef,
+  data,
+  sim,
   dispatch,
-  dispatchUI,
-  dispatchRef,
-  isEclipsed,
-  animationSpeed,
 }) => {
   const obj = useGLTF(SatelliteGLB);
 
   useEffect(() => {
     obj.nodes.Satellite.geometry.rotateY((3 * Math.PI) / 2);
-    // obj.nodes.Satellite.geometry.rotateX(Math.PI / 2);
   }, [obj]);
 
   // Callbacks to store refs from child components
   function storeCustomerRef(key, ref) {
-    dispatchRef({
+    dispatch({
+      target: 'sim',
       type: 'add customer',
       name: key,
       ref,
@@ -41,7 +35,8 @@ const Satellites = ({
   }
 
   function storePowerRef(key, ref) {
-    dispatchRef({
+    dispatch({
+      target: 'sim',
       type: 'add power',
       name: key,
       ref,
@@ -49,7 +44,8 @@ const Satellites = ({
   }
 
   function storeBeamRef(key, ref) {
-    dispatchRef({
+    dispatch({
+      target: 'sim',
       type: 'add beam',
       name: key,
       ref,
@@ -64,9 +60,9 @@ const Satellites = ({
       customers.forEach((customer) => {
         beams.push({
           satellite: sat.name,
-          powerRef: refs.powerRefs.get(sat.name),
+          powerRef: sim.powerRefs.get(sat.name),
           customer: customer.name,
-          customerRef: refs.customerRefs.get(customer.name),
+          customerRef: sim.customerRefs.get(customer.name),
           // active: false,
         });
       });
@@ -101,46 +97,28 @@ const Satellites = ({
       beams.current[index].active = false;
     }
   }
-  // const beamComponents = useMemo(() => {
-  //   return beams.current.map((beam) => {
-  //     return (
-  //       <Beam
-  //         key={`${beam.satellite}-${beam.customer}`}
-  //         beam={beam}
-  //         activateBeam={activateBeam}
-  //         deactivateBeam={deactivateBeam}
-  //         storeRef={storeBeamRef}
-  //       />
-  //     );
-  //   });
-  // }, [beams]);
 
   return (
     <>
       <CustomerSats
         customers={customers}
         time={time}
+        dispatch={dispatch}
+        sim={sim}
+        data={data}
         storeRef={storeCustomerRef}
         getOrbitAtTime={getOrbitAtTime}
-        uiMap={uiMap}
-        dispatch={dispatch}
-        dispatchUI={dispatchUI}
-        isEclipsed={isEclipsed}
         beams={beams.current}
-        animationSpeed={animationSpeed}
         obj={obj}
       />
       <PowerSats
-        dispatch={dispatch}
-        dispatchUI={dispatchUI}
         powerSats={powerSats}
-        time={time}
-        uiMap={uiMap}
         customers={customers}
+        time={time}
+        dispatch={dispatch}
+        data={data}
         storeRef={storePowerRef}
         getOrbitAtTime={getOrbitAtTime}
-        sunRef={sunRef}
-        isEclipsed={isEclipsed}
         obj={obj}
       />
       {beams.current.map((beam) => {

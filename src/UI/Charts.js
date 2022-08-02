@@ -200,6 +200,7 @@ const Charts = ({
         total += 1;
       });
       average /= total;
+      averageData[param] = average;
     });
   }, [time]);
 

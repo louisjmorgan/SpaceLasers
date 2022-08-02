@@ -18,28 +18,19 @@ import React, {
   useEffect,
   useState,
   useRef,
-  useMemo,
   Suspense,
   createContext,
-  useContext,
   useReducer,
 } from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Canvas, useFrame } from '@react-three/fiber';
-import {
-  OrbitControls,
-  Html,
-  useContextBridge,
-  PerspectiveCamera,
-  Stars,
-} from '@react-three/drei';
-import * as satelliteUtils from 'satellite.js/lib/index';
-import { format } from 'date-fns';
+import { Html, useContextBridge, Stars } from '@react-three/drei';
 import { earthRadius } from 'satellite.js/lib/constants';
 import * as THREE from 'three';
-import { initializeState, satReducer } from './Model/SatReducer';
+import { initializeState, satReducer } from './Model/satellites';
+import dispatchSim from './Model/simulation';
+import dispatchData from './Model/data';
 import GlobalStyles from './GlobalStyles';
 import Camera from './Simulation/Camera';
 import Earth from './Simulation/Earth';
@@ -48,7 +39,6 @@ import UI from './UI/UI';
 import Controls from './UI/Controls';
 import Time from './Simulation/Time';
 import Sun from './Simulation/Sun';
-import Skybox from './Simulation/Skybox';
 
 const defaultStationOptions = {
   orbitMinutes: 1200,
@@ -56,192 +46,95 @@ const defaultStationOptions = {
   showLabel: false,
 };
 
-const defaultUI = {
-  isCustomer: false,
-  showLabel: false,
-  chargeState: 0.3,
-  currentDuty: 'power storing',
-  chargeSources: 'eclipsed',
-  attachCamera: false,
-  data: {
-    chargeStateBeam: [],
-    chargeStateNoBeam: [],
-    currentDuty: [],
-    chargeSources: [],
-  },
-};
-
 const Context = createContext(null);
 
 const App = ({ title }) => {
-  const [state, dispatch] = useReducer(satReducer, {
+  /* INITIALIZE STATE 
+
+    For performance reasons, only the key parameters governing the simulation are stored in state. Chiefly, the user selection and the
+    simulation time/speed. These are changed by dispatching commands to a stateful react reducer.
+    
+    Other parameters that are updated every frame are stored in refs, as making this quantity of setState calls is 
+    prohibitive to performance. Two different dispatch functions are used to update these values, both of which simply
+    edit the current property of refs:
+    
+      dispatchData - stores performance data from satellites on every frame in the data variable. This primarily relates to the 
+      simulated satellite power systems
+      
+      dispatchSim - stores references to the THREE.js objects in the sim variable. This holds their position as well as 
+      methods associated with their 3d representation
+    
+    The global dispatch function sends commands to the relevant dispatch function via the target attribute.
+  
+  */
+
+  const [state, dispatchState] = useReducer(satReducer, {
     orbits: null,
-    simulation: {
-      time: null,
-      speed: null,
-    },
+    time: null,
     customers: null,
     powers: null,
-    ui: null,
   });
-  // Initialize context (global constants)
-  const ContextBridge = useContextBridge(Context);
 
-  // Create references for sun and earth 3d models
-  const earthRef = useRef();
-  const sunRef = useRef();
-  const refs = useRef({
+  const sim = useRef({
     customerRefs: new Map(),
     powerRefs: new Map(),
     beamRefs: new Map(),
+    earthRef: useRef(),
+    sunRef: useRef(),
+    cameraTarget: {
+      name: null,
+      ref: null,
+      lock: true,
+    },
   });
 
-  function dispatchRef(action) {
-    switch (action.type) {
-      case 'add customer': {
-        refs.current.customerRefs.set(action.name, action.ref);
+  const data = useRef(
+    new Map().set('averages', {
+      chargeStateBeam: [],
+      chargeStateNoBeam: [],
+    })
+  );
+
+  function dispatch(action) {
+    // perform actions prior to next tick
+    // if (action.type === 'set time') {
+    //   if (state.customers.length > 0) {
+    //     // dispatchData(
+    //     //   {
+    //     //     type: 'calculate averages',
+    //     //     time: state.time.current,
+    //     //   },
+    //     //   data
+    //     // );
+    //   }
+    // }
+
+    // route commands to relevant dispatch function
+    switch (action.target) {
+      case 'state': {
+        dispatchState(action);
         return;
       }
-      case 'add power': {
-        refs.current.powerRefs.set(action.name, action.ref);
+      case 'data': {
+        dispatchData(action, data);
         return;
       }
-      case 'add beam': {
-        refs.current.beamRefs.set(action.name, action.ref);
+      case 'sim': {
+        dispatchSim(action, sim);
+        return;
+      }
+      case 'global': {
+        dispatchData(action, data);
+        dispatchState(action);
         return;
       }
     }
   }
 
-  const ui = useRef(new Map());
-  const cameraTarget = useRef({
-    name: 'earth',
-    ref: earthRef.current,
-    lock: true,
-  });
-
-  function dispatchUI(action) {
-    switch (action.type) {
-      case 'add satellite': {
-        ui.current.set(action.name, {
-          ...defaultUI,
-          isCustomer: action.isCustomer,
-        });
-        return;
-      }
-
-      case 'remove satellite': {
-        ui.current.delete(action.name);
-        return;
-      }
-
-      case 'toggle label': {
-        const prev = ui.current.get(action.name);
-        ui.current.set(action.name, {
-          ...prev,
-          showLabel: !prev.showLabel,
-        });
-        return;
-      }
-
-      case 'attach camera': {
-        cameraTarget.current = {
-          ...cameraTarget.current,
-          name: action.name,
-          ref: refs.current.customerRefs.get(action.name),
-        };
-        return;
-      }
-
-      case 'detach camera': {
-        cameraTarget.current = {
-          ...cameraTarget.current,
-          name: 'earth',
-          ref: earthRef.current,
-        };
-        return;
-      }
-
-      case 'set camera lock': {
-        cameraTarget.current = {
-          ...cameraTarget.current,
-          lock: action.lock,
-        };
-        return;
-      }
-
-      case 'update charge state': {
-        const prev = ui.current.get(action.name);
-        ui.current.set(action.name, {
-          ...prev,
-          chargeStateBeam: action.chargeStateBeam,
-          chargeStateNoBeam: action.chargeStateNoBeam,
-          data: {
-            ...prev.data,
-            chargeStateBeam: [
-              ...prev.data.chargeStateBeam,
-              {
-                x: format(action.time, 'PPpp'),
-                y: +action.chargeStateBeam,
-              },
-            ],
-            chargeStateNoBeam: [
-              ...prev.data.chargeStateNoBeam,
-              {
-                x: format(action.time, 'PPpp'),
-                y: +action.chargeStateNoBeam,
-              },
-            ],
-          },
-        });
-        return;
-      }
-
-      case 'update current duty': {
-        const prev = ui.current.get(action.name);
-        ui.current.set(action.name, {
-          ...prev,
-          currentDuty: action.currentDuty,
-        });
-        return;
-      }
-
-      case 'update charging': {
-        const prev = ui.current.get(action.name);
-        ui.current.set(action.name, {
-          ...prev,
-          chargeSources: action.sources,
-        });
-        return;
-      }
-    }
-  }
+  // Initialize context (global constants)
+  const ContextBridge = useContextBridge(Context);
 
   // Battery simulation functions
-
-  function isEclipsed(satRef) {
-    const sunPosition = sunRef.current.position;
-    const earthPosition = earthRef.current.position;
-    const satPosition = satRef.position;
-
-    const sunEarth = new THREE.Vector3();
-    sunEarth.subVectors(earthPosition, sunPosition);
-
-    const sunSat = new THREE.Vector3();
-    sunSat.subVectors(satPosition, earthPosition);
-
-    const angle = sunEarth.angleTo(sunSat);
-
-    const sunEarthDistance = sunPosition.distanceTo(earthPosition);
-    const sunSatDistance = sunPosition.distanceTo(satPosition);
-    const limbAngle = Math.atan2(earthRadius, sunEarthDistance);
-
-    if (angle > limbAngle || sunSatDistance < sunEarthDistance) {
-      return false;
-    }
-
-    return true;
-  }
 
   const [isLoaded, setLoaded] = useState(false);
 
@@ -249,8 +142,13 @@ const App = ({ title }) => {
     initializeState().then((initialState) => {
       console.log(initialState);
       dispatch({
+        target: 'state',
         type: 'initialize',
         initialState,
+      });
+      dispatch({
+        target: 'sim',
+        type: 'detach camera',
       });
       setLoaded(() => true);
     });
@@ -260,41 +158,31 @@ const App = ({ title }) => {
     if (isLoaded) {
       let newSat = 'ONEWEB-0012';
       dispatch({
+        target: 'global',
         type: 'add satellite',
         name: state.orbits.get(newSat).name,
         tles: state.orbits.get(newSat).tles,
         size: 1,
         isCustomer: false,
       });
-      dispatchUI({
-        type: 'add satellite',
-        name: newSat,
-        isCustomer: false,
-      });
+
       newSat = 'ONEWEB-0087';
       dispatch({
+        target: 'global',
         type: 'add satellite',
         name: state.orbits.get(newSat).name,
         tles: state.orbits.get(newSat).tles,
         size: 1,
         isCustomer: false,
       });
-      dispatchUI({
-        type: 'add satellite',
-        name: newSat,
-        isCustomer: false,
-      });
+
       newSat = 'ONEWEB-0006';
       dispatch({
+        target: 'global',
         type: 'add satellite',
         name: state.orbits.get(newSat).name,
         tles: state.orbits.get(newSat).tles,
         size: 1,
-        isCustomer: false,
-      });
-      dispatchUI({
-        type: 'add satellite',
-        name: newSat,
         isCustomer: false,
       });
     }
@@ -302,30 +190,18 @@ const App = ({ title }) => {
 
   return isLoaded ? (
     <Wrapper className="app">
-      <Context.Provider
-        value={{ dispatch, dispatchUI, cameraTarget }}
-      >
+      <Context.Provider value={{ dispatch, state, sim, data }}>
         <GlobalStyles />
         <h1>{title}</h1>
 
-        <Controls
-          time={state.simulation.time}
-          satellites={state.customers}
-          cameraTarget={cameraTarget.current}
-        />
+        <Controls />
 
-        <UI
-          allStations={state.orbits}
-          powerSats={state.powers}
-          customerSats={state.customers}
-          uiMap={ui.current}
-          time={state.simulation.time}
-        />
+        <UI />
       </Context.Provider>
 
       <Canvas className="canvas" mode="concurrent">
         <ContextBridge>
-          <Camera target={cameraTarget.current} />
+          <Camera target={sim.current.cameraTarget} />
           {/* <ambientLight color="white" intensity={0.3} /> */}
 
           <Suspense
@@ -335,11 +211,7 @@ const App = ({ title }) => {
               </Html>
             }
           >
-            <Time
-              dispatch={dispatch}
-              time={state.simulation.time}
-              speed={state.simulation.speed}
-            />
+            <Time dispatch={dispatch} time={state.time} />
             <Stars
               radius={100} // Radius of the inner sphere (default=100)
               depth={50} // Depth of area where stars should fit (default=50)
@@ -348,20 +220,15 @@ const App = ({ title }) => {
               saturation={1} // Saturation 0-1 (default=0)
               fade
             />
-            <Sun time={state.simulation.time} ref={sunRef} />
-            <Earth ref={earthRef} time={state.simulation.time} />
+            <Sun time={state.time} ref={sim.current.sunRef} />
+            <Earth ref={sim.current.earthRef} time={state.time} />
             <Satellites
-              time={state.simulation.time}
+              time={state.time}
               powerSats={state.powers}
               customers={state.customers}
-              refs={refs.current}
+              sim={sim.current}
               dispatch={dispatch}
-              dispatchUI={dispatchUI}
-              dispatchRef={dispatchRef}
-              uiMap={ui.current}
-              sunRef={sunRef.current}
-              isEclipsed={isEclipsed}
-              animationSpeed={state.simulation.speed}
+              data={data.current}
             />
           </Suspense>
         </ContextBridge>

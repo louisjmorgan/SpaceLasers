@@ -7,31 +7,19 @@
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import React, {
-  Suspense,
-  useRef,
-  useEffect,
-  useContext,
-  forwardRef,
-  useMemo,
-} from 'react';
-import * as THREE from 'three';
-import { useLoader, useFrame } from '@react-three/fiber';
+import React, { useRef } from 'react';
 import { Instances, useGLTF } from '@react-three/drei';
-import Beam from './Beam';
 import Customer from './Customer';
 
 const CustomerSats = ({
   customers,
   getOrbitAtTime,
   time,
+  sim,
   storeRef,
-  uiMap,
+  data,
   dispatch,
-  dispatchUI,
-  isEclipsed,
   beams,
-  animationSpeed,
   obj,
 }) => {
   function hasBeam(name) {
@@ -44,20 +32,16 @@ const CustomerSats = ({
   customers.map((customer, index) => {
     return satellites.push(
       <Customer
-        id={customer.name}
-        obj={obj}
         storeRef={storeRef}
         time={time}
+        sim={sim}
         dispatch={dispatch}
-        dispatchUI={dispatchUI}
         key={customer.name}
         station={customer}
         getOrbitAtTime={getOrbitAtTime}
-        showLabel={uiMap.get(customer.name).showLabel}
-        attachCamera={uiMap.get(customer.name).attachCamera}
-        isEclipsed={isEclipsed}
+        showLabel={data.get(customer.name).showLabel}
+        attachCamera={data.get(customer.name).attachCamera}
         hasBeam={hasBeam(customer.name)}
-        animationSpeed={animationSpeed}
       />
     );
   });

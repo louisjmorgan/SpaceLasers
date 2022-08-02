@@ -5,94 +5,12 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable default-case */
 /* eslint-disable no-param-reassign */
-import * as satelliteUtils from 'satellite.js/lib/index';
-import * as THREE from 'three';
-import { earthRadius } from 'satellite.js/lib/constants';
-import { twoline2satrec } from '../Utils/TLE';
 
-function getCorsFreeUrl(url) {
-  return `https://api.allorigins.win/raw?url=${url}`;
-}
-
-function parseTLEs(fileContent, stationOptions) {
-  const result = [];
-  const lines = fileContent.split('\n');
-
-  let current = null;
-  for (let i = 0; i < lines.length; ++i) {
-    const line = lines[i].trim();
-    if (line.length === 0) continue;
-
-    if (line[0] !== '1' && line[0] !== '2') {
-      current = {
-        name: line,
-        ...stationOptions,
-      };
-    } else if (line[0] === '1') {
-      current = {
-        ...current,
-        tles: { ...current.tles, tle1: line },
-      };
-    } else if (line[0] === '2') {
-      current = {
-        ...current,
-        tles: { ...current.tles, tle2: line },
-      };
-      result.push(current);
-    }
-  }
-
-  return result;
-}
-
-function loadTLEs(url, stationOptions) {
-  return fetch(url).then((res) => {
-    if (res.ok) {
-      return res.text().then((text) => {
-        const stations = parseTLEs(text, stationOptions);
-        return stations;
-      });
-    }
-  });
-}
-
-const toThree = (v) => {
-  return {
-    x: v.x / earthRadius,
-    y: v.z / earthRadius,
-    z: -v.y / earthRadius,
-  };
-};
-
-function getPositionFromTLE(station, date, type = 2) {
-  if (!station || !date) return null;
-
-  if (!station.orbit) {
-    const { tle1, tle2 } = station.orbit;
-    if (!tle1 || !tle2) return null;
-    station.orbit = twoline2satrec(tle1, tle2);
-  }
-
-  const positionVelocity = satelliteUtils.propagate(
-    station.orbit,
-    date
-  );
-
-  const positionEci = positionVelocity.position;
-  return toThree(positionEci);
-}
-
-function getOrbitAtTime(station, time) {
-  const date = time;
-  if (!station.orbit) {
-    const { tle1, tle2 } = station.tles;
-    if (!tle1 || !tle2) return null;
-    station.orbit = twoline2satrec(tle1, tle2);
-  }
-
-  const pos = getPositionFromTLE(station, date);
-  return new THREE.Vector3(pos.x, pos.y, pos.z);
-}
+import {
+  twoline2satrec,
+  loadTLEs,
+  getCorsFreeUrl,
+} from '../Utils/TLE';
 
 const defaultBattery = {
   capacity: 1.125, // Ah
@@ -234,12 +152,11 @@ async function initializeState() {
   });
   return {
     orbits,
-    simulation: {
-      time: {
-        initial: initialDate,
-        current: initialDate,
-        paused: false,
-      },
+    time: {
+      initial: initialDate,
+      current: initialDate,
+      ticks: 0,
+      paused: false,
       speed: animationSpeed,
     },
     customers: [],
@@ -322,12 +239,10 @@ function satReducer(state, action) {
     case 'set time': {
       return {
         ...state,
-        simulation: {
-          ...state.simulation,
-          time: {
-            ...state.simulation.time,
-            current: action.time,
-          },
+        time: {
+          ...state.time,
+          ticks: state.time.ticks + 1,
+          current: action.time,
         },
       };
     }
@@ -335,8 +250,8 @@ function satReducer(state, action) {
     case 'set speed': {
       return {
         ...state,
-        simulation: {
-          ...state.simulation,
+        time: {
+          ...state.time,
           speed: action.speed,
         },
       };
@@ -345,16 +260,13 @@ function satReducer(state, action) {
     case 'pause time': {
       return {
         ...state,
-        simulation: {
-          ...state.simulation,
-          time: {
-            ...state.simulation.time,
-            paused: action.paused,
-          },
+        time: {
+          ...state.time,
+          paused: action.paused,
         },
       };
     }
   }
 }
 
-export { initializeState, satReducer, getOrbitAtTime, parseTLEs };
+export { initializeState, satReducer };

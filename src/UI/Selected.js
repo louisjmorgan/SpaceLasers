@@ -28,41 +28,49 @@ const StationCard = ({ station, onClick, active, chartStation }) => {
   );
 };
 
-const DetailsPanel = ({ station, ui, chartStation, openCharts }) => {
-  const { dispatch, dispatchUI, cameraTarget } = useContext(Context);
+const DetailsPanel = ({
+  station,
+  data,
+  chartStation,
+  openCharts,
+}) => {
+  const {
+    dispatch,
+    sim: {
+      current: { cameraTarget },
+    },
+  } = useContext(Context);
 
   function toggleLabel(sat) {
-    dispatchUI({
+    dispatch({
+      target: 'data',
       type: 'toggle label',
       name: sat.name,
     });
   }
 
-  function detachCamera() {}
-
   function attachCamera(sat) {
-    if (cameraTarget.current.name !== sat.name) {
-      dispatchUI({
+    if (cameraTarget.name !== sat.name) {
+      dispatch({
+        target: 'sim',
         type: 'attach camera',
         name: sat.name,
       });
     } else {
-      dispatchUI({
+      dispatch({
+        target: 'sim',
         type: 'detach camera',
       });
     }
   }
 
   const removeStation = () => {
-    dispatchUI({
+    dispatch({
+      target: 'sim',
       type: 'detach camera',
     });
     dispatch({
-      type: 'remove satellite',
-      isCustomer: true,
-      sat: station,
-    });
-    dispatchUI({
+      target: 'global',
       type: 'remove satellite',
       isCustomer: true,
       sat: station,
@@ -72,9 +80,9 @@ const DetailsPanel = ({ station, ui, chartStation, openCharts }) => {
   const netCurrent = useRef(0);
 
   useEffect(() => {
-    const profiles = station.profiles.get(ui.chargeSources);
-    netCurrent.current = profiles.get(ui.currentDuty).toFixed(3);
-  }, [ui.currentDuty, ui.currentSources]);
+    const profiles = station.profiles.get(data.chargeSources);
+    netCurrent.current = profiles.get(data.currentDuty).toFixed(3);
+  }, [data.currentDuty, data.currentSources]);
 
   const tabs = ['performance', 'parameters', 'actions'];
   const [activeTab, setActiveTab] = useState(tabs[0]);
@@ -101,19 +109,19 @@ const DetailsPanel = ({ station, ui, chartStation, openCharts }) => {
         <div className="tab performance">
           <p>
             Charge (with Space Power):
-            {` ${ui.chargeStateBeam}%`}
+            {` ${data.chargeStateBeam}%`}
           </p>
           <p>
             Charge (without Space Power):
-            {` ${ui.chargeStateNoBeam}%`}
+            {` ${data.chargeStateNoBeam}%`}
           </p>
           <p>
             Current Duty:
-            {` ${ui.currentDuty}`}
+            {` ${data.currentDuty}`}
           </p>
           <p>
             Charge Source:
-            {` ${ui.chargeSources}`}
+            {` ${data.chargeSources}`}
           </p>
           <p>
             Net Current:
@@ -186,7 +194,7 @@ const DetailsPanel = ({ station, ui, chartStation, openCharts }) => {
             Toggle Label
           </button>
           <button type="button" onClick={() => attachCamera(station)}>
-            {cameraTarget.current.name === station.name
+            {cameraTarget.name === station.name
               ? 'Detach Camera'
               : 'Attach Camera'}
           </button>
@@ -227,7 +235,7 @@ const SatelliteList = ({ selected, activeStation, onClick }) => {
   );
 };
 
-const Selected = ({ selected, uiMap, chartStation, openCharts }) => {
+const Selected = ({ selected, data, chartStation, openCharts }) => {
   if (!selected || selected.length === 0) return null;
 
   const [activeStation, setActiveStation] = useState(selected[0]);
@@ -240,7 +248,7 @@ const Selected = ({ selected, uiMap, chartStation, openCharts }) => {
       />
       <DetailsPanel
         station={activeStation}
-        ui={uiMap.get(activeStation.name)}
+        data={data.get(activeStation.name)}
         chartStation={chartStation}
         openCharts={openCharts}
       />

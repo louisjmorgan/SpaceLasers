@@ -1,50 +1,19 @@
+/* eslint-disable consistent-return */
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-plusplus */
+/* eslint-disable no-continue */
 /* eslint-disable no-console */
 /* eslint-disable import/prefer-default-export */
-import { pi, tumin, deg2rad } from 'satellite.js/lib/constants';
-
+import {
+  pi,
+  tumin,
+  deg2rad,
+  earthRadius,
+} from 'satellite.js/lib/constants';
 import { jday, days2mdhms } from 'satellite.js/lib/ext';
-
 import sgp4init from 'satellite.js/lib/propagation/sgp4init';
-
-/* -----------------------------------------------------------------------------
-   *
-   *                           function twoline2rv
-   *
-   *  this function converts the two line element set character string data to
-   *    variables and initializes the sgp4 variables. several intermediate varaibles
-   *    and quantities are determined. note that the result is a structure so multiple
-   *    satellites can be processed simultaneously without having to reinitialize. the
-   *    verification mode is an important option that permits quick checks of any
-   *    changes to the underlying technical theory. this option works using a
-   *    modified tle file in which the start, stop, and delta time values are
-   *    included at the end of the second line of data. this only works with the
-   *    verification mode. the catalog mode simply propagates from -1440 to 1440 min
-   *    from epoch and is useful when performing entire catalog runs.
-   *
-   *  author        : david vallado                  719-573-2600    1 mar 2001
-   *
-   *  inputs        :
-   *    longstr1    - first line of the tle
-   *    longstr2    - second line of the tle
-   *    typerun     - type of run                    verification 'v', catalog 'c',
-   *                                                 manual 'm'
-   *    typeinput   - type of manual input           mfe 'm', epoch 'e', dayofyr 'd'
-   *    opsmode     - mode of operation afspc or improved 'a', 'i'
-   *    whichconst  - which set of constants to use  72, 84
-   *
-   *  outputs       :
-   *    satrec      - structure containing all the sgp4 satellite information
-   *
-   *  coupling      :
-   *    getgravconst-
-   *    days2mdhms  - conversion of days to month, day, hour, minute, second
-   *    jday        - convert day month year hour minute second into julian date
-   *    sgp4init    - initialize the sgp4 variables
-   *
-   *  references    :
-   *    norad spacetrack report #3
-   *    vallado, crawford, hujsak, kelso  2006
-   --------------------------------------------------------------------------- */
+import * as satelliteUtils from 'satellite.js/lib/index';
+import * as THREE from 'three';
 
 /**
  * Return a Satellite imported from two lines of TLE data.
@@ -238,4 +207,95 @@ function generateTLE(orbitElements) {
   };
 }
 
-export { twoline2satrec, generateTLE };
+function getCorsFreeUrl(url) {
+  return `https://api.allorigins.win/raw?url=${url}`;
+}
+
+function parseTLEs(fileContent, stationOptions) {
+  const result = [];
+  const lines = fileContent.split('\n');
+
+  let current = null;
+  for (let i = 0; i < lines.length; ++i) {
+    const line = lines[i].trim();
+    if (line.length === 0) continue;
+
+    if (line[0] !== '1' && line[0] !== '2') {
+      current = {
+        name: line,
+        ...stationOptions,
+      };
+    } else if (line[0] === '1') {
+      current = {
+        ...current,
+        tles: { ...current.tles, tle1: line },
+      };
+    } else if (line[0] === '2') {
+      current = {
+        ...current,
+        tles: { ...current.tles, tle2: line },
+      };
+      result.push(current);
+    }
+  }
+
+  return result;
+}
+
+function loadTLEs(url, stationOptions) {
+  return fetch(url).then((res) => {
+    if (res.ok) {
+      return res.text().then((text) => {
+        const stations = parseTLEs(text, stationOptions);
+        return stations;
+      });
+    }
+  });
+}
+
+const toThree = (v) => {
+  return {
+    x: v.x / earthRadius,
+    y: v.z / earthRadius,
+    z: -v.y / earthRadius,
+  };
+};
+
+function getPositionFromTLE(station, date) {
+  if (!station || !date) return null;
+
+  if (!station.orbit) {
+    const { tle1, tle2 } = station.orbit;
+    if (!tle1 || !tle2) return null;
+    station.orbit = twoline2satrec(tle1, tle2);
+  }
+
+  const positionVelocity = satelliteUtils.propagate(
+    station.orbit,
+    date
+  );
+
+  const positionEci = positionVelocity.position;
+  return toThree(positionEci);
+}
+
+function getOrbitAtTime(station, time) {
+  const date = time;
+  if (!station.orbit) {
+    const { tle1, tle2 } = station.tles;
+    if (!tle1 || !tle2) return null;
+    station.orbit = twoline2satrec(tle1, tle2);
+  }
+
+  const pos = getPositionFromTLE(station, date);
+  return new THREE.Vector3(pos.x, pos.y, pos.z);
+}
+
+export {
+  twoline2satrec,
+  generateTLE,
+  getOrbitAtTime,
+  parseTLEs,
+  getCorsFreeUrl,
+  loadTLEs,
+};

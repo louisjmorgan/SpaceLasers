@@ -22,8 +22,12 @@ import {
 } from 'formik';
 import * as Yup from 'yup';
 import { resolveConfig } from 'prettier';
-import { twoline2satrec, generateTLE } from '../Utils/TLE';
-import { getOrbitAtTime, parseTLEs } from '../Model/SatReducer';
+import {
+  twoline2satrec,
+  generateTLE,
+  getOrbitAtTime,
+  parseTLEs,
+} from '../Utils/TLE';
 import { Context } from '../App';
 
 const xpdotp = 1440.0 / (2.0 * Math.PI);
@@ -75,7 +79,7 @@ export default function AddSatForm({
     setActiveOrbitInput(() => input);
   };
 
-  const { dispatch, dispatchUI } = useContext(Context);
+  const { dispatch } = useContext(Context);
 
   const handleStationSelect = (e) => {
     const { tles, name } = allStations.get(e.target.value);
@@ -162,12 +166,8 @@ export default function AddSatForm({
         );
       }
 
-      dispatchUI({
-        type: 'add satellite',
-        name: sat.name,
-        isCustomer: values.isCustomer,
-      });
       dispatch({
+        target: 'global',
         type: 'add satellite',
         tles: sat.tles,
         name: sat.name,

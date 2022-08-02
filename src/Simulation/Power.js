@@ -5,7 +5,6 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
 import React, { useRef, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { Html, Instance, useFBX } from '@react-three/drei';
@@ -13,7 +12,7 @@ import { Html, Instance, useFBX } from '@react-three/drei';
 const Power = ({
   station,
   time,
-  dispatchUI,
+  dispatch,
   getOrbitAtTime,
   storeRef,
   showLabel,
@@ -49,7 +48,8 @@ const Power = ({
       scale={0.01}
       // up={[1, 0, -1]}
       onClick={() => {
-        dispatchUI({
+        dispatch({
+          target: 'data',
           type: 'toggle label',
           name: station.name,
         });

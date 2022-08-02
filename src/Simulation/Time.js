@@ -6,14 +6,15 @@ import React, { useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Context } from '../App';
 
-const Time = ({ dispatch, time, speed }) => {
+const Time = ({ dispatch, time }) => {
   useFrame(({ clock }, delta) => {
     const temp = time.current;
     const date = new Date(
-      temp.setSeconds(temp.getSeconds() + delta * speed)
+      temp.setSeconds(temp.getSeconds() + delta * time.speed)
     );
     if (!time.paused) {
       dispatch({
+        target: 'state',
         type: 'set time',
         time: date,
       });
