@@ -5,16 +5,15 @@ import {
   Grid, GridItem, Spinner, Button,
 } from '@chakra-ui/react';
 import {
-  useState, useEffect,
+  useState, useEffect, useRef,
 } from 'react';
 import '@fontsource/barlow/700.css';
 import '@fontsource/barlow/400.css';
-import MissionPlanner from './UI/MissionPlanner';
+import { MissionPlanner, HUD } from './UI';
 import theme from './theme';
-import HUD from './UI/HUD';
 import ViewButtons from './UI/ViewButtons';
 import Simulation from './Simulation/Simulation';
-import handleMissionRequest from './Model/mission';
+import { handleMissionRequest } from './Model/mission';
 
 const simulationView = {
   name: 'simulation',
@@ -48,46 +47,131 @@ const performanceView = {
 };
 
 const defaultRequest = {
-  customers: [
+
+  satellites: [
     {
-      name: 'ONEWEB-0017',
-      size: 1,
-      tle1: '1 44059C 19010C   22214.40398561 -.00002389  00000-0 -62577-2 0  2143',
-      tle2: '2 44059  87.9155 150.4251 0001575  83.4744 333.6540 13.16594779    12',
-      pvVoltage: 4.7,
-      currentDensity: 170.5,
-      area: 0.0064,
-      batteryVoltage: 3.6,
-      capacity: 1.125,
+      orbit: {
+        epoch: '2022-09-16T04:30:45',
+        meanMotionDot: 0.00003242,
+        bstar: 0.0084918,
+        inclination: 87.9147,
+        rightAscension: 147.6632,
+        eccentricity: 0.0002947,
+        perigee: 88.9181,
+        meanAnomaly: 343.2887,
+        meanMotion: 13.16587847,
+        tle: '',
+      },
+      power: {
+        pvVoltage: 4.7,
+        currentDensity: 170.5,
+        area: 0.0064,
+        batteryVoltage: 3.6,
+        capacity: 1.125,
+        powerStoringConsumption: 1.2,
+      },
       duties: [
         {
-          id: 0,
-          name: 'power storing',
-          type: 'power storing',
-          consumption: 1.2,
-        },
-        {
-          id: 1,
-          name: 'over power',
-          type: 'cyclical',
+          name: 'Cyclical',
           consumption: 3.2,
+          type: 'cyclical',
           duration: 600,
           cycles: 6,
+          priority: 1,
         },
       ],
-
+      name: 'Satellite 1',
+      id: 'dcd9b6ff-c7f6-46e4-87a0-e5f45a91da41',
+    },
+    {
+      orbit: {
+        epoch: '2022-09-16T05:06:16',
+        meanMotionDot: 0.00001674,
+        bstar: 0.004385,
+        inclination: 87.9151,
+        rightAscension: 147.6525,
+        eccentricity: 0.0002601,
+        perigee: 76.2503,
+        meanAnomaly: 352.9196,
+        meanMotion: 13.16593118,
+        tle: '',
+      },
+      power: {
+        pvVoltage: 4.7,
+        currentDensity: 170.5,
+        area: 0.0064,
+        batteryVoltage: 3.6,
+        capacity: 1.125,
+        powerStoringConsumption: 1.2,
+      },
+      duties: [
+        {
+          name: 'Cyclical',
+          consumption: 3.2,
+          type: 'cyclical',
+          duration: 600,
+          cycles: 6,
+          priority: 1,
+        },
+      ],
+      name: 'Satellite 2',
+      id: 'd7852436-f82d-424a-bc9e-9ee5fe40c6b3',
+    },
+    {
+      orbit: {
+        epoch: '2022-09-16T07:37:44',
+        meanMotionDot: 2e-7,
+        bstar: 0.000052609,
+        inclination: 87.9156,
+        rightAscension: 147.6698,
+        eccentricity: 0.0001678,
+        perigee: 89.1265,
+        meanAnomaly: 358.4823,
+        meanMotion: 13.16600059,
+        tle: '',
+      },
+      power: {
+        pvVoltage: 4.7,
+        currentDensity: 170.5,
+        area: 0.0064,
+        batteryVoltage: 3.6,
+        capacity: 1.125,
+        powerStoringConsumption: 1.2,
+      },
+      duties: [
+        {
+          name: 'Cyclical',
+          consumption: 3.2,
+          type: 'cyclical',
+          duration: 600,
+          cycles: 6,
+          priority: 1,
+        },
+      ],
+      name: 'Satellite 3',
+      id: '96e638d6-c041-4366-96e4-62438e93f5cb',
     },
   ],
   powerSats: 3,
-  inclinationOffset: 0.2,
+  inclinationOffset: 20,
 };
 
 function App() {
   const [view, setView] = useState(simulationView);
-  const [simData, setSimData] = useState();
+  // const [simData, setSimData] = useState();
+  const [loaded, setLoaded] = useState(false);
+  const simData = useRef();
+
+  const updateMission = (mission) => {
+    setLoaded(() => false);
+    simData.current = mission;
+    setLoaded(() => true);
+  };
 
   useEffect(() => {
-    setSimData(() => handleMissionRequest(defaultRequest));
+    // setSimData(() => handleMissionRequest(defaultRequest));
+    updateMission(handleMissionRequest(defaultRequest));
+    setLoaded(() => true);
   }, []);
 
   const [currentFrame, setCurrentFrame] = useState(0);
@@ -125,39 +209,41 @@ function App() {
               </Center>
             </GridItem>
             <GridItem area={'controls'}>
-              <p>{simData ? new Date(simData.time[currentFrame]).toISOString() : ''}</p>
+              <p>{simData.current ? new Date(simData.current.time[currentFrame]).toISOString() : ''}</p>
             </GridItem>
           </Grid>
         </GridItem>
-        <GridItem area={view.simulationArea}>
-          { simData ? (
-            <Grid
-              h={'100%'}
-              templateColumns={'1fr 0.125fr'}
-              templateRows={'2fr 0.5fr 0.125fr'}
-            >
-              <Simulation
-                simData={simData}
-                currentFrame={currentFrame}
-                setCurrentFrame={setCurrentFrame}
-              />
-              {view.name === 'simulation'
-                ? (
-                  <HUD satellites={simData.satellites} frame={currentFrame} />
-                ) : '' }
-              {((view.name === 'mission') || (view.name === 'performance'))
-                ? (
-                  <GridItem area={'3 / 2 / 4 / 3'}>
-                    <Button value={'simulation'} onClick={(e) => handleView(e.target.value)}>
-                      Return
-                    </Button>
-                  </GridItem>
-                ) : ''}
-            </Grid>
-          ) : <Spinner />}
+        <GridItem position="relative" area={view.simulationArea}>
+          <Grid
+            h={'100%'}
+            templateColumns={'1fr 0.125fr'}
+            templateRows={'2fr 0.5fr 0.125fr'}
+          >
+            { loaded ? (
+              <>
+                <Simulation
+                  simData={simData.current}
+                  currentFrame={currentFrame}
+                  setCurrentFrame={setCurrentFrame}
+                />
+                {view.name === 'simulation'
+                  ? (
+                    <HUD satellites={simData.current.satellites} frame={currentFrame} />
+                  ) : '' }
+              </>
+            ) : <Spinner position="absolute" top="50%" left="50%" transform={'translate(-50%, -50%)'} />}
+            {((view.name === 'mission') || (view.name === 'performance'))
+              ? (
+                <GridItem area={'3 / 2 / 4 / 3'}>
+                  <Button value={'simulation'} onClick={(e) => handleView(e.target.value)}>
+                    Return
+                  </Button>
+                </GridItem>
+              ) : ''}
+          </Grid>
         </GridItem>
 
-        <MissionPlanner display={view.name === 'mission' ? '' : 'none'} />
+        <MissionPlanner shouldDisplay={view.name === 'mission'} updateMission={updateMission} />
 
         <GridItem area={view.footerArea}>
           Footer

@@ -51,8 +51,16 @@ const components = {
   },
 };
 
+const colors = {
+  background: {
+    100: 'hsl(276.9,41.9%,20%)',
+    200: 'hsl(276.9,41.9%,10%)',
+    300: 'hsl(276.9,41.9%,6.1%)',
+  },
+};
+
 const theme = extendTheme({
-  config, styles, fonts, layerStyles, components,
+  config, styles, fonts, layerStyles, components, colors,
 });
 
 export default theme;

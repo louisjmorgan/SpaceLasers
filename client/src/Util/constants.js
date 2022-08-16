@@ -1,7 +1,7 @@
 const SIM_LENGTH = 24 * 60 * 60 * 2 * 1000; // ms
 const FPmS = 150 / 1000;
 
-const BEAM_DISTANCE = 10000;
+const BEAM_DISTANCE = 1000;
 const MIN_SPEED = 600;
 const FRAMES = SIM_LENGTH * (FPmS / MIN_SPEED);
 

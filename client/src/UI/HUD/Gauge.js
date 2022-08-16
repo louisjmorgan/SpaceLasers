@@ -64,7 +64,7 @@ export default function Gauge({ height, beams, noBeams }) {
       <Stat align="center">
         <StatLabel>Charge</StatLabel>
 
-        <svg width={width} height={height / 2} margin>
+        <svg width={width} height={height / 2}>
           <Group top={halfWidth} left={halfWidth}>
             <Pie
               data={[

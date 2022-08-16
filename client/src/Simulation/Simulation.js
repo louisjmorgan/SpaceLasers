@@ -43,15 +43,13 @@ function Simulation({ simData, currentFrame, setCurrentFrame }) {
           style={{
             pointerEvents: 'none',
             position: 'fixed',
-            width: '100%',
-            height: '100%',
             top: '0px',
             left: '0px',
           }}
         >
           <Suspense fallback={null}>
 
-            <View track={viewRef}>
+            <View index={1} track={viewRef}>
               <Camera target={{
                 name: 'earth',
                 ref: null,

@@ -15,88 +15,142 @@ import {
   getEarthRotationAngles,
 } from './simulation';
 
-const missionSchema = Yup.object().shape({
-  customers: Yup.array()
+const MissionSchema = Yup.object().shape({
+
+  satellites: Yup.array()
     .of(
       Yup.object().shape({
         name: Yup.string()
           .min(2, 'Too Short!')
           .max(50, 'Too Long!')
           .trim(),
-        size: Yup.number()
-          .integer()
-          .min(1, 'Size must be 1 or more!')
-          .max(6, 'Size must be 6 or less!')
-          .required('size is required'),
-        tle1: Yup.string()
-          .min(69, 'tle must be 69 columns')
-          .max(69, 'tle must be 69 columns')
-          .required('tle line 1 is required'),
-        tle2: Yup.string()
-          .min(69, 'tle must be 69 columns')
-          .max(69, 'tle must be 69 columns')
-          .required('tle line 2 required'),
-        pvVoltage: Yup.number()
-          .min(0, 'Must be positive')
-          .required('pv voltage is required'),
-        currentDensity: Yup.number()
-          .min(0, 'Must be positive')
-          .required('pv current density is required'),
-        area: Yup.number()
-          .min(0, 'Must be greater than 0')
-          .required('pv area is required'),
-        batteryVoltage: Yup.number()
-          .min(0, 'Must be positive')
-          .required('battery voltage is required'),
-        capacity: Yup.number()
-          .min(0, 'Must be greater than 0')
-          .required('battery capacity is required'),
+        // size: Yup.number()
+        //   .integer()
+        //   .min(1, 'Size must be 1 or more!')
+        //   .max(6, 'Size must be 6 or less!')
+        //   .required('size is required'),
+        // tle1: Yup.string()
+        //   .min(69, 'tle must be 69 columns')
+        //   .max(69, 'tle must be 69 columns')
+        //   .required('tle line 1 is required'),
+        // tle2: Yup.string()
+        //   .min(69, 'tle must be 69 columns')
+        //   .max(69, 'tle must be 69 columns')
+        //   .required('tle line 2 required'),
+
+        orbit: Yup.object().shape({
+          tle: Yup.string(),
+          meanMotionDot: Yup.number()
+            .min(-1, 'Must be more than -1')
+            .max(1, 'Must be less than 1')
+            .required('battery capacity is required'),
+          bstar: Yup.number()
+            .min(-2, 'Must be between -2 and 2')
+            .max(2, 'Must be between -2 and 2')
+            .required('battery capacity is required'),
+          inclination: Yup.number()
+            .min(0, 'Must be 0-360°')
+            .max(360, 'Must be 0-360°')
+            .required('battery capacity is required'),
+          rightAscension: Yup.number()
+            .min(0, 'Must be 0-360°')
+            .max(360, 'Must be 0-360°')
+            .required('battery capacity is required'),
+          eccentricity: Yup.number()
+            .min(0, 'Must be between 0 and 1')
+            .max(1, 'Must be between 0 and 1')
+            .required('battery capacity is required'),
+          perigee: Yup.number()
+            .min(0, 'Must be 0-360°')
+            .max(360, 'Must be 0-360°')
+            .required('battery capacity is required'),
+          meanAnomaly: Yup.number()
+            .min(0, 'Must be 0-360°')
+            .max(360, 'Must be 0-360°')
+            .required('battery capacity is required'),
+          meanMotion: Yup.number()
+            .min(0, 'Must be greater than 0')
+            .max(16, 'Must be less than 16')
+            .required('battery capacity is required'),
+        }),
+        power: Yup.object().shape({
+          pvVoltage: Yup.number()
+            .min(0, 'Must be positive')
+            .required('pv voltage is required'),
+          currentDensity: Yup.number()
+            .min(0, 'Must be positive')
+            .required('pv current density is required'),
+          area: Yup.number()
+            .min(0, 'Must be greater than 0')
+            .required('pv area is required'),
+          batteryVoltage: Yup.number()
+            .min(0, 'Must be positive')
+            .required('battery voltage is required'),
+          capacity: Yup.number()
+            .min(0, 'Must be greater than 0')
+            .required('battery capacity is required'),
+          powerStoringConsumption: Yup.number()
+            .min(0, 'Must be greater than 0')
+            .required('Power storing consumption is required'),
+        }),
         duties: Yup.array()
           .of(
             Yup.object().shape({
-              id: Yup.number()
-                .integer()
-                .min(0, 'Must be an integer greater than or equal to 0'),
+              type: Yup.string()
+                .oneOf(['cyclical'])
+                .required('Type is required'),
               name: Yup.string()
                 .min(2, 'Too Short!')
                 .max(30, 'Too Long!')
                 .required('required!'),
-              type: Yup.string()
-                .min(2, 'Too Short!')
-                .max(30, 'Too Long!')
-                .required('required!'),
+              priority: Yup.number()
+                .integer()
+                .min(1)
+                .required('Priority is required'),
               consumption: Yup.number()
                 .min(0, 'Must be positive')
-                .required('required'),
+                .required('Consumption is required'),
               duration: Yup.number()
-                .min(0, 'Must be positive'),
+                .min(0, 'Must be positive')
+                .when(
+                  'type',
+                  {
+                    is: 'cyclical',
+                    then: Yup.number().required('Duration is required'),
+                  },
+                ),
               cycles: Yup.number()
-                .integer()
-                .min(1, 'Must be an integer greater than 0'),
+                .min(0, 'Must be positive')
+                .when(
+                  'type',
+                  {
+                    is: 'cyclical',
+                    then: Yup.number().required('Cycles is required'),
+                  },
+                ),
             }),
           ),
       }),
     ),
-  powerSats: Yup.number()
-    .integer()
-    .min(0, 'Must be an integer greater than or equal to 0'),
-  inclinationOffset: Yup.number()
-    .min(0, 'Must be positive')
-    .required('required'),
+  // powerSats: Yup.number()
+  //   .integer()
+  //   .min(0, 'Must be an integer greater than or equal to 0'),
+  // inclinationOffset: Yup.number()
+  //   .min(0, 'Must be positive')
+  //   .required('required'),
 
 });
 
 const handleMissionRequest = (req) => {
-  try {
-    missionSchema.validate(req);
-  } catch (err) {
-    console.log(err);
-    return new Error({ type: err.name, message: `${err.path} ${err.message}` });
-  }
+  // try {
+  //   missionSchema.validate(req);
+  // } catch (err) {
+  //   console.log(err);
+  //   return new Error({ type: err.name, message: `${err.path} ${err.message}` });
+  // }
 
   // initialize customers
-  const customers = req.customers.map((customer) => createSatellite(customer));
-
+  const customers = req.satellites.map((customer) => createSatellite(customer));
   // initialize global simulation parameters
   const time = getTimeArray(customers[0].params.orbit.epochdate);
   const sun = getSunPositions(time);
@@ -118,7 +172,11 @@ const handleMissionRequest = (req) => {
     return req.inclinationOffset * multiplier * ((0 - 1) ** index);
   });
 
-  const spacePowers = inclinationOffsets.map((offset, index) => createPowerSatellite(`Space Power ${index + 1}`, { tle1: req.customers[0].tle1, tle2: req.customers[0].tle2 }, offset));
+  const spacePowers = inclinationOffsets.map((offset, index) => createPowerSatellite(
+    `Space Power ${index + 1}`,
+    req.satellites[0].orbit,
+    offset,
+  ));
 
   // simulate space power orbits and initialize beams
   const beams = [];
@@ -176,4 +234,4 @@ const handleMissionRequest = (req) => {
   };
 };
 
-export default handleMissionRequest;
+export { handleMissionRequest, MissionSchema };

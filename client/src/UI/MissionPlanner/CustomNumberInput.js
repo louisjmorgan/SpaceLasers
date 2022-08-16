@@ -2,30 +2,37 @@
 import {
   Flex,
   FormControl,
+  FormErrorMessage,
   FormLabel,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput, NumberInputField, NumberInputStepper, Text,
 } from '@chakra-ui/react';
+import { getIn } from 'formik';
 
 function CustomNumberInput({
-  value, id, label, name, units, step, setFieldValue,
+  value, min, max, label, name, units, step, formik,
 }) {
+  const errors = getIn(formik.errors, name);
+
   return (
-    <FormControl maxWidth="40%" minWidth="20rem" p={5}>
+    <FormControl maxWidth="40%" minWidth="20rem" p={5} isInvalid={errors}>
       <FormLabel htmlFor={`${name}`}>{label}</FormLabel>
       <Flex gap={1} align="center">
         <NumberInput
-          id={id}
+          id={name}
           name={`${name}`}
           onChange={(v) => {
-            setFieldValue(
+            formik.setFieldValue(
               `${name}`,
               Number(v),
             );
           }}
           value={value}
           step={step}
+          min={min}
+          max={max}
+          flex={3}
         >
           <NumberInputField />
           <NumberInputStepper>
@@ -33,8 +40,9 @@ function CustomNumberInput({
             <NumberDecrementStepper />
           </NumberInputStepper>
         </NumberInput>
-        <Text>{units}</Text>
+        <Text flex={1} align="left">{units}</Text>
       </Flex>
+      <FormErrorMessage>{errors}</FormErrorMessage>
     </FormControl>
   );
 }

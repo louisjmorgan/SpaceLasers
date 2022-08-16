@@ -4,15 +4,18 @@
 /* eslint-disable no-continue */
 /* eslint-disable no-console */
 /* eslint-disable import/prefer-default-export */
-const {
+import {
   pi,
   tumin,
   deg2rad,
   earthRadius,
-} = require('satellite.js/lib/constants');
-const { jday, days2mdhms } = require('satellite.js/lib/ext');
-const sgp4init = require('satellite.js/lib/propagation/sgp4init').default;
-const satelliteUtils = require('satellite.js');
+} from 'satellite.js/lib/constants';
+
+import { jday, days2mdhms } from 'satellite.js/lib/ext';
+
+import sgp4init from 'satellite.js/lib/propagation/sgp4init';
+
+import * as satelliteUtils from 'satellite.js';
 
 /**
  * Return a Satellite imported from two lines of TLE data.
@@ -230,6 +233,10 @@ function twoline2satrec(longstr1, longstr2) {
   } = mdhmsResult;
   satrec.jdsatepoch = jday(year, mon, day, hr, minute, sec);
   satrec.epochdate = new Date(year, mon, day, hr, minute, sec);
+  satrec.epochdatetimelocal = new Date(
+    satrec.epochdate.getTime() - satrec.epochdate.getTimezoneOffset() * 60000,
+  ).toISOString().substring(0, 19);
+
   //  ---------------- initialize the orbit at sgp4epoch -------------------
   sgp4init(satrec, {
     opsmode,

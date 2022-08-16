@@ -1,11 +1,10 @@
-const { v4: uuidv4 } = require('uuid');
-const {
+import { v4 as uuidv4 } from 'uuid';
+import {
   twoline2satrec,
   extractTLE,
   generateTLE,
-} = require('../Util/astronomy');
-
-const { SIM_LENGTH } = require('../Util/constants');
+} from '../Util/astronomy';
+import { SIM_LENGTH } from '../Util/constants';
 
 const PV_SOURCES = {
   sunOnly: {
@@ -27,19 +26,15 @@ const PV_SOURCES = {
 };
 
 const POWER_SAT_REQUEST = {
-  pvVoltage: 4.7,
-  currentDensity: 170.5,
-  area: 0.0128,
-  batteryVoltage: 3.6,
-  capacity: 1.125,
+  power: {
+    pvVoltage: 4.7,
+    currentDensity: 170.5,
+    area: 0.0128,
+    batteryVoltage: 3.6,
+    capacity: 1.125,
+    powerStoringConsumption: 1.2,
+  },
   duties: [
-    {
-      name: 'power storing',
-      duration: null,
-      cycles: null,
-      consumption: 1.2,
-      type: 'power storing',
-    },
     {
       name: 'beaming',
       duration: null,
@@ -90,19 +85,23 @@ function getPowerTLEs(tles, inclinationOffset) {
 function createSatellite(
   customer,
 ) {
-  const orbit = twoline2satrec(customer.tle1, customer.tle2);
+  const tles = generateTLE({
+    ...customer.orbit,
+    epoch: new Date(customer.orbit.epoch),
+  });
+  const orbit = twoline2satrec(tles.tle1, tles.tle2);
   orbit.period = (2 * Math.PI * 60 * 1000) / orbit.no;
 
   const pv = {
     sources: PV_SOURCES,
-    voltage: customer.pvVoltage,
-    currentDensity: customer.currentDensity,
-    area: customer.area,
+    voltage: customer.power.pvVoltage,
+    currentDensity: customer.power.currentDensity,
+    area: customer.power.area,
   };
 
   const battery = {
-    voltage: customer.batteryVoltage,
-    capacity: customer.capacity,
+    voltage: customer.power.batteryVoltage,
+    capacity: customer.power.capacity,
   };
 
   const duties = customer.duties.map((duty) => ({
@@ -113,10 +112,16 @@ function createSatellite(
     cycles: Number(duty.cycles) || null,
     intervals: duty.type === 'cyclical' ? getDutyIntervals(duty, orbit.period, orbit.epochdate) : null,
   }));
+
+  duties.unshift({
+    name: 'Power storing',
+    type: 'power storing',
+    consumption: customer.power.powerStoringConsumption,
+  });
   const powerProfiles = generatePowerProfiles(pv, duties, battery);
   return {
     name: customer.name,
-    id: uuidv4(),
+    id: customer.id,
     params: {
       orbit,
       battery,
@@ -129,15 +134,17 @@ function createSatellite(
   };
 }
 
-function createPowerSatellite(name, tles, inclinationOffset) {
-  const newTLEs = getPowerTLEs(tles, inclinationOffset);
+function createPowerSatellite(name, orbit, inclinationOffset) {
   const request = {
     ...POWER_SAT_REQUEST,
     name,
-    tle1: newTLEs.tle1,
-    tle2: newTLEs.tle2,
+    id: uuidv4(),
+    orbit: {
+      ...orbit,
+      inclination: orbit.inclination + inclinationOffset,
+    },
   };
   return createSatellite(request);
 }
 
-module.exports = { createSatellite, createPowerSatellite };
+export { createSatellite, createPowerSatellite };

@@ -81,7 +81,7 @@ function getCurrentDuties(duties, timeArray) {
   return timeArray.map((time) => {
     let currentDuty = 0;
     duties.forEach((duty, index) => {
-      if (duty.name === 'power storing') return;
+      if (duty.type === 'power storing') return;
       duty.intervals.forEach((cycle) => {
         if ((time >= cycle.start) && (time <= cycle.end)) currentDuty = index;
       });
