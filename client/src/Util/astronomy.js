@@ -258,7 +258,7 @@ function getCorsFreeUrl(url) {
   return `https://api.allorigins.win/raw?url=${url}`;
 }
 
-function parseTLEs(fileContent, satelliteOptions) {
+function parseTLEs(fileContent) {
   const result = [];
   const lines = fileContent.split('\n');
 
@@ -270,7 +270,6 @@ function parseTLEs(fileContent, satelliteOptions) {
     if (line[0] !== '1' && line[0] !== '2') {
       current = {
         name: line,
-        ...satelliteOptions,
       };
     } else if (line[0] === '1') {
       current = {
@@ -289,11 +288,19 @@ function parseTLEs(fileContent, satelliteOptions) {
   return result;
 }
 
-function loadTLEs(url, satelliteOptions) {
+function loadTLEsJSON(url) {
+  return fetch(url).then((res) => {
+    if (res.ok) {
+      return res.text().then((text) => JSON.parse(text));
+    }
+  });
+}
+
+function loadTLEs(url) {
   return fetch(url).then((res) => {
     if (res.ok) {
       return res.text().then((text) => {
-        const satellites = parseTLEs(text, satelliteOptions);
+        const satellites = parseTLEs(text);
         return satellites;
       });
     }
@@ -364,4 +371,5 @@ export {
   parseTLEs,
   getCorsFreeUrl,
   loadTLEs,
+  loadTLEsJSON,
 };

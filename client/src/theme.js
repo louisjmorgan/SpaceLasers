@@ -49,6 +49,16 @@ const components = {
       width: "auto",
     },
   },
+  Modal: {
+    sizes: {
+      xl: {
+        dialog: {
+          height: "auto",
+          minWidth: "50vw",
+        },
+      },
+    },
+  },
 };
 
 const colors = {

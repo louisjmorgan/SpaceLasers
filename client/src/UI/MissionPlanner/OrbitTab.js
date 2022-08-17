@@ -1,8 +1,9 @@
 /* eslint-disable react/prop-types */
 import {
   Button,
-  Flex, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, Textarea,
+  Flex, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, Select, Tab, TabList, TabPanel, TabPanels, Tabs, Textarea,
 } from '@chakra-ui/react';
+import { useState } from 'react';
 import { parseTLEs, twoline2satrec } from 'Util/astronomy.js';
 import CustomNumberInput from './CustomNumberInput';
 
@@ -88,11 +89,12 @@ const fields = [
   },
 ];
 
-export default function OrbitTab({ formik, satIndex }) {
+export default function OrbitTab({ formik, satIndex, constellations }) {
+  console.log(formik.values.satellites[satIndex].orbit.tle);
   const handleExtractTle = (e) => {
     e.preventDefault();
     const { tles } = parseTLEs(formik.values.satellites[satIndex].orbit.tle)[0];
-    console.log(tles);
+
     const satRec = twoline2satrec(tles.tle1, tles.tle2);
     const newOrbit = {
       epoch: satRec.epochdatetimelocal,
@@ -108,7 +110,6 @@ export default function OrbitTab({ formik, satIndex }) {
     };
     Object.entries(newOrbit).forEach(
       (entry) => {
-        console.log(entry);
         formik.setFieldValue(`satellites[${satIndex}].orbit.[${entry[0]}]`, entry[1]);
       },
     );
@@ -127,9 +128,7 @@ export default function OrbitTab({ formik, satIndex }) {
             value={formik.values.satellites[satIndex].orbit.epoch}
           />
           {!formik.errors.epoch ? (
-            <FormHelperText>
-              This will be the start time of the simulation.
-            </FormHelperText>
+            <FormHelperText />
           ) : (
             <FormErrorMessage>{formik.errors.orbit.epoch}</FormErrorMessage>
           )}
@@ -149,20 +148,76 @@ export default function OrbitTab({ formik, satIndex }) {
           />
         ))}
       </Flex>
-      <FormControl>
-        <FormLabel htmlFor={`satellites[${satIndex}].orbit.tle`}>TLE Input</FormLabel>
-        <Textarea
-          id="tle"
-          name={`satellites[${satIndex}].orbit.tle`}
-          onChange={formik.handleChange}
-          value={formik.values.satellites[satIndex].orbit.tle}
-          placeholder="Enter TLE here"
-        />
-        <FormErrorMessage>{formik.errors.tle}</FormErrorMessage>
-      </FormControl>
-      <Button onClick={handleExtractTle} m={3}>
-        Extract
-      </Button>
+      <Tabs
+        p={10}
+        minWidth="50%"
+        maxWidth="80%"
+        align="center"
+      >
+        <TabList>
+          <Tab>Choose TLE</Tab>
+          <Tab>Paste TLE</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel pt={10}>
+            <Flex wrap="wrap" justify="space-around">
+              <FormControl width="40%">
+                <FormLabel htmlFor={`satellites[${satIndex}].orbit.constellation`}>Constellation</FormLabel>
+                <Select
+                  name={`satellites[${satIndex}].orbit.constellation`}
+                  value={formik.values.satellites[satIndex].orbit.constellation}
+                  onChange={formik.handleChange}
+                >
+                  {constellations.map((c) => (
+                    <option value={c.name} key={c.name}>
+                      {c.name}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl width="40%">
+                <FormLabel htmlFor={`satellites[${satIndex}].orbit.tle`}>Satellite</FormLabel>
+                <Select
+                  name={`satellites[${satIndex}].orbit.tle`}
+                  value={formik.values.satellites[satIndex].orbit.tle}
+                  onChange={formik.handleChange}
+                >
+                  {constellations.find(
+                    (v) => v.name === formik.values.satellites[satIndex].orbit.constellation,
+                  ).tles
+                    .map((tle) => (<option value={`${tle.name}\n${tle.tles.tle1}\n${tle.tles.tle2}`}>{tle.name}</option>))}
+                </Select>
+              </FormControl>
+              <Button
+                onClick={handleExtractTle}
+                m={3}
+              >
+                Extract
+              </Button>
+            </Flex>
+          </TabPanel>
+
+          <TabPanel pt={10}>
+            <FormControl width="90%">
+              <FormLabel htmlFor={`satellites[${satIndex}].orbit.tle`}>TLE Input</FormLabel>
+              <Textarea
+                id="tle"
+                name={`satellites[${satIndex}].orbit.tle`}
+                onChange={formik.handleChange}
+                value={formik.values.satellites[satIndex].orbit.tle}
+                placeholder="Enter TLE here"
+              />
+              <FormErrorMessage>{formik.errors.tle}</FormErrorMessage>
+            </FormControl>
+            <Button
+              onClick={handleExtractTle}
+              m={3}
+            >
+              Extract
+            </Button>
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
     </>
   );
 }

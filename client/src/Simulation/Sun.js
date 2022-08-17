@@ -23,13 +23,13 @@ function Sun({ position, frame }) {
         intensity={0.7}
         position={[position.x[0], position.y[0], position.z[0]]}
       />
-      <mesh>
+      {/* <mesh>
         <sphereGeometry attach="geometry" args={[109, 64, 64]} />
         <meshBasicMaterial
           attach="material"
           color="yellow"
         />
-      </mesh>
+      </mesh> */}
 
     </group>
   );

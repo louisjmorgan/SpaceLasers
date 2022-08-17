@@ -6,11 +6,14 @@
 import {
   Button,
   Center, Flex, GridItem,
-  Tab, TabList, TabPanel, TabPanels, Tabs,
+  Spinner,
+  Tab, TabList, TabPanel, TabPanels, Tabs, Text,
 } from '@chakra-ui/react';
 import { useFormik } from 'formik';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import { getCorsFreeUrl, loadTLEs } from 'Util/astronomy';
+import { lighten } from '@chakra-ui/theme-tools';
 import { handleMissionRequest, MissionSchema } from '../../Model/mission';
 
 import SatelliteList from './SatelliteList';
@@ -19,21 +22,55 @@ import OrbitTab from './OrbitTab';
 import PowerTab from './PowerTab';
 import DutyTab from './DutyTab';
 import ConfigModal from './ConfigModal';
+import { defaultValues } from './defaultInputs';
+
+function fetchTLEs(urls) {
+  const tles = [];
+  Object.entries(urls).forEach(([key, url]) => {
+    loadTLEs(getCorsFreeUrl(url)).then((res) => {
+      tles.push({
+        name: key,
+        tles: res,
+      });
+    });
+  });
+  return tles;
+}
+
+const urls = {
+  OneWeb: 'https://celestrak.org/NORAD/elements/gp.php?GROUP=oneweb&FORMAT=tle',
+  Starlink: 'https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=tle',
+  Orbcomm: 'https://celestrak.org/NORAD/elements/gp.php?GROUP=orbcomm&FORMAT=tle',
+  Galileo: 'https://celestrak.org/NORAD/elements/gp.php?GROUP=galileo&FORMAT=tle',
+  Geosynchronous: 'https://celestrak.org/NORAD/elements/gp.php?GROUP=geo&FORMAT=tle',
+};
 
 function MissionPlanner({ updateMission, shouldDisplay }) {
-  const [satIndex, setSatIndex] = useState();
+  const [satIndex, setSatIndex] = useState(0);
+  const [constellations, setConstellations] = useState();
 
+  useEffect(() => {
+    setConstellations((fetchTLEs(urls)));
+  }, []);
   const formik = useFormik({
-    initialValues: {
-      satellites: [
-      ],
-    },
+    initialValues: defaultValues,
     validationSchema: MissionSchema,
     validateOnChange: false,
     validateOnBlur: true,
-    onSubmit: (values) => {
-      console.log(values);
-      updateMission(handleMissionRequest(values));
+    onSubmit: async (values) => {
+      formik.setSubmitting(true);
+      await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          try {
+            updateMission(handleMissionRequest(values));
+            formik.setStatus('');
+          } catch (error) {
+            formik.setStatus(error.message);
+            reject();
+          }
+          resolve();
+        }, 500);
+      });
     },
   });
   return (
@@ -42,20 +79,26 @@ function MissionPlanner({ updateMission, shouldDisplay }) {
         <>
           <GridItem area="select">
             <form onSubmit={formik.handleSubmit}>
-              <h2 align="center">Satellites</h2>
+
               <SatelliteList formik={formik} satIndex={satIndex} setSatIndex={setSatIndex} />
               {formik.values.satellites.length > 0
                 ? (
-                  <Center>
-                    <ConfigModal formik={formik} />
-                    <Button
-                      m={5}
-                      type="submit"
-                    >
-                      Generate Mission
-                    </Button>
+                  <>
+                    <Center>
+                      <ConfigModal formik={formik} />
 
-                  </Center>
+                      <Button
+                        m={5}
+                        type="submit"
+                        disabled={formik.isSubmitting}
+                      >
+                        {formik.isSubmitting ? <Spinner /> : 'Generate Mission'}
+                      </Button>
+                    </Center>
+                    <Center>
+                      <Text color="red" width="50%" align="center">{formik.status}</Text>
+                    </Center>
+                  </>
                 ) : '' }
             </form>
           </GridItem>
@@ -76,7 +119,11 @@ function MissionPlanner({ updateMission, shouldDisplay }) {
                     </TabList>
                     <TabPanels>
                       <TabPanel pt={10}>
-                        <OrbitTab satIndex={satIndex} formik={formik} />
+                        <OrbitTab
+                          satIndex={satIndex}
+                          formik={formik}
+                          constellations={constellations}
+                        />
                       </TabPanel>
                       <TabPanel pt={10}>
                         <PowerTab satIndex={satIndex} formik={formik} />

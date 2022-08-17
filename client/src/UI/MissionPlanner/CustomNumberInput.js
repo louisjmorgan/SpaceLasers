@@ -11,12 +11,19 @@ import {
 import { getIn } from 'formik';
 
 function CustomNumberInput({
-  value, min, max, label, name, units, step, formik,
+  value, min, max, label, name, units, step, formik, width,
 }) {
   const errors = getIn(formik.errors, name);
 
   return (
-    <FormControl maxWidth="40%" minWidth="20rem" p={5} isInvalid={errors}>
+    <FormControl
+      maxWidth="40%"
+      p={5}
+      isInvalid={errors}
+      as={Flex}
+      direction="column"
+      align="start"
+    >
       <FormLabel htmlFor={`${name}`}>{label}</FormLabel>
       <Flex gap={1} align="center">
         <NumberInput

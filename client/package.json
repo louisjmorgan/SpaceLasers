@@ -4,7 +4,8 @@
     "start": "webpack serve --config config/webpack.config.js",
     "build-dev": "webpack --config config/webpack.config.js",
     "build": "NODE_ENV=production webpack --config config/webpack.config.js",
-    "test": "NODE_ENV=test jest"
+    "test": "NODE_ENV=test jest",
+    "deploy": "gh-pages -d dist"
   },
   "devDependencies": {
     "@babel/core": "^7.18.0",
@@ -25,6 +26,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.30.0",
     "eslint-plugin-react-hooks": "^4.5.0",
+    "gh-pages": "^4.0.0",
     "html-webpack-plugin": "^5.5.0",
     "jest": "^28.1.0",
     "prettier": "^2.6.2",

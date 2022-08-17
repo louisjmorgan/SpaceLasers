@@ -20,13 +20,29 @@ function SatelliteListItem({
       borderRadius={5}
       layerStyle={(index === satIndex) ? 'selected' : ''}
       key={satellite.id}
+      onClick={() => setSatIndex(index)}
     >
 
+      {/* <Button
+        onClick={() => {
+          setSatIndex(index);
+        }}
+        order={3}
+      >
+        <ChevronRightIcon />
+      </Button> */}
+
+      <CustomEditableInput
+        value={satellite.name}
+        name={`satellites[${index}].name`}
+        form={form}
+        onSubmit={() => setSatIndex(index)}
+      />
       <Button
         type="button"
         className="secondary"
-        order={0}
-        onClick={() => {
+        onClick={(e) => {
+          e.stopPropagation();
           remove(index);
           if (index === satIndex) {
             setSatIndex(
@@ -37,22 +53,6 @@ function SatelliteListItem({
       >
         <SmallCloseIcon />
       </Button>
-      <Button
-        onClick={() => {
-          setSatIndex(index);
-        }}
-        order={3}
-      >
-        <ChevronRightIcon />
-      </Button>
-
-      <CustomEditableInput
-        value={satellite.name}
-        name={`satellites[${index}].name`}
-        form={form}
-        clickHandler={() => setSatIndex(index)}
-        onSubmit={() => setSatIndex(index)}
-      />
     </ListItem>
   );
 }
@@ -60,6 +60,7 @@ function SatelliteListItem({
 function SatelliteList({ formik, satIndex, setSatIndex }) {
   return (
     <VStack>
+      <h2 align="center">Satellites</h2>
       <FormikProvider value={formik}>
         <FieldArray name="satellites">
           {(fieldArrayProps) => {

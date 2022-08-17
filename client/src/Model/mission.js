@@ -1,7 +1,8 @@
+/* eslint-disable consistent-return */
 /* eslint-disable max-len */
 /* eslint-disable no-param-reassign */
 import * as Yup from 'yup';
-import { createSatellite, createPowerSatellite } from './satellite';
+import { createSatellite, createPowerSatellite, getOffsets } from './satellite';
 import {
   getTimeArray,
   getSatellitePositions,
@@ -43,35 +44,35 @@ const MissionSchema = Yup.object().shape({
           meanMotionDot: Yup.number()
             .min(-1, 'Must be more than -1')
             .max(1, 'Must be less than 1')
-            .required('battery capacity is required'),
+            .required('meanMotionDot is required'),
           bstar: Yup.number()
             .min(-2, 'Must be between -2 and 2')
             .max(2, 'Must be between -2 and 2')
-            .required('battery capacity is required'),
+            .required('bstar is required'),
           inclination: Yup.number()
             .min(0, 'Must be 0-360°')
             .max(360, 'Must be 0-360°')
-            .required('battery capacity is required'),
+            .required('inclination is required'),
           rightAscension: Yup.number()
             .min(0, 'Must be 0-360°')
             .max(360, 'Must be 0-360°')
-            .required('battery capacity is required'),
+            .required('right ascension is required'),
           eccentricity: Yup.number()
             .min(0, 'Must be between 0 and 1')
             .max(1, 'Must be between 0 and 1')
-            .required('battery capacity is required'),
+            .required('eccentricity is required'),
           perigee: Yup.number()
             .min(0, 'Must be 0-360°')
             .max(360, 'Must be 0-360°')
-            .required('battery capacity is required'),
+            .required('perigee is required'),
           meanAnomaly: Yup.number()
             .min(0, 'Must be 0-360°')
             .max(360, 'Must be 0-360°')
-            .required('battery capacity is required'),
+            .required('mean anomaly is required'),
           meanMotion: Yup.number()
             .min(0, 'Must be greater than 0')
             .max(16, 'Must be less than 16')
-            .required('battery capacity is required'),
+            .required('mean motion is required'),
         }),
         power: Yup.object().shape({
           pvVoltage: Yup.number()
@@ -132,13 +133,35 @@ const MissionSchema = Yup.object().shape({
           ),
       }),
     ),
-  // powerSats: Yup.number()
-  //   .integer()
-  //   .min(0, 'Must be an integer greater than or equal to 0'),
-  // inclinationOffset: Yup.number()
-  //   .min(0, 'Must be positive')
-  //   .required('required'),
-
+  powerSats: Yup.number()
+    .integer()
+    .min(0, 'Must be an integer greater than or equal to 0'),
+  offsets: Yup.object().shape({
+    inclination: Yup.number()
+      .min(0, 'Must be 0-36°')
+      .max(36, 'Must be 0-36°')
+      .required('inclination is required'),
+    rightAscension: Yup.number()
+      .min(0, 'Must be 0-36°')
+      .max(36, 'Must be 0-36°')
+      .required('right ascension is required'),
+    eccentricity: Yup.number()
+      .min(0, 'Must be between 0 and 1')
+      .max(1, 'Must be between 0 and 1')
+      .required('eccentricity is required'),
+    perigee: Yup.number()
+      .min(0, 'Must be 0-36°')
+      .max(36, 'Must be 0-36°')
+      .required('perigee is required'),
+    meanAnomaly: Yup.number()
+      .min(0, 'Must be 0-360°')
+      .max(360, 'Must be 0-360°')
+      .required('mean anomaly is required'),
+    meanMotion: Yup.number()
+      .min(0, 'Must be greater than 0')
+      .max(16, 'Must be less than 16')
+      .required('mean motion is required'),
+  }),
 });
 
 const handleMissionRequest = (req) => {
@@ -165,18 +188,26 @@ const handleMissionRequest = (req) => {
     };
   });
 
-  // initialize space power satellites
-  let multiplier = 0;
-  const inclinationOffsets = Array.from({ length: req.powerSats }, (value, index) => {
-    if (index % 2 === 0) multiplier += 1;
-    return req.inclinationOffset * multiplier * ((0 - 1) ** index);
-  });
+  const offsets = getOffsets(req.spacePowers, req.satellites.length, req.offsets);
 
-  const spacePowers = inclinationOffsets.map((offset, index) => createPowerSatellite(
-    `Space Power ${index + 1}`,
-    req.satellites[0].orbit,
-    offset,
-  ));
+  // const spacePowers = req.satellites.map((satellite, index) => {
+  //   if (!offsets[index]) return;
+  //   return offsets[index].map((offset) => createPowerSatellite(
+  //     `Space Power ${index + 1}`,
+  //     satellite.orbit,
+  //     offset,
+  //   ));
+  // });
+  const spacePowers = [];
+
+  req.satellites.forEach((satellite, index) => {
+    if (!offsets[index]) return;
+    return offsets[index].forEach((offset) => spacePowers.push(createPowerSatellite(
+      `Space Power ${index + 1}`,
+      satellite.orbit,
+      offset,
+    )));
+  });
 
   // simulate space power orbits and initialize beams
   const beams = [];

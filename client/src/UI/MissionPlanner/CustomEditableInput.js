@@ -11,7 +11,6 @@ function CustomEditableInput({
     <FormControl>
       <Editable
         as={Flex}
-        startWithEditView
         submitOnBlur
         defaultValue={value}
         align="center"
