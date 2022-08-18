@@ -13,12 +13,11 @@ import Camera from './Camera';
 import Satellites from './Satellites';
 
 function Simulation({
-  simData, currentFrame, setCurrentFrame, ui, handleLabel,
+  simData, currentFrame, isPaused, speed, setCurrentFrame, ui, handleLabel,
 }) {
   const viewRef = useRef();
   const earthRef = useRef();
   const container = useRef();
-
   return (
     <GridItem area="1 / 1 / 4 / 3">
       <div
@@ -58,7 +57,7 @@ function Simulation({
                 lock: true,
               }}
               />
-              <Frame setCurrentFrame={setCurrentFrame} speed={1} paused={false} />
+              <Frame currentFrame={currentFrame} setCurrentFrame={setCurrentFrame} speed={speed} isPaused={isPaused} />
               <Stars
                 radius={100} // Radius of the inner sphere (default=100)
                 depth={50} // Depth of area where stars should fit (default=50)

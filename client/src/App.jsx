@@ -9,6 +9,7 @@ import {
 } from 'react';
 import '@fontsource/barlow/700.css';
 import '@fontsource/barlow/400.css';
+import Controls from 'UI/Controls';
 import { defaultValues } from './UI/MissionPlanner/defaultInputs';
 import { MissionPlanner, HUD } from './UI';
 import theme from './theme';
@@ -73,6 +74,14 @@ function App() {
     });
   };
 
+  const handleLabel = (id) => {
+    const prev = ui.current.get(id);
+    ui.current.set(id, {
+      ...prev,
+      showLabel: !prev.showLabel,
+    });
+  };
+
   const updateMission = (mission) => {
     setLoaded(() => false);
     initializeUI(mission);
@@ -95,14 +104,14 @@ function App() {
     setView(newView);
   };
 
-  const handleLabel = (id) => {
-    console.log(id);
-    const prev = ui.current.get(id);
-    console.log(prev);
-    ui.current.set(id, {
-      ...prev,
-      showLabel: !prev.showLabel,
-    });
+  const [isPaused, setPaused] = useState(false);
+  const handlePause = () => {
+    setPaused((prev) => !prev);
+  };
+
+  const speed = useRef(1);
+  const handleSpeed = (value) => {
+    speed.current = value;
   };
 
   return (
@@ -131,7 +140,17 @@ function App() {
               </Center>
             </GridItem>
             <GridItem area={'controls'}>
-              <p>{simData.current ? new Date(simData.current.time[currentFrame]).toISOString() : ''}</p>
+              { loaded
+                ? (
+                  <Controls
+                    time={simData.current.time[currentFrame]}
+                    isPaused={isPaused}
+                    handlePause={handlePause}
+                    speed={speed.current}
+                    handleSpeed={handleSpeed}
+                  />
+                )
+                : '' }
             </GridItem>
           </Grid>
         </GridItem>
@@ -149,6 +168,8 @@ function App() {
                   setCurrentFrame={setCurrentFrame}
                   handleLabel={handleLabel}
                   ui={ui.current}
+                  isPaused={isPaused}
+                  speed={speed.current}
                 />
                 {view.name === 'simulation'
                   ? (

@@ -15,7 +15,7 @@ const LaserBeam = (width, height, canvas) => {
     color: 0x4444aa,
     side: THREE.DoubleSide,
     depthWrite: false,
-    transparent: true,
+    transparent: false,
   });
   const geometry = new THREE.PlaneGeometry(width, height);
   //   geometry.applyMatrix4(
@@ -24,7 +24,7 @@ const LaserBeam = (width, height, canvas) => {
   //   geometry.applyMatrix4(
   //     new THREE.Matrix4().makeTranslation(0, -height / 2, 0)
   //   );
-  const nPlanes = 16;
+  const nPlanes = 4;
   for (let i = 0; i < nPlanes; i++) {
     const mesh = new THREE.Mesh(geometry, material);
     mesh.translateX(width / 2);
@@ -32,7 +32,6 @@ const LaserBeam = (width, height, canvas) => {
     mesh.rotateX(-Math.PI / 2);
     object3d.add(mesh);
   }
-
   return object3d;
 };
 
@@ -41,7 +40,7 @@ function generateLaserBodyCanvas() {
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
   canvas.width = 1;
-  canvas.height = 64;
+  canvas.height = 1;
   // set gradient
   const gradient = context.createLinearGradient(
     0,
