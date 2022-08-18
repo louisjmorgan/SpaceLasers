@@ -135,17 +135,25 @@ function getSource(satellite, beams, index) {
 
   const hasSun = !satellite.performance.isEclipsed[index];
 
-  if (!hasSun && hasBeam) return 'beam only';
+  if (!hasSun && hasBeam) return 'beam';
   if (hasSun && hasBeam) return 'sun and beam';
   if (!hasSun && !hasBeam) return 'eclipsed';
-  if (hasSun && !hasBeam) return 'sun only';
+  if (hasSun && !hasBeam) return 'sun';
 }
 
-function getChargeStates(satellite, beams, timeArray) {
+function getSources(satellite, beams, timeArray) {
+  return timeArray.map((time, index) => getSource(satellite, beams, index));
+}
+
+function getChargeStates(satellite, timeArray, hasBeams = true) {
   const delta = ((SIM_LENGTH / (60 * 60 * 1000)) / FRAMES);
   let chargeState = 1;
   return timeArray.map((time, index) => {
-    const source = getSource(satellite, beams, index);
+    let source = satellite.performance.sources[index];
+    if (hasBeams === false) {
+      if (source === 'sun and beam') source = 'sun';
+      if (source === 'beam') source = 'eclipsed';
+    }
     chargeState = getChargeState(satellite.params, satellite.performance.currentDuties[index], source, chargeState, delta);
     return chargeState;
   });
@@ -162,6 +170,7 @@ export {
   getEarthRotationAngles,
   getEclipsedArray,
   getCurrentDuties,
+  getSources,
   getChargeStates,
   getBeams,
   getBeamDuties,

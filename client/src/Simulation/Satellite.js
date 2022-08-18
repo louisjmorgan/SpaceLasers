@@ -9,7 +9,7 @@ import { useRef } from 'react';
 import * as THREE from 'three';
 
 function Satellite({
-  satellite, color, frame, handleClick, showLabel, viewRef,
+  satellite, color, frame, handleLabel, showLabel, viewRef,
 }) {
   const ref = useRef();
 
@@ -31,7 +31,7 @@ function Satellite({
     <Instance
       ref={ref}
       scale={0.01}
-      onClick={() => handleClick(satellite.name)}
+      onClick={() => handleLabel(satellite.id)}
       color={color}
     >
       {showLabel ? (
@@ -45,20 +45,14 @@ function Satellite({
           }}
           portal={viewRef}
         >
-          <h1
-            style={{
-              fontFamily: 'sans-serif',
-              color: 'white',
-              fontSize: '1rem',
-              width: '100%',
-            }}
-          >
-            <p>{satellite.name}</p>
-            {/* <p>
-            {' Charge: '}
+
+          <p>
+            {satellite.name}
+          </p>
+          <p>
             {`${(satellite.performance.chargeState[frame] * 100).toFixed(1)}%`}
-          </p> */}
-          </h1>
+          </p>
+
         </Html>
       ) : (
         ''

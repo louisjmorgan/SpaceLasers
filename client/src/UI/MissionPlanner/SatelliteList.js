@@ -43,12 +43,14 @@ function SatelliteListItem({
         className="secondary"
         onClick={(e) => {
           e.stopPropagation();
-          remove(index);
           if (index === satIndex) {
             setSatIndex(
               () => (index > 0 ? index - 1 : 0),
             );
+          } else if (index < satIndex) {
+            setSatIndex((prev) => prev - 1);
           }
+          remove(index);
         }}
       >
         <SmallCloseIcon />
@@ -92,6 +94,7 @@ function SatelliteList({ formik, satIndex, setSatIndex }) {
                       name: `Satellite ${values.satellites.length + 1}`,
                       id: uuidv4(),
                     });
+                    setSatIndex(values.satellites.length);
                   }}
                 >
                   <AddIcon />

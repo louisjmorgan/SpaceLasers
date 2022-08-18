@@ -14,6 +14,7 @@ import {
   getChargeStates,
   getTotalCharged,
   getEarthRotationAngles,
+  getSources,
 } from './simulation';
 
 const MissionSchema = Yup.object().shape({
@@ -223,10 +224,12 @@ const handleMissionRequest = (req) => {
 
   // simulate batteries
   customers.forEach((customer) => {
+    customer.performance.sources = getSources(customer, beams, time);
+
     customer.performance = {
       ...customer.performance,
-      chargeState: getChargeStates(customer, beams, time),
-      chargeStateNoBeams: getChargeStates(customer, null, time),
+      chargeState: getChargeStates(customer, time),
+      chargeStateNoBeams: getChargeStates(customer, time, false),
     };
     customer.summary = {
       totalCharged: getTotalCharged(
@@ -237,9 +240,10 @@ const handleMissionRequest = (req) => {
   });
 
   spacePowers.forEach((spacePower) => {
+    spacePower.performance.sources = getSources(spacePower, beams, time);
     spacePower.performance = {
       ...spacePower.performance,
-      chargeState: getChargeStates(spacePower, null, time),
+      chargeState: getChargeStates(spacePower, time),
     };
   });
 

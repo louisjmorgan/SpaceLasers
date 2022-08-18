@@ -1,12 +1,14 @@
 /* eslint-disable react/prop-types */
 import { useFrame } from '@react-three/fiber';
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { Vector3 } from 'three';
 import { generateLaserBodyCanvas, LaserBeam } from './Shaders/LaserBeam';
 
 function Beam({
   beam, spacePower, customer, frame,
 }) {
+  const laser = useRef();
+
   const ref = useRef();
   useFrame(() => {
     if (beam.activated[frame]) {
@@ -20,18 +22,25 @@ function Beam({
       );
       ref.current.lookAt(customerPosition);
       ref.current.rotateY(-Math.PI / 2);
+    } else {
+      laser.current = false;
     }
   });
 
-  const texture = useMemo(() => generateLaserBodyCanvas(), []);
+  // const texture = useMemo(() => generateLaserBodyCanvas(), []);
 
-  const laser = useMemo(() => {
-    if (!beam.activated[frame]) return false;
-    const object = LaserBeam(beam.distances[frame], 0.01, generateLaserBodyCanvas());
-    return object;
-  }, [frame, texture]);
+  // useEffect(() => {
+  //   if (!beam.activated[frame]) laser.current = null;
+  //   else laser.current = LaserBeam(beam.distances[frame], 0.01, generateLaserBodyCanvas());
+  // }, [frame]);
 
-  return laser && <primitive object={laser} position={[0, 0, 0]} ref={ref} />;
+  return beam.activated[frame] && (
+    <primitive
+      object={LaserBeam(beam.distances[frame], 0.01, generateLaserBodyCanvas())}
+      position={[0, 0, 0]}
+      ref={ref}
+    />
+  );
 }
 
 export default Beam;

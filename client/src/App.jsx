@@ -5,7 +5,7 @@ import {
   Grid, GridItem, Spinner, Button,
 } from '@chakra-ui/react';
 import {
-  useState, useEffect,
+  useState, useEffect, useRef,
 } from 'react';
 import '@fontsource/barlow/700.css';
 import '@fontsource/barlow/400.css';
@@ -28,8 +28,8 @@ const simulationView = {
 
 const missionView = {
   name: 'mission',
-  templateRows: '1fr 1.5fr 0.125fr',
-  templateColumns: '1fr 2fr',
+  templateRows: '0.75fr 1.75fr 0.125fr',
+  templateColumns: '1fr 2.25fr',
   templateAreas: `"simulation parameters"
   "select parameters"
   "footer footer"`,
@@ -47,16 +47,37 @@ const performanceView = {
   "footer footer"`,
 };
 
+const defaultUI = {
+  showLabel: false,
+};
+
 function App() {
   const [view, setView] = useState(simulationView);
   // const [simData, setSimData] = useState();
   const [loaded, setLoaded] = useState(false);
-  // const simData = useRef();
-  const [simData, setSimData] = useState();
+  const simData = useRef();
+
+  const ui = useRef(new Map());
+  const initializeUI = (mission) => {
+    mission.satellites.customers.forEach((satellite) => {
+      ui.current.set(satellite.id, {
+        ...defaultUI,
+        color: 'red',
+      });
+    });
+    mission.satellites.spacePowers.forEach((satellite) => {
+      ui.current.set(satellite.id, {
+        ...defaultUI,
+        color: 'yellow',
+      });
+    });
+  };
+
   const updateMission = (mission) => {
     setLoaded(() => false);
-    // simData.current = mission;
-    setSimData(() => mission);
+    initializeUI(mission);
+    simData.current = mission;
+    // setSimData(() => mission);
     setLoaded(() => true);
   };
 
@@ -72,6 +93,16 @@ function App() {
     if (selection === 'mission') newView = missionView;
     if (selection === 'performance') newView = performanceView;
     setView(newView);
+  };
+
+  const handleLabel = (id) => {
+    console.log(id);
+    const prev = ui.current.get(id);
+    console.log(prev);
+    ui.current.set(id, {
+      ...prev,
+      showLabel: !prev.showLabel,
+    });
   };
 
   return (
@@ -100,7 +131,7 @@ function App() {
               </Center>
             </GridItem>
             <GridItem area={'controls'}>
-              <p>{simData ? new Date(simData.time[currentFrame]).toISOString() : ''}</p>
+              <p>{simData.current ? new Date(simData.current.time[currentFrame]).toISOString() : ''}</p>
             </GridItem>
           </Grid>
         </GridItem>
@@ -113,13 +144,20 @@ function App() {
             { loaded ? (
               <>
                 <Simulation
-                  simData={simData}
+                  simData={simData.current}
                   currentFrame={currentFrame}
                   setCurrentFrame={setCurrentFrame}
+                  handleLabel={handleLabel}
+                  ui={ui.current}
                 />
                 {view.name === 'simulation'
                   ? (
-                    <HUD satellites={simData.satellites} frame={currentFrame} />
+                    <HUD
+                      satellites={simData.current.satellites}
+                      frame={currentFrame}
+                      ui={ui.current}
+                      handleLabel={handleLabel}
+                    />
                   ) : '' }
               </>
             ) : <Spinner position="absolute" top="50%" left="50%" transform={'translate(-50%, -50%)'} />}

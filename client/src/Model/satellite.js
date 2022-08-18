@@ -9,11 +9,11 @@ import { SIM_LENGTH } from '../Util/constants';
 
 const PV_SOURCES = {
   sunOnly: {
-    name: 'sun only',
+    name: 'sun',
     efficiency: 1,
   },
   beamOnly: {
-    name: 'beam only',
+    name: 'beam',
     efficiency: 1,
   },
   sunAndBeam: {
@@ -153,6 +153,7 @@ function createPowerSatellite(name, orbit, offsets) {
 }
 
 function getOffsets(spacePowers, customers, offsets) {
+  if (spacePowers === 0) return [];
   if (spacePowers === customers) return Array.from({ length: customers }, () => [offsets]);
   if (spacePowers < customers) {
     const spacing = Math.ceil(customers / spacePowers);

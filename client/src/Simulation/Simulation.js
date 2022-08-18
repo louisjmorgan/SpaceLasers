@@ -12,7 +12,9 @@ import Sun from './Sun';
 import Camera from './Camera';
 import Satellites from './Satellites';
 
-function Simulation({ simData, currentFrame, setCurrentFrame }) {
+function Simulation({
+  simData, currentFrame, setCurrentFrame, ui, handleLabel,
+}) {
   const viewRef = useRef();
   const earthRef = useRef();
   const container = useRef();
@@ -74,6 +76,8 @@ function Simulation({ simData, currentFrame, setCurrentFrame }) {
                 beams={simData.beams}
                 frame={currentFrame}
                 viewRef={viewRef}
+                handleLabel={handleLabel}
+                ui={ui}
               />
             </View>
           </Suspense>

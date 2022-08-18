@@ -90,7 +90,6 @@ const fields = [
 ];
 
 export default function OrbitTab({ formik, satIndex, constellations }) {
-  console.log(formik.values.satellites[satIndex].orbit.tle);
   const handleExtractTle = (e) => {
     e.preventDefault();
     const { tles } = parseTLEs(formik.values.satellites[satIndex].orbit.tle)[0];
@@ -155,7 +154,7 @@ export default function OrbitTab({ formik, satIndex, constellations }) {
         align="center"
       >
         <TabList>
-          <Tab>Choose TLE</Tab>
+          <Tab>Choose</Tab>
           <Tab>Paste TLE</Tab>
         </TabList>
         <TabPanels>
