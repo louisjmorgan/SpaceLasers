@@ -184,7 +184,7 @@ export default function OrbitTab({ formik, satIndex, constellations }) {
                   {constellations.find(
                     (v) => v.name === formik.values.satellites[satIndex].orbit.constellation,
                   ).tles
-                    .map((tle) => (<option value={`${tle.name}\n${tle.tles.tle1}\n${tle.tles.tle2}`}>{tle.name}</option>))}
+                    .map((tle) => (<option key={tle.name} value={`${tle.name}\n${tle.tles.tle1}\n${tle.tles.tle2}`}>{tle.name}</option>))}
                 </Select>
               </FormControl>
               <Button

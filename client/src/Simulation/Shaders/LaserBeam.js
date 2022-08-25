@@ -35,6 +35,20 @@ const LaserBeam = (width, height, canvas) => {
   return object3d;
 };
 
+const getLaserMeshes = (width, material) => {
+  const geometry = new THREE.PlaneGeometry(width, 0.01);
+  const nPlanes = 4;
+  const meshes = [];
+  for (let i = 0; i < nPlanes; i++) {
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.translateX(width / 2);
+    mesh.rotation.x = (i / nPlanes) * Math.PI;
+    mesh.rotateX(-Math.PI / 2);
+    meshes.push(mesh);
+  }
+  return meshes;
+};
+
 function generateLaserBodyCanvas() {
   // init canvas
   const canvas = document.createElement('canvas');
@@ -60,4 +74,4 @@ function generateLaserBodyCanvas() {
   return canvas;
 }
 
-export { LaserBeam, generateLaserBodyCanvas };
+export { LaserBeam, generateLaserBodyCanvas, getLaserMeshes };

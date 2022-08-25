@@ -1,26 +1,37 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
+import shallow from 'zustand/shallow';
+import useStore from '../Model/store';
 import { FRAMES, SIM_LENGTH, MIN_SPEED } from '../Util/constants';
 
 const interval = 1 / 60;
 
-function Frame({
-  isPaused, speed, currentFrame, setCurrentFrame,
-}) {
-  const runningDelta = useRef(0);
+function Frame() {
+  const updateFrame = useCallback((frame) => {
+    useStore.setState({ frame });
+  }, []);
 
+  const { isPaused, speed } = useStore(
+    (state) => ({ isPaused: state.isPaused, speed: state.speed }),
+    shallow,
+  );
+
+  const frame = useRef(0);
   useFrame(({ clock }, delta) => {
     if (!isPaused) {
-      let frameIndex = currentFrame + Math.round(
-        FRAMES * (delta / (SIM_LENGTH / (1000 * MIN_SPEED * speed))),
+      let newFrame = frame.current + Math.round(
+        FRAMES * ((delta * 1000 * MIN_SPEED * speed) / (SIM_LENGTH)),
       );
 
-      if (frameIndex >= FRAMES) {
-        frameIndex = 0;
+      if (newFrame >= FRAMES) {
+        newFrame = 0;
       }
-      setCurrentFrame(frameIndex);
+      if (newFrame !== frame.current) {
+        frame.current = newFrame;
+        updateFrame(newFrame);
+      }
     }
   });
 

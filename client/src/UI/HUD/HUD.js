@@ -8,6 +8,8 @@ import {
 } from '@chakra-ui/react';
 import { useEffect, useRef, useState } from 'react';
 import { ParentSize } from '@visx/responsive';
+import shallow from 'zustand/shallow';
+import useStore from 'Model/store';
 import Gauge from './Gauge';
 
 function capitalize(string) {
@@ -15,8 +17,22 @@ function capitalize(string) {
 }
 
 function HUD({
-  satellites, frame, handleLabel, ui,
+  satellites, shouldDisplay,
 }) {
+  const {
+    toggleLabel, toggleAllLabels, attachCamera, detachCamera, cameraTarget, satelliteOptions,
+  } = useStore(
+    (state) => ({
+      toggleLabel: state.toggleLabel,
+      toggleAllLabels: state.toggleAllLabels,
+      satelliteOptions: state.satelliteOptions,
+      attachCamera: state.attachCamera,
+      detachCamera: state.detachCamera,
+      cameraTarget: state.cameraTarget,
+    }),
+    shallow,
+  );
+  const frame = useStore((state) => state.frame);
   const [selected, setSelected] = useState(satellites.averages);
 
   const handleSelectSatellite = (selection) => {
@@ -29,7 +45,6 @@ function HUD({
   };
 
   const netCurrent = useRef(0);
-
   useEffect(() => {
     if (!selected.params) return;
     netCurrent.current = selected.params.load.powerProfiles[
@@ -42,9 +57,9 @@ function HUD({
   if (!satellites) return;
   return (
     <GridItem area={'2 / 1 / 3 / 3'} zIndex={99}>
-      <Flex height="100%" justify="space-between" align-items="center">
+      <Flex height="100%" justify="space-between" align-items="center" display={shouldDisplay ? 'flex' : 'none'}>
         <Center flex={1}>
-          <Box>
+          <Box px={2}>
             <Select onChange={(e) => handleSelectSatellite(e.target.value)}>
               <option value="all">Average</option>
               {satellites.customers.map((customer) => (
@@ -53,15 +68,22 @@ function HUD({
             </Select>
 
           </Box>
-          {selected !== satellites.averages
+          {selected.name !== 'averages'
             ? (
               <ButtonGroup>
-                <Button onClick={() => handleLabel(selected.id)}>
-                  {ui.get(selected.id).showLabel ? 'Hide Label' : 'Show Label'}
+                <Button onClick={() => toggleLabel(selected.id)}>
+                  {satelliteOptions.get(selected.id).showLabel ? 'Hide Label' : 'Show Label'}
+                </Button>
+                <Button onClick={
+                      cameraTarget.id === selected.id
+                        ? () => detachCamera() : () => attachCamera(selected.id)
+                    }
+                >
+                  {cameraTarget.id === selected.id ? 'Detach Camera' : 'Attach Camera'}
                 </Button>
               </ButtonGroup>
             )
-            : ''}
+            : <Button onClick={() => toggleAllLabels(false)}>{'Hide All Labels'}</Button>}
         </Center>
         <Box height="100%" flex={1}>
 
@@ -84,17 +106,17 @@ function HUD({
 
               <StatGroup>
                 <Stat width="30ch">
-                  <StatLabel>Duty</StatLabel>
-                  <StatNumber>{`${capitalize(selected.params.load.duties[selected.performance.currentDuties[frame]].name)}`}</StatNumber>
-                  <StatHelpText>{`${selected.params.load.duties[selected.performance.currentDuties[frame]].consumption}W`}</StatHelpText>
-                </Stat>
-                <Stat width="30ch">
                   <StatLabel>Net Current</StatLabel>
                   <StatNumber>{`${(netCurrent.current).toFixed(2)}A`}</StatNumber>
                   <StatHelpText>
-                    {`${capitalize(selected.performance.sources[frame])} `}
                     <StatArrow type={netCurrent.current > 0 ? 'increase' : 'decrease'} />
+                    {`${capitalize(selected.performance.sources[frame])} `}
                   </StatHelpText>
+                </Stat>
+                <Stat width="30ch">
+                  <StatLabel>Consumption</StatLabel>
+                  <StatNumber>{`${selected.params.load.duties[selected.performance.currentDuties[frame]].consumption}W`}</StatNumber>
+                  <StatHelpText>{`${capitalize(selected.params.load.duties[selected.performance.currentDuties[frame]].name)}`}</StatHelpText>
                 </Stat>
               </StatGroup>
             ) : '' }

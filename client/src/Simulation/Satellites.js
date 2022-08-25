@@ -1,18 +1,29 @@
 /* eslint-disable react/prop-types */
 import { Instances, useGLTF } from '@react-three/drei';
+import useStore from 'Model/store';
 import { useLayoutEffect } from 'react';
+import shallow from 'zustand/shallow';
 import SatelliteGLB from '../Assets/Mesh/lowpolysat.glb';
 import Beam from './Beam';
 import Satellite from './Satellite';
 
-function Satellites({
-  customers, spacePowers, beams, frame, viewRef, ui, handleLabel,
-}) {
+function Satellites({}) {
   const obj = useGLTF(SatelliteGLB);
-
   useLayoutEffect(() => {
     obj.nodes.Satellite.geometry.rotateY((3 * Math.PI) / 2);
   }, [obj]);
+
+  const {
+    customers, spacePowers, beams,
+  } = useStore(
+    (state) => ({
+      customers: state.mission.satellites.customers,
+      spacePowers: state.mission.satellites.spacePowers,
+      beams: state.mission.beams,
+    }),
+    shallow,
+  );
+
   return (
     <>
       <Instances
@@ -22,32 +33,22 @@ function Satellites({
         {spacePowers.map((satellite) => (
           <Satellite
             satellite={satellite}
-            color={ui.get(satellite.id).color}
-            frame={frame}
             key={satellite.id}
-            viewRef={viewRef}
-            showLabel={ui.get(satellite.id).showLabel}
-            handleLabel={handleLabel}
           />
         ))}
         {customers.map((satellite) => (
           <Satellite
             satellite={satellite}
-            color={ui.get(satellite.id).color}
-            frame={frame}
             key={satellite.id}
-            showLabel={ui.get(satellite.id).showLabel}
-            handleLabel={handleLabel}
           />
         ))}
       </Instances>
       {beams.map((beam) => (
         <Beam
           beam={beam}
-          key={`${beam.customerId}-${beam.spacePowerId}`}
+          key={beam.id}
           customer={customers.find((customer) => customer.id === beam.customerId)}
           spacePower={spacePowers.find((spacePower) => spacePower.id === beam.spacePowerId)}
-          frame={frame}
         />
       ))}
     </>

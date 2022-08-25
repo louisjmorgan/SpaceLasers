@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 const defaultDuty = {
   name: 'Cyclical',
   consumption: 3.2,
@@ -77,7 +79,7 @@ const defaultValues = {
         },
       ],
       name: 'Satellite 1',
-      id: 'dcd9b6ff-c7f6-46e4-87a0-e5f45a91da41',
+      id: uuidv4(),
     },
     {
       orbit: {
@@ -112,7 +114,7 @@ const defaultValues = {
         },
       ],
       name: 'Satellite 2',
-      id: 'd7852436-f82d-424a-bc9e-9ee5fe40c6b3',
+      id: uuidv4(),
     },
     {
       orbit: {
@@ -147,7 +149,7 @@ const defaultValues = {
         },
       ],
       name: 'Satellite 3',
-      id: '96e638d6-c041-4366-96e4-62438e93f5cb',
+      id: uuidv4(),
     },
   ],
   spacePowers: 3,

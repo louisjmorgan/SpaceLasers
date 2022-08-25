@@ -191,14 +191,6 @@ const handleMissionRequest = (req) => {
 
   const offsets = getOffsets(req.spacePowers, req.satellites.length, req.offsets);
 
-  // const spacePowers = req.satellites.map((satellite, index) => {
-  //   if (!offsets[index]) return;
-  //   return offsets[index].map((offset) => createPowerSatellite(
-  //     `Space Power ${index + 1}`,
-  //     satellite.orbit,
-  //     offset,
-  //   ));
-  // });
   const spacePowers = [];
 
   req.satellites.forEach((satellite, index) => {
@@ -249,6 +241,7 @@ const handleMissionRequest = (req) => {
 
   // calculate averages
   const averages = {
+    name: 'averages',
     performance: {
       chargeState: time.map((t, index) => customers.reduce((prev, current) => prev + current.performance.chargeState[index], 0) / customers.length),
       chargeStateNoBeams: time.map((t, index) => customers.reduce((prev, current) => prev + current.performance.chargeStateNoBeams[index], 0) / customers.length),

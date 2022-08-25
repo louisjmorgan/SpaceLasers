@@ -11,7 +11,7 @@ import {
 import { getIn } from 'formik';
 
 function CustomNumberInput({
-  value, min, max, label, name, units, step, formik, width,
+  value, min, max, label, name, units, step, formik,
 }) {
   const errors = getIn(formik.errors, name);
 
@@ -32,7 +32,7 @@ function CustomNumberInput({
           onChange={(v) => {
             formik.setFieldValue(
               `${name}`,
-              Number(v),
+              v,
             );
           }}
           value={value}

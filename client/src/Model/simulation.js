@@ -1,5 +1,7 @@
 /* eslint-disable consistent-return */
 /* eslint-disable max-len */
+import { v4 as uuidv4 } from 'uuid';
+
 const {
   earthRadius,
 } = require('satellite.js/lib/constants');
@@ -116,6 +118,7 @@ function getBeams(spacePower, customers, timeArray) {
       activated,
       customerId: customer.id,
       spacePowerId: spacePower.id,
+      id: uuidv4(),
     };
   });
 }

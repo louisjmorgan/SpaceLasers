@@ -6,18 +6,17 @@ import {
   Stars, View,
 } from '@react-three/drei';
 import { Suspense, useRef } from 'react';
+import useStore from 'Model/store';
 import Frame from './Frame';
 import Earth from './Earth';
 import Sun from './Sun';
 import Camera from './Camera';
 import Satellites from './Satellites';
 
-function Simulation({
-  simData, currentFrame, isPaused, speed, setCurrentFrame, ui, handleLabel,
-}) {
+function Simulation() {
   const viewRef = useRef();
-  const earthRef = useRef();
   const container = useRef();
+  const isPaused = useStore((state) => state.isPaused);
   return (
     <GridItem area="1 / 1 / 4 / 3">
       <div
@@ -26,6 +25,7 @@ function Simulation({
           width: '100%',
           height: '100%',
           position: 'relative',
+          // display: `${shouldDisplay ? 'block' : 'none'}`,
         }}
       >
         <div
@@ -39,7 +39,9 @@ function Simulation({
         />
         <Canvas
           className="canvas"
-          onCreated={(state) => state.events.connect(container.current)}
+          onCreated={(state) => {
+            state.events.connect(container.current);
+          }}
           mode="concurrent"
           style={{
             pointerEvents: 'none',
@@ -49,15 +51,9 @@ function Simulation({
           }}
         >
           <Suspense fallback={null}>
-
             <View index={1} track={viewRef}>
-              <Camera target={{
-                name: 'earth',
-                ref: null,
-                lock: true,
-              }}
-              />
-              <Frame currentFrame={currentFrame} setCurrentFrame={setCurrentFrame} speed={speed} isPaused={isPaused} />
+              <Camera />
+              <Frame />
               <Stars
                 radius={100} // Radius of the inner sphere (default=100)
                 depth={50} // Depth of area where stars should fit (default=50)
@@ -65,19 +61,12 @@ function Simulation({
                 factor={4} // Size factor (default=4)
                 saturation={1} // Saturation 0-1 (default=0)
                 fade
+                speed={isPaused ? 0 : 1}
               />
-              {/* <ambientLight intensity={0.1} /> */}
-              <Sun position={simData.sun} frame={currentFrame} />
-              <Earth frame={currentFrame} angles={simData.earth} ref={earthRef} />
-              <Satellites
-                customers={simData.satellites.customers}
-                spacePowers={simData.satellites.spacePowers}
-                beams={simData.beams}
-                frame={currentFrame}
-                viewRef={viewRef}
-                handleLabel={handleLabel}
-                ui={ui}
-              />
+              {/* <ambientLight intensity={0.25} /> */}
+              <Sun />
+              <Earth />
+              <Satellites />
             </View>
           </Suspense>
         </Canvas>

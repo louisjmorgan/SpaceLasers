@@ -2,13 +2,15 @@
 import {
   Button, ButtonGroup, Center, GridItem,
 } from '@chakra-ui/react';
+import useStore from 'Model/store';
 
-function ViewButtons({ handleView }) {
+function ViewButtons() {
+  const setView = useStore((state) => state.setView);
   return (
 
     <GridItem area="views">
       <Center>
-        <ButtonGroup onClick={(e) => handleView(e.target.value)}>
+        <ButtonGroup onClick={(e) => setView(e.target.value)}>
           <Button value="mission">
             Mission Planner
           </Button>

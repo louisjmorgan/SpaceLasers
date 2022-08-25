@@ -4,37 +4,56 @@
 /* eslint-disable import/no-cycle */
 /* eslint-disable no-unused-vars */
 import React, {
-  forwardRef, useRef, useEffect, useLayoutEffect,
+  useRef, useEffect, useLayoutEffect,
 } from 'react';
 import { useLoader, useFrame } from '@react-three/fiber';
 import { TextureLoader } from 'three/src/loaders/TextureLoader';
 import * as THREE from 'three';
-import earthTexture from '../Assets/Textures/earth-texture.jpg';
+import useStore from '../Model/store';
+import earthTexture from '../Assets/Textures/earth-texture-master.jpg';
+import gradientTexture from '../Assets/Textures/twoTone.jpg';
 
-const Earth = forwardRef(({ angles, frame }, ref) => {
+function Earth() {
+  const ref = useRef();
   const colorMap = useLoader(TextureLoader, earthTexture);
+  const gradientMap = useLoader(TextureLoader, gradientTexture);
+  useLayoutEffect(() => {
+    gradientMap.minFilter = THREE.NearestFilter;
+    gradientMap.magFilter = THREE.NearestFilter;
+  }, [gradientMap]);
 
   useLayoutEffect(() => {
     colorMap.wrapS = THREE.RepeatWrapping;
     colorMap.offset.x = 0.5;
   }, [colorMap]);
 
-  useFrame(({ clock }) => {
-    ref.current.rotation.y = angles[frame];
-  });
+  const frame = useRef(useStore.getState().frame);
+  useEffect(() => {
+    useStore.subscribe(
+      (state) => {
+        frame.current = state.frame;
+      },
+    );
+  }, []);
 
+  const angles = useStore((state) => state.mission.earth);
+  useFrame(() => {
+    ref.current.rotation.y = angles[frame.current];
+  });
   return (
     <mesh
       ref={ref}
       rotation={[0, angles[0], 0]}
+      position={[0, 0, 0]}
     >
       <sphereGeometry attach="geometry" args={[1, 64, 64]} />
       <meshToonMaterial
         attach="material"
         map={colorMap}
+        gradientMap={gradientMap}
       />
     </mesh>
   );
-});
+}
 
 export default Earth;

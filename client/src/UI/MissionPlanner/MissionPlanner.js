@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react';
 
 import { getCorsFreeUrl, loadTLEs } from 'Util/astronomy';
 import { lighten } from '@chakra-ui/theme-tools';
+import useStore from 'Model/store';
 import { handleMissionRequest, MissionSchema } from '../../Model/mission';
 
 import SatelliteList from './SatelliteList';
@@ -45,9 +46,11 @@ const urls = {
   Geosynchronous: 'https://celestrak.org/NORAD/elements/gp.php?GROUP=geo&FORMAT=tle',
 };
 
-function MissionPlanner({ updateMission, shouldDisplay }) {
+function MissionPlanner({ shouldDisplay }) {
   const [satIndex, setSatIndex] = useState(0);
   const [constellations, setConstellations] = useState();
+
+  const initializeMission = useStore((state) => state.initializeMission);
 
   useEffect(() => {
     setConstellations((fetchTLEs(urls)));
@@ -62,7 +65,7 @@ function MissionPlanner({ updateMission, shouldDisplay }) {
       await new Promise((resolve, reject) => {
         setTimeout(() => {
           try {
-            updateMission(handleMissionRequest(values));
+            initializeMission(values);
             formik.setStatus('');
           } catch (error) {
             formik.setStatus(error.message);

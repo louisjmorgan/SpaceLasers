@@ -5,22 +5,34 @@
 /* eslint-disable react/prop-types */
 import { Billboard } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import React, { forwardRef, useRef } from 'react';
+import React, { forwardRef, useEffect, useRef } from 'react';
 import { earthRadius } from 'satellite.js/lib/constants';
+import useStore from '../Model/store';
 
-function Sun({ position, frame }) {
+function Sun() {
   const ref = useRef();
 
+  const frame = useRef(useStore.getState().frame);
+
+  useEffect(() => {
+    useStore.subscribe(
+      (state) => {
+        frame.current = state.frame;
+      },
+    );
+  }, []);
+
+  const position = useStore((state) => state.mission.sun);
   useFrame(({ clock }) => {
-    ref.current.position.x = position.x[frame];
-    ref.current.position.y = position.y[frame];
-    ref.current.position.z = position.z[frame];
+    ref.current.position.x = position.x[frame.current];
+    ref.current.position.y = position.y[frame.current];
+    ref.current.position.z = position.z[frame.current];
   });
   return (
     <group ref={ref}>
       <directionalLight
         color={0xffffff}
-        intensity={0.7}
+        intensity={0.5}
         position={[position.x[0], position.y[0], position.z[0]]}
       />
       {/* <mesh>
