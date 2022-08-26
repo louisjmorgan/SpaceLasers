@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-unused-vars */
@@ -6,53 +7,33 @@ import {
   Box, Center, Flex, Select, VStack,
 } from '@chakra-ui/react';
 import { addEffect } from '@react-three/fiber';
-import { LegendOrdinal } from '@visx/legend';
-import {
-  Axis,
-  LineSeries,
-  DataContext,
-  DataProvider,
-  darkTheme,
-  XYChart,
-  Tooltip,
-} from '@visx/xychart';
+import { Chart, Line } from 'react-chartjs-2';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { Chart as ChartJS, registerables } from 'chart.js';
+import 'chartjs-adapter-luxon';
 import useStore from 'Model/store';
 import {
   useContext, useEffect, useRef, useState,
 } from 'react';
 import shallow from 'zustand/shallow';
+import { seededRandom } from 'three/src/math/MathUtils';
+import chartConfig from './chartConfig';
 
-const accessors = {
-  xAccessor: (d) => d.x,
-  yAccessor: (d) => d.y,
-};
+ChartJS.register(...registerables);
+ChartJS.register(ChartDataLabels);
+ChartJS.defaults.color = '#fff';
+ChartJS.defaults.borderColor = '#fff';
 
-const dataTypeDictionary = {
+const dataHelpers = {
   chargeState: {
     name: 'Charge State',
+    format: (value) => (value * 100),
   },
   chargeStateNoBeams: {
     name: 'Charge w/o Space Power',
+    format: (value) => (value * 100),
   },
 };
-
-function ChartLegend() {
-  const { colorScale, theme, margin } = useContext(DataContext);
-
-  return (
-    <Center>
-      <LegendOrdinal
-        direction="column"
-        itemMargin="2px 2px 2px 0"
-        scale={colorScale}
-        // labelFormat={(label) => label.replace('-', ' ')}
-        legendLabelProps={{ color: 'white' }}
-        shape="line"
-      />
-    </Center>
-  );
-}
-
 function Charts() {
   const {
     time, customers, spacePowers, averages,
@@ -65,19 +46,34 @@ function Charts() {
     }),
     shallow,
   );
-  const frame = useStore((state) => state.frame, (oldFrame, newFrame) => (newFrame - oldFrame) > 600);
+  const frame = useRef(useStore.getState().frame);
+  useEffect(() => {
+    useStore.subscribe(
+      (state) => {
+        frame.current = state.frame;
+      },
+    );
+  }, []);
+
   const [selectedSatellites, setSelectedSatellites] = useState([]);
   const [selectedDataTypes, setSelectedDataTypes] = useState([]);
   const [data, setData] = useState([]);
+
   useEffect(() => {
     if (!time || !customers) return;
     setData(() => []);
+
     selectedSatellites.forEach((satellite) => selectedDataTypes.forEach((dataType) => {
+      const helpers = dataHelpers[dataType];
       setData((prev) => [...prev, {
-        name: `${satellite.name} - ${dataTypeDictionary[dataType].name}`,
+        ...chartConfig.defaultDataSet,
+        label: helpers.name,
         id: `${satellite.id}-${dataType}`,
         data: time.map(
-          (t, index) => ({ x: t, y: satellite.performance[dataType][index] }),
+          (t, index) => ({
+            x: Number(t),
+            y: helpers.format(satellite.performance[dataType][index]),
+          }),
         ),
       }]);
     }));
@@ -87,60 +83,37 @@ function Charts() {
     setSelectedSatellites(() => [...customers]);
     setSelectedDataTypes(() => ['chargeState', 'chargeStateNoBeams']);
   }, []);
+  const chartRef = useRef();
+  addEffect(() => {
+    if (!chartRef.current || data.length === 0) return;
+    data.forEach((series, index) => {
+      chartRef.current.data.datasets[index].data = Array.from(
+        { length: 1000 },
+        (value, i) => (
+          i < frame.current
+            ? series.data.slice(frame.current - 1000 > 0 ? frame.current - 1000 : 0, frame.current)[i]
+            : ({ x: time[i], y: null })),
+      );
+    });
+    // chartRef.current.options.scales.x.min = time[frame.current - 999];
+    // chartRef.current.options.scales.x.max = time[frame.current];
+    chartRef.current.data.labels = [time[frame.current]];
+    chartRef.current.update('quiet');
+  });
+  useEffect(() => (chartRef.current && chartRef.current.destroy()), []);
+
+  if (data.length === 0) return;
   return (
     <VStack>
-      <Flex>
-        <DataProvider
-          xScale={{ type: 'time' }}
-          yScale={{ type: 'linear' }}
-          theme={darkTheme}
-        >
-          <XYChart height={500} width={800}>
-            <Axis orientation="bottom" />
-            <Axis orientation="left" />
-            {data.map((series, index) => (
-              <LineSeries
-                key={series.id}
-                dataKey={series.name}
-                data={Array.from(
-                  { length: 1000 },
-                  (v, i) => (i < frame
-                    ? series.data.slice(frame - 1000 > 0 ? frame - 1000 : 0, frame)[i]
-                    : ({ x: time[i], y: undefined })),
-                )}
-                xAccessor={(d) => d.x}
-                yAccessor={(d) => d.y}
-              />
-            ))}
-            <Tooltip
-              snapTooltipToDatumX
-              snapTooltipToDatumY
-              showVerticalCrosshair
-              showSeriesGlyphs
-              renderTooltip={({ tooltipData, colorScale }) => accessors.xAccessor(true ? (
-                <>
-                  <div>
-                    {new Date(
-                      accessors.xAccessor((tooltipData.nearestDatum.datum)),
-                    ).toString().slice(0, 21)}
-                  </div>
-                  {data.map((series, index) => (
-                    <div key={series.id}>
-                      <div style={{ color: colorScale(series.name) }}>
-                        {series.name}
-                      </div>
-                      {(accessors.yAccessor(
-                        tooltipData.datumByKey[series.name].datum,
-                      ) * 100).toFixed(2)}
-                      %
-                    </div>
-                  ))}
-                </>
-              ) : '')}
-            />
-          </XYChart>
-          <ChartLegend />
-        </DataProvider>
+      <Flex width="90%" justify="center" height={500}>
+        <Line
+          datasetIdKey="id"
+          ref={chartRef}
+          data={{ datasets: data.map((series) => ({ ...series, data: [series.data[0]] })) }}
+          options={chartConfig.options}
+          // plugins={[chartConfig.custom_canvas_background_color]}
+          className="chart"
+        />
       </Flex>
     </VStack>
   );

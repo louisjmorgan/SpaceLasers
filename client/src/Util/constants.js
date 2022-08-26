@@ -1,5 +1,5 @@
 const SIM_LENGTH = 24 * 60 * 60 * 2 * 1000; // ms
-const FPmS = 60 / 1000;
+const FPmS = 120 / 1000;
 
 const BEAM_DISTANCE = 1000;
 const MIN_SPEED = 600;
