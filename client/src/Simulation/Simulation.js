@@ -6,7 +6,7 @@ import {
   Stars, View,
 } from '@react-three/drei';
 import { Suspense, useRef } from 'react';
-import useStore from 'Model/store';
+import { useStore } from 'Model/store';
 import Frame from './Frame';
 import Earth from './Earth';
 import Sun from './Sun';

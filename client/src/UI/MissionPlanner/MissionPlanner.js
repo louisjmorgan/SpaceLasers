@@ -13,8 +13,7 @@ import { useFormik } from 'formik';
 import { useEffect, useState } from 'react';
 
 import { getCorsFreeUrl, loadTLEs } from 'Util/astronomy';
-import { lighten } from '@chakra-ui/theme-tools';
-import useStore from 'Model/store';
+import { useStore } from 'Model/store';
 import { handleMissionRequest, MissionSchema } from '../../Model/mission';
 
 import SatelliteList from './SatelliteList';

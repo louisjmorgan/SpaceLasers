@@ -9,7 +9,7 @@ import React, {
 import { useLoader, useFrame } from '@react-three/fiber';
 import { TextureLoader } from 'three/src/loaders/TextureLoader';
 import * as THREE from 'three';
-import useStore from '../Model/store';
+import { useFrameStore, useStore } from '../Model/store';
 import earthTexture from '../Assets/Textures/earth-texture-master.jpg';
 import gradientTexture from '../Assets/Textures/twoTone.jpg';
 
@@ -27,9 +27,9 @@ function Earth() {
     colorMap.offset.x = 0.5;
   }, [colorMap]);
 
-  const frame = useRef(useStore.getState().frame);
+  const frame = useRef(useFrameStore.getState().frame);
   useEffect(() => {
-    useStore.subscribe(
+    useFrameStore.subscribe(
       (state) => {
         frame.current = state.frame;
       },

@@ -2,7 +2,7 @@
 import {
   Button, ButtonGroup, Center, GridItem,
 } from '@chakra-ui/react';
-import useStore from 'Model/store';
+import { useStore } from 'Model/store';
 
 function ViewButtons() {
   const setView = useStore((state) => state.setView);

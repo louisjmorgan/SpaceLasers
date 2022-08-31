@@ -4,15 +4,17 @@ const THREE = require('three');
 const { earthRadius } = require('satellite.js/lib/constants');
 const { SIM_LENGTH, FRAMES } = require('./constants');
 
+const earthPosition = new THREE.Vector3(0, 0, 0);
+const sunPosition = new THREE.Vector3();
+const satPosition = new THREE.Vector3();
+const sunEarth = new THREE.Vector3();
+const sunSat = new THREE.Vector3();
+
 function isEclipsed(satellite, sun) {
-  const earthPosition = new THREE.Vector3(0, 0, 0);
-  const sunPosition = new THREE.Vector3(sun.x, sun.y, sun.z);
-  const satPosition = new THREE.Vector3(satellite.x, satellite.y, satellite.z);
+  sunPosition.fromArray([sun.x, sun.y, sun.z]);
+  satPosition.fromArray([satellite.x, satellite.y, satellite.z]);
 
-  const sunEarth = new THREE.Vector3();
   sunEarth.subVectors(earthPosition, sunPosition);
-
-  const sunSat = new THREE.Vector3();
   sunSat.subVectors(satPosition, earthPosition);
 
   const angle = sunEarth.angleTo(sunSat);

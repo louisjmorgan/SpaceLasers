@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { Instances, useGLTF } from '@react-three/drei';
-import useStore from 'Model/store';
+import { useStore } from 'Model/store';
 import { useLayoutEffect } from 'react';
 import shallow from 'zustand/shallow';
 import SatelliteGLB from '../Assets/Mesh/lowpolysat.glb';

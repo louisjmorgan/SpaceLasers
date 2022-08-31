@@ -3,14 +3,15 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import shallow from 'zustand/shallow';
-import useStore from '../Model/store';
+// import { unstable_batchedUpdates } from 'react-dom'; // or 'react-native'
+import { useStore, useFrameStore } from '../Model/store';
 import { FRAMES, SIM_LENGTH, MIN_SPEED } from '../Util/constants';
 
 const interval = 1 / 60;
 
 function Frame() {
   const updateFrame = useCallback((frame) => {
-    useStore.setState({ frame });
+    useFrameStore.setState({ frame });
   }, []);
 
   const { isPaused, speed } = useStore(

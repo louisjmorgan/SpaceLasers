@@ -12,7 +12,7 @@ import '@fontsource/barlow/400.css';
 import shallow from 'zustand/shallow';
 import PerformanceView from 'UI/PerformanceView/PerformanceView';
 import Controls from './UI/Controls';
-import useStore from './Model/store';
+import { useStore } from './Model/store';
 import { defaultValues } from './UI/MissionPlanner/defaultInputs';
 import { MissionPlanner, HUD } from './UI';
 import theme from './theme';
@@ -31,7 +31,7 @@ function App() {
     }),
     shallow,
   );
-
+  console.log(mission);
   useEffect(() => {
     initializeMission(defaultValues);
   }, []);

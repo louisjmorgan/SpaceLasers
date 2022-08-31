@@ -5,7 +5,7 @@ import React, { useRef, useEffect, useLayoutEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { Vector3, Spherical } from 'three';
-import useStore from '../Model/store';
+import { useStore } from '../Model/store';
 
 export default function Camera() {
   const controls = useRef();

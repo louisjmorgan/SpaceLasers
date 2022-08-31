@@ -8,7 +8,9 @@ import { useFrame } from '@react-three/fiber';
 import { useCallback, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import shallow from 'zustand/shallow';
-import useStore from '../Model/store';
+import { useFrameStore, useStore } from '../Model/store';
+
+const earth = new THREE.Vector3(0, 0, 0);
 
 function Satellite({
   satellite,
@@ -30,9 +32,9 @@ function Satellite({
       satRef.current = node;
     }
   }, []);
-  const frame = useRef(useStore.getState().frame);
+  const frame = useRef(useFrameStore.getState().frame);
   useEffect(() => {
-    useStore.subscribe(
+    useFrameStore.subscribe(
       (state) => {
         frame.current = state.frame;
       },
@@ -43,12 +45,8 @@ function Satellite({
     satRef.current.position.x = satellite.positions.x[frame.current];
     satRef.current.position.y = satellite.positions.y[frame.current];
     satRef.current.position.z = satellite.positions.z[frame.current];
-    const earth = new THREE.Vector3(0, 0, 0);
 
     const lookAt = earth.clone().sub(satRef.current.position);
-    // const up = new THREE.Vector3(0, 0, 1);
-    // up.applyQuaternion(satRef.current.quaternion);
-    // satRef.current.up.set(up.x, up.y, up.z);
     satRef.current.lookAt(earth);
   });
 

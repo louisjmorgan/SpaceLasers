@@ -7,15 +7,15 @@ import { Billboard } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import React, { forwardRef, useEffect, useRef } from 'react';
 import { earthRadius } from 'satellite.js/lib/constants';
-import useStore from '../Model/store';
+import { useFrameStore, useStore } from '../Model/store';
 
 function Sun() {
   const ref = useRef();
 
-  const frame = useRef(useStore.getState().frame);
+  const frame = useRef(useFrameStore.getState().frame);
 
   useEffect(() => {
-    useStore.subscribe(
+    useFrameStore.subscribe(
       (state) => {
         frame.current = state.frame;
       },

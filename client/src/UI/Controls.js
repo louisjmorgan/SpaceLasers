@@ -9,7 +9,7 @@ import {
   SliderFilledTrack, SliderThumb, SliderTrack, Switch, Text,
 } from '@chakra-ui/react';
 import shallow from 'zustand/shallow';
-import useStore from '../Model/store';
+import { useStore } from '../Model/store';
 
 function SimControls() {
   const {

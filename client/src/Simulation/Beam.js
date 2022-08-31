@@ -2,9 +2,9 @@
 import { useFrame } from '@react-three/fiber';
 import { useRef, useEffect, useLayoutEffect } from 'react';
 import {
-  Vector3, MeshBasicMaterial, AdditiveBlending, DoubleSide, Object3D, Texture,
+  Vector3, MeshBasicMaterial, AdditiveBlending, DoubleSide, Object3D, Texture, PlaneGeometry,
 } from 'three';
-import useStore from '../Model/store';
+import { useFrameStore, useStore } from '../Model/store';
 import { generateLaserBodyCanvas, getLaserMeshes } from './Shaders/LaserBeam';
 
 function Beam({
@@ -14,6 +14,7 @@ function Beam({
   const laser = useRef(new Object3D());
   const texture = useRef();
   const material = useRef();
+  const meshes = useRef();
 
   useEffect(() => {
     texture.current = new Texture(generateLaserBodyCanvas());
@@ -26,11 +27,13 @@ function Beam({
       depthWrite: false,
       transparent: false,
     });
+    meshes.current = getLaserMeshes(1, material.current);
+    meshes.current.forEach((mesh) => laser.current.add(mesh));
   }, []);
 
-  const frame = useRef(useStore.getState().frame);
+  const frame = useRef(useFrameStore.getState().frame);
   useEffect(() => {
-    useStore.subscribe(
+    useFrameStore.subscribe(
       (state) => {
         frame.current = state.frame;
       },
@@ -39,21 +42,23 @@ function Beam({
 
   useFrame(() => {
     if (beam.activated[frame.current]) {
+      // if (laser.current.children.length === 0) {
+      // }
+      if (ref.current.children.length === 0) {
+        ref.current.children = meshes.current;
+      }
       ref.current.position.x = spacePower.positions.x[frame.current];
       ref.current.position.y = spacePower.positions.y[frame.current];
       ref.current.position.z = spacePower.positions.z[frame.current];
-      const customerPosition = new Vector3(
+
+      ref.current.lookAt(
         customer.positions.x[frame.current],
         customer.positions.y[frame.current],
         customer.positions.z[frame.current],
       );
-      ref.current.lookAt(customerPosition);
       ref.current.rotateY(-Math.PI / 2);
-      const meshes = getLaserMeshes(beam.distances[frame.current], material.current);
-      meshes.forEach((mesh) => laser.current.add(mesh));
-      ref.current.children = meshes;
+      ref.current.scale.set(beam.distances[frame.current], 1, 1);
     } else if (ref.current.children) {
-      laser.current.clear();
       ref.current.children = [];
     }
   });

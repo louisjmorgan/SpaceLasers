@@ -1,5 +1,6 @@
 import { Vector3 } from 'three';
 import create from 'zustand';
+import createVanilla from 'zustand/vanilla';
 import { handleMissionRequest } from './mission';
 
 const defaultOptions = {
@@ -37,8 +38,11 @@ const views = {
   },
 };
 
-const useStore = create((set) => ({
+const useFrameStore = createVanilla(() => ({
   frame: 0,
+}));
+
+const useStore = create((set) => ({
   isPaused: false,
   speed: 1,
   cameraTarget: {
@@ -120,4 +124,4 @@ const useStore = create((set) => ({
   setView: (view) => set(() => ({ view: views[`${view}`] })),
 }));
 
-export default useStore;
+export { useStore, useFrameStore };

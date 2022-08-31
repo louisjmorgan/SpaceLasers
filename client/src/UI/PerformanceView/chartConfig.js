@@ -23,8 +23,8 @@ const chartConfig = {
     parsing: false,
     layout: {
       padding: {
-        left: 50,
-        right: 50,
+      //   left: 50,
+      //   right: 50,
         top: 50,
         bottom: 50,
       },
@@ -43,7 +43,7 @@ const chartConfig = {
           stepSize: 1,
           unit: 'date',
           displayFormats: {
-            date: 'hh:mm MMM yyyy',
+            date: 'HH:mm a dd MMM yyyy',
           },
         },
         ticks: {
@@ -71,15 +71,13 @@ const chartConfig = {
       decimation: {
         enabled: true,
         algorithm: 'lttb',
-        samples: 50,
-        threshold: 100,
+        samples: 100,
+        threshold: 50,
       },
     },
   },
   defaultDataSet:
     {
-      backgroundColor: 'yellow',
-      borderColor: 'yellow',
       lineTension: 0,
       pointRadius: 0.1,
       showLine: true,
@@ -88,6 +86,13 @@ const chartConfig = {
         anchor: 'start',
       },
     },
+  colors: [
+    ['#1a53ff', '#0d88e6'],
+    ['#bdcf32', '#87bc45'],
+    ['#b33dc6', '#f46a9b'],
+    ['#5ad45a', '#8be04e'],
+
+  ],
 };
 
 export default chartConfig;

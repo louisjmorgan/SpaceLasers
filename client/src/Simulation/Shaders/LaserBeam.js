@@ -17,6 +17,7 @@ const LaserBeam = (width, height, canvas) => {
     depthWrite: false,
     transparent: false,
   });
+
   const geometry = new THREE.PlaneGeometry(width, height);
   //   geometry.applyMatrix4(
   //     new THREE.Matrix4().makeRotationX(-Math.PI / 2)

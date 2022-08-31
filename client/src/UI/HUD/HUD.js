@@ -9,7 +9,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { ParentSize } from '@visx/responsive';
 import shallow from 'zustand/shallow';
-import useStore from 'Model/store';
+import { useStore } from 'Model/store';
 import Gauge from './Gauge';
 
 function capitalize(string) {
