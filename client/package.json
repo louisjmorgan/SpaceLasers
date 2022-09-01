@@ -45,7 +45,7 @@
     "@emotion/react": "^11.10.0",
     "@emotion/styled": "^11.10.0",
     "@fontsource/barlow": "^4.5.8",
-    "@react-three/drei": "^9.19.7",
+    "@react-three/drei": "^9.25.2",
     "@react-three/fiber": "^8.3.0",
     "@visx/visx": "^2.12.2",
     "chart.js": "^3.9.1",

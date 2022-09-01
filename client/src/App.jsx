@@ -31,9 +31,14 @@ function App() {
     }),
     shallow,
   );
+  const [firstRender, setFirstRender] = useState(false);
   console.log(mission);
   useEffect(() => {
-    initializeMission(defaultValues);
+    if (firstRender) initializeMission(defaultValues);
+  }, [firstRender]);
+
+  useEffect(() => {
+    setFirstRender(true);
   }, []);
   return (
     <ChakraProvider theme={theme}>
@@ -79,14 +84,13 @@ function App() {
             templateRows={'2fr 0.5fr 0.125fr'}
           >
             { mission ? (
-              <Suspense>
+              <>
                 <Simulation />
                 <HUD
                   satellites={mission.satellites}
                   shouldDisplay={view.name === 'simulation'}
                 />
-
-              </Suspense>
+              </>
             ) : <Spinner position="absolute" top="50%" left="50%" transform={'translate(-50%, -50%)'} />}
             {((view.name === 'mission') || (view.name === 'performance'))
               ? (

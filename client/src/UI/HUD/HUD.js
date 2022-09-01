@@ -6,15 +6,45 @@ import {
   Flex, Select, Stat, StatLabel, StatNumber,
   Box, Center, StatGroup, GridItem, StatHelpText, StatArrow, ButtonGroup, Button,
 } from '@chakra-ui/react';
-import { useEffect, useRef, useState } from 'react';
+import {
+  useCallback, useEffect, useRef, useState,
+} from 'react';
 import { ParentSize } from '@visx/responsive';
 import shallow from 'zustand/shallow';
-import { useStore } from 'Model/store';
+import { useFrameStore, useStore } from 'Model/store';
+import { addEffect } from '@react-three/fiber';
 import Gauge from './Gauge';
 
 function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
+const statProps = [
+  {
+    key: 'netCurrent',
+    label: 'Net Current',
+    getValue: (frame, selected) => {
+      const netCurrent = selected.params.load.powerProfiles[
+        selected.performance.sources[frame]
+      ][
+        selected.performance.currentDuties[frame]
+      ];
+      return netCurrent;
+    },
+    formatValue: (value) => `${(value).toFixed(2)}A`,
+    getHelpText: (frame, selected) => capitalize(selected.performance.sources[frame]),
+  },
+  {
+    key: 'consumption',
+    label: 'Consumption',
+    getValue: (frame, selected) => selected.params.load.duties[
+      selected.performance.currentDuties[frame]
+    ].consumption,
+    formatValue: (value) => `${value}W`,
+    getHelpText: (frame, selected) => `${capitalize(selected.params.load.duties[selected.performance.currentDuties[frame]].name)}`,
+
+  },
+];
 
 function HUD({
   satellites, shouldDisplay,
@@ -32,7 +62,7 @@ function HUD({
     }),
     shallow,
   );
-  const frame = useStore((state) => state.frame);
+
   const [selected, setSelected] = useState(satellites.averages);
 
   const handleSelectSatellite = (selection) => {
@@ -44,14 +74,33 @@ function HUD({
     }
   };
 
-  const netCurrent = useRef(0);
+  const frame = useRef(useFrameStore.getState().frame);
   useEffect(() => {
-    if (!selected.params) return;
-    netCurrent.current = selected.params.load.powerProfiles[
-      selected.performance.sources[frame]
-    ][
-      selected.performance.currentDuties[frame]
-    ];
+    useFrameStore.subscribe(
+      (state) => {
+        frame.current = state.frame;
+      },
+    );
+  }, []);
+
+  const statRefs = useRef([]);
+  const handleStatRefs = useCallback((node, stat) => {
+    statRefs.current.push({
+      ...stat,
+      ref: node,
+    });
+  });
+  addEffect(() => {
+    if (selected.params) {
+      statRefs.current.forEach((stat) => {
+        const parent = stat.ref.children[0];
+        const value = stat.getValue(frame.current, selected);
+        const valueContainer = parent.children[1];
+        valueContainer.innerText = stat.formatValue(value);
+        const helpContainer = parent.children[2];
+        helpContainer.children[4].innerText = stat.getHelpText(frame.current, selected);
+      });
+    }
   }, [selected, frame]);
 
   if (!satellites) return;
@@ -105,7 +154,22 @@ function HUD({
             {selected.params ? (
 
               <StatGroup>
-                <Stat width="30ch">
+                {statProps.map((stat) => (
+                  <Stat
+                    width="30ch"
+                    key={stat.key}
+                    ref={(node) => handleStatRefs(node, stat)}
+                  >
+                    <StatLabel>{stat.label}</StatLabel>
+                    <StatNumber />
+                    <StatHelpText>
+                      <StatArrow type="increase" />
+                      <StatArrow type="decrease" />
+                      <span />
+                    </StatHelpText>
+                  </Stat>
+                ))}
+                {/* <Stat width="30ch">
                   <StatLabel>Net Current</StatLabel>
                   <StatNumber>{`${(netCurrent.current).toFixed(2)}A`}</StatNumber>
                   <StatHelpText>
@@ -117,7 +181,7 @@ function HUD({
                   <StatLabel>Consumption</StatLabel>
                   <StatNumber>{`${selected.params.load.duties[selected.performance.currentDuties[frame]].consumption}W`}</StatNumber>
                   <StatHelpText>{`${capitalize(selected.params.load.duties[selected.performance.currentDuties[frame]].name)}`}</StatHelpText>
-                </Stat>
+                </Stat> */}
               </StatGroup>
             ) : '' }
           </Box>

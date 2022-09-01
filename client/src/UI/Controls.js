@@ -96,11 +96,11 @@ function CameraControls({
 function Controls({
   times, satellites,
 }) {
-  const frame = useStore((state) => state.frame);
+  // const frame = useStore((state) => state.frame);
   if (!times) return;
   return (
     <Flex align="center">
-      <Text width="22ch">{new Date(times[frame]).toString().slice(0, 21)}</Text>
+      <Text width="22ch">{new Date(times[0]).toString().slice(0, 21)}</Text>
       <Menu closeOnSelect={false}>
         <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
           Controls

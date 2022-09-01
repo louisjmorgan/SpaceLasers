@@ -1,11 +1,12 @@
 /* eslint-disable react/jsx-curly-brace-presence */
 /* eslint-disable react/prop-types */
 import { Canvas } from '@react-three/fiber';
-import { GridItem } from '@chakra-ui/react';
+import { Box, GridItem, Spinner } from '@chakra-ui/react';
 import {
-  Stars, View,
+  Html,
+  Stars, View, PerformanceMonitor,
 } from '@react-three/drei';
-import { Suspense, useRef } from 'react';
+import { Suspense, useRef, useState } from 'react';
 import { useStore } from 'Model/store';
 import Frame from './Frame';
 import Earth from './Earth';
@@ -17,6 +18,7 @@ function Simulation() {
   const viewRef = useRef();
   const container = useRef();
   const isPaused = useStore((state) => state.isPaused);
+  const [dpr, setDpr] = useState(1);
   return (
     <GridItem area="1 / 1 / 4 / 3">
       <div
@@ -49,9 +51,13 @@ function Simulation() {
             top: '0px',
             left: '0px',
           }}
+          dpr={dpr}
         >
-          <Suspense fallback={null}>
-            <View index={1} track={viewRef}>
+          <View index={1} track={viewRef}>
+            <Suspense>
+              <PerformanceMonitor
+                onChange={({ factor }) => setDpr((0.5 + 1.5 * factor).toFixed(1))}
+              />
               <Camera />
               <Frame />
               <Stars
@@ -67,8 +73,9 @@ function Simulation() {
               <Sun />
               <Earth />
               <Satellites />
-            </View>
-          </Suspense>
+            </Suspense>
+          </View>
+
         </Canvas>
       </div>
     </GridItem>
