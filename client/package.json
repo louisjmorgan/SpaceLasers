@@ -52,6 +52,8 @@
     "chartjs-adapter-luxon": "^1.2.0",
     "chartjs-plugin-datalabels": "^2.1.0",
     "chartjs-plugin-streaming": "^2.0.0",
+    "d3": "^7.6.1",
+    "d3fc": "^15.2.6",
     "formik": "^2.2.9",
     "framer-motion": "^7.0.0",
     "jest-environment-jsdom": "^28.1.0",

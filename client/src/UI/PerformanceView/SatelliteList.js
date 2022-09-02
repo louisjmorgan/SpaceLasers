@@ -4,6 +4,7 @@ import {
 } from '@chakra-ui/react';
 import { useStore } from 'Model/store';
 import shallow from 'zustand/shallow';
+import './Charts.css';
 
 function SatelliteList({ toggleSelected, selected }) {
   const {
@@ -15,22 +16,28 @@ function SatelliteList({ toggleSelected, selected }) {
     shallow,
   );
 
+  const handleSelect = (e) => {
+    const { id } = e.target;
+    toggleSelected(id);
+  };
+
   return (
     <VStack width="50%">
-      <h3>Select satellites:</h3>
+      <h4>Show data for</h4>
       <List width="100%">
         {customers.map((customer) => (
-          <Center>
+          <Center key={customer.id}>
             <ListItem
-              onClick={() => toggleSelected(customer)}
-              key={customer.id}
+              onClick={handleSelect}
               cursor="pointer"
+              id={customer.id}
+              disabled
               p={3}
-              my={2}
+              my={1}
               justify="space-around"
               align="center"
               borderRadius={5}
-              // layerStyle={selected.includes(customer) ? 'selected' : ''}
+              layerStyle={selected.includes(customer) ? 'selected' : ''}
               width="80%"
             >
               {customer.name}

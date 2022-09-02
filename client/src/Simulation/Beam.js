@@ -42,8 +42,6 @@ function Beam({
 
   useFrame(() => {
     if (beam.activated[frame.current]) {
-      // if (laser.current.children.length === 0) {
-      // }
       if (ref.current.children.length === 0) {
         ref.current.children = meshes.current;
       }

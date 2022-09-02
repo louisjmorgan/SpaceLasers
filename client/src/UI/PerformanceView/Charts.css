@@ -1,0 +1,32 @@
+.plot-area {
+}
+
+.gridline-x, .gridline-y {
+  z-index: 4;
+  stroke: white;
+  stroke-width: 0.1;
+}
+
+.webgl-plot-area {
+  background-color: hsl(276.9,41.9%,20%);
+
+}
+
+.domain {
+  stroke: white;
+}
+
+.tick > text {
+  stroke: white;
+  outline: 0;
+  font-family: 'Barlow', 'sans-serif';
+  stroke-width: 0.5px;
+}
+.tick > path{
+  stroke: white;
+  fill: white;
+}
+
+.selected {
+  background-color: rgba(255,255,255,0.1),
+};

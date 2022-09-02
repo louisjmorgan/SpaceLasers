@@ -27,6 +27,11 @@ const styles = {
       fontWeight: 'bold',
       padding: '1.5rem',
     },
+    h4: {
+      fontSize: '1rem',
+      fontWeight: 'bold',
+      padding: '0.5rem',
+    },
   }),
 };
 
