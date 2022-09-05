@@ -4,7 +4,7 @@
 /* eslint-disable react/prop-types */
 import {
   Flex, Select, Stat, StatLabel, StatNumber,
-  Box, Center, StatGroup, GridItem, StatHelpText, StatArrow, ButtonGroup, Button,
+  Box, Center, StatGroup, GridItem, StatHelpText, StatArrow, ButtonGroup, Button, StatUpArrow, StatDownArrow, Text,
 } from '@chakra-ui/react';
 import {
   useCallback, useEffect, useRef, useState,
@@ -13,7 +13,10 @@ import { ParentSize } from '@visx/responsive';
 import shallow from 'zustand/shallow';
 import { useFrameStore, useStore } from 'Model/store';
 import { addEffect } from '@react-three/fiber';
+import * as d3 from 'd3';
 import Gauge from './Gauge';
+import './HUD.css';
+import { TriangleDownIcon, TriangleUpIcon } from '@chakra-ui/icons';
 
 function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -23,6 +26,7 @@ const statProps = [
   {
     key: 'netCurrent',
     label: 'Net Current',
+    shouldArrows: true,
     getValue: (frame, selected) => {
       const netCurrent = selected.params.load.powerProfiles[
         selected.performance.sources[frame]
@@ -37,6 +41,7 @@ const statProps = [
   {
     key: 'consumption',
     label: 'Consumption',
+    shouldArrows: false,
     getValue: (frame, selected) => selected.params.load.duties[
       selected.performance.currentDuties[frame]
     ].consumption,
@@ -44,15 +49,26 @@ const statProps = [
     getHelpText: (frame, selected) => `${capitalize(selected.params.load.duties[selected.performance.currentDuties[frame]].name)}`,
 
   },
+  {
+    key: 'chargeState',
+    label: '',
+    shouldArrows: false,
+    getValue: (frame, selected) => selected.performance.chargeState[frame] * 100,
+    formatValue: (value) => `${(value).toPrecision(3)}%`,
+    getHelpText: () => 'w/o Space Power',
+    getHelpNumber: (frame, selected) => `${(selected.performance.chargeStateNoBeams[frame] * 100).toPrecision(3)}% `,
+  },
 ];
 
 function HUD({
-  satellites, shouldDisplay,
+  shouldDisplay,
 }) {
   const {
-    toggleLabel, toggleAllLabels, attachCamera, detachCamera, cameraTarget, satelliteOptions,
+    satellites, toggleLabel, toggleAllLabels, attachCamera,
+    detachCamera, cameraTarget, satelliteOptions,
   } = useStore(
     (state) => ({
+      satellites: state.mission.satellites,
       toggleLabel: state.toggleLabel,
       toggleAllLabels: state.toggleAllLabels,
       satelliteOptions: state.satelliteOptions,
@@ -63,45 +79,108 @@ function HUD({
     shallow,
   );
 
-  const [selected, setSelected] = useState(satellites.averages);
+  // const [selected, setSelected] = useState(satellites.customers[0]);
+  // const selected = useRef(satellites.customers[0]);
+  const [selected, setSelected] = useState(satellites.customers[0]);
+  useEffect(() => {
+    // selected.current = satellites.customers[0];
+    setSelected(() => satellites.customers[0]);
+  }, [satellites]);
 
-  const handleSelectSatellite = (selection) => {
-    if (selection === 'all') setSelected(() => satellites.averages);
-    else {
-      setSelected(() => (
-        satellites.customers.find((customer) => (
-          customer.id === selection))));
+  const handleSelectSatellite = (e) => {
+    const selection = e.target.value;
+    if (selection === 'all') {
+      // selected.current = satellites.averages;
+      setSelected(() => satellites.averages);
+    } else {
+      // selected.current = satellites.customers.find((customer) => (
+      //   customer.id === selection));
+      setSelected(() => satellites.customers.find((customer) => (
+        customer.id === selection)));
     }
+  };
+
+  const handleLabel = () => {
+    toggleLabel(selected.id);
+  };
+
+  const handleCamera = () => {
+    if (cameraTarget.id === selected.id) detachCamera();
+    else attachCamera(selected.id);
+  };
+
+  const hideAllLabels = () => {
+    toggleAllLabels(false);
   };
 
   const frame = useRef(useFrameStore.getState().frame);
   useEffect(() => {
     useFrameStore.subscribe(
       (state) => {
-        frame.current = state.frame;
+        if (state.frame - 10 > frame.current) { frame.current = state.frame; }
       },
     );
   }, []);
 
-  const statRefs = useRef([]);
-  const handleStatRefs = useCallback((node, stat) => {
-    statRefs.current.push({
-      ...stat,
-      ref: node,
+  // const statRefs = useRef([]);
+  const statRefs = useRef(new Map());
+  const handleStatRefs = useCallback((node) => {
+    if (!node) return;
+    const stat = statProps.find((v) => v.key === node.id);
+    statRefs.current.set(
+      stat.key,
+      {
+        ...stat,
+        ref: node,
+      },
+    );
+  }, []);
+
+  console.log(statRefs.current);
+  addEffect(() => {
+    statRefs.current.forEach((stat) => {
+      if (!stat.ref) return;
+      const parent = d3.select(stat.ref);
+
+      if (selected.name === 'averages' && stat.key !== 'chargeState') {
+        if (!parent.classed('hide')) d3.select(stat.ref).classed('hide', true);
+        return;
+      }
+      if (parent.classed('hide')) d3.select(stat.ref).classed('hide', false);
+
+      const value = stat.getValue(frame.current, selected);
+
+      parent.selectAll('.chakra-stat__number')
+        .select('span')
+        .text(stat.formatValue(value));
+
+      parent.selectAll('.chakra-stat__help-text')
+        .select('.help-text')
+        .text(stat.getHelpText(frame.current, selected));
+
+      if (stat.getHelpNumber) {
+        parent.selectAll('.chakra-stat__help-text')
+          .select('.help-number')
+          .text(stat.getHelpNumber(frame.current, selected));
+      }
+
+      if (stat.shouldArrows) {
+        const upArrow = parent.select('.chakra-stat__help-text').select('.up-arrow');
+        const downArrow = parent.select('.chakra-stat__help-text').select('.down-arrow');
+        if (value > 0) {
+          upArrow.attr('visibility', 'visible');
+          upArrow.style('position', 'relative');
+          downArrow.attr('visibility', 'hidden');
+          downArrow.style('position', 'absolute');
+        } else {
+          upArrow.attr('visibility', 'hidden');
+          upArrow.style('position', 'absolute');
+          downArrow.attr('visibility', 'visible');
+          downArrow.style('position', 'relative');
+        }
+      }
     });
   });
-  addEffect(() => {
-    if (selected.params) {
-      statRefs.current.forEach((stat) => {
-        const parent = stat.ref.children[0];
-        const value = stat.getValue(frame.current, selected);
-        const valueContainer = parent.children[1];
-        valueContainer.innerText = stat.formatValue(value);
-        const helpContainer = parent.children[2];
-        helpContainer.children[4].innerText = stat.getHelpText(frame.current, selected);
-      });
-    }
-  }, [selected, frame]);
 
   if (!satellites) return;
   return (
@@ -109,81 +188,85 @@ function HUD({
       <Flex height="100%" justify="space-between" align-items="center" display={shouldDisplay ? 'flex' : 'none'}>
         <Center flex={1}>
           <Box px={2}>
-            <Select onChange={(e) => handleSelectSatellite(e.target.value)}>
-              <option value="all">Average</option>
+            <Select onChange={handleSelectSatellite}>
               {satellites.customers.map((customer) => (
                 <option key={customer.id} value={customer.id}>{customer.name}</option>
               ))}
+              <option value="all">Average</option>
             </Select>
 
           </Box>
           {selected.name !== 'averages'
             ? (
               <ButtonGroup>
-                <Button onClick={() => toggleLabel(selected.id)}>
+                <Button onClick={handleLabel}>
                   {satelliteOptions.get(selected.id).showLabel ? 'Hide Label' : 'Show Label'}
                 </Button>
-                <Button onClick={
-                      cameraTarget.id === selected.id
-                        ? () => detachCamera() : () => attachCamera(selected.id)
-                    }
+                <Button
+                  // onClick={
+                  //     cameraTarget.id === selected.id
+                  //       ? () => detachCamera() : () => attachCamera(selected.id)
+                  //   }
+                  onClick={handleCamera}
                 >
                   {cameraTarget.id === selected.id ? 'Detach Camera' : 'Attach Camera'}
                 </Button>
               </ButtonGroup>
             )
-            : <Button onClick={() => toggleAllLabels(false)}>{'Hide All Labels'}</Button>}
+            : <Button onClick={hideAllLabels}>{'Hide All Labels'}</Button>}
         </Center>
         <Box height="100%" flex={1}>
+          <Center>
+            <Stat
+              align="center"
+              ref={handleStatRefs}
+              id={'chargeState'}
 
-          <ParentSize>
-            {({ height }) => (
+            >
+              <StatLabel>Charge</StatLabel>
 
               <Gauge
-                height={height}
-                beams={selected.performance.chargeState[frame] * 100}
-                noBeams={selected.performance.chargeStateNoBeams[frame] * 100}
+                height={200}
+                selected={selected}
+                styles={{ position: 'absolute' }}
               />
+              <StatNumber textStyle="number">
+                <span />
+              </StatNumber>
+              <StatHelpText width="100%">
+                <Text as={'span'} textStyle="number" className="help-number" />
+                <span className="help-text" />
+              </StatHelpText>
 
-            )}
-          </ParentSize>
-
+            </Stat>
+          </Center>
         </Box>
         <Center flex={1}>
           <Box>
-            {selected.params ? (
-
-              <StatGroup>
-                {statProps.map((stat) => (
-                  <Stat
-                    width="30ch"
-                    key={stat.key}
-                    ref={(node) => handleStatRefs(node, stat)}
-                  >
-                    <StatLabel>{stat.label}</StatLabel>
-                    <StatNumber />
-                    <StatHelpText>
-                      <StatArrow type="increase" />
-                      <StatArrow type="decrease" />
-                      <span />
-                    </StatHelpText>
-                  </Stat>
-                ))}
-                {/* <Stat width="30ch">
-                  <StatLabel>Net Current</StatLabel>
-                  <StatNumber>{`${(netCurrent.current).toFixed(2)}A`}</StatNumber>
+            <StatGroup>
+              {statProps.slice(0, 2).map((stat) => (
+                <Stat
+                  width="30ch"
+                  key={stat.key}
+                  id={stat.key}
+                  ref={handleStatRefs}
+                >
+                  <StatLabel>{stat.label}</StatLabel>
+                  <StatNumber textStyle="number"><span /></StatNumber>
                   <StatHelpText>
-                    <StatArrow type={netCurrent.current > 0 ? 'increase' : 'decrease'} />
-                    {`${capitalize(selected.performance.sources[frame])} `}
+                    {stat.shouldArrows
+                      ? (
+                        <>
+                          <StatArrow type="increase" className="up-arrow hide" />
+                          <StatArrow type="decrease" className="down-arrow hide" />
+                        </>
+                      )
+                      : '' }
+                    <span className="help-text" />
                   </StatHelpText>
                 </Stat>
-                <Stat width="30ch">
-                  <StatLabel>Consumption</StatLabel>
-                  <StatNumber>{`${selected.params.load.duties[selected.performance.currentDuties[frame]].consumption}W`}</StatNumber>
-                  <StatHelpText>{`${capitalize(selected.params.load.duties[selected.performance.currentDuties[frame]].name)}`}</StatHelpText>
-                </Stat> */}
-              </StatGroup>
-            ) : '' }
+              ))}
+            </StatGroup>
           </Box>
         </Center>
       </Flex>

@@ -1,13 +1,16 @@
 /* eslint-disable react/prop-types */
 import { Instances, useGLTF } from '@react-three/drei';
+import { useLoader } from '@react-three/fiber';
 import { useStore } from 'Model/store';
 import { useLayoutEffect } from 'react';
+import { TextureLoader } from 'three';
 import shallow from 'zustand/shallow';
 import SatelliteGLB from '../Assets/Mesh/lowpolysat.glb';
 import Beam from './Beam';
 import Satellite from './Satellite';
+import gradientTexture from '../Assets/Textures/twoTone.jpg';
 
-function Satellites({}) {
+function Satellites() {
   const obj = useGLTF(SatelliteGLB);
   useLayoutEffect(() => {
     obj.nodes.Satellite.geometry.rotateY((3 * Math.PI) / 2);
@@ -23,13 +26,16 @@ function Satellites({}) {
     }),
     shallow,
   );
+  const gradientMap = useLoader(TextureLoader, gradientTexture);
 
   return (
     <>
       <Instances
         geometry={obj.nodes.Satellite.geometry}
       >
-        <meshToonMaterial />
+        <meshToonMaterial
+          gradientMap={gradientMap}
+        />
         {spacePowers.map((satellite) => (
           <Satellite
             satellite={satellite}

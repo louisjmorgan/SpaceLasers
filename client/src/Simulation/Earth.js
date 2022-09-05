@@ -17,6 +17,7 @@ function Earth() {
   const ref = useRef();
   const colorMap = useLoader(TextureLoader, earthTexture);
   const gradientMap = useLoader(TextureLoader, gradientTexture);
+
   useLayoutEffect(() => {
     gradientMap.minFilter = THREE.NearestFilter;
     gradientMap.magFilter = THREE.NearestFilter;

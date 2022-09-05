@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-curly-brace-presence */
 /* eslint-disable react/prop-types */
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useLoader } from '@react-three/fiber';
 import { Box, GridItem, Spinner } from '@chakra-ui/react';
 import {
   Html,
@@ -8,6 +8,7 @@ import {
 } from '@react-three/drei';
 import { Suspense, useRef, useState } from 'react';
 import { useStore } from 'Model/store';
+import { TextureLoader } from 'three/src/loaders/TextureLoader';
 import Frame from './Frame';
 import Earth from './Earth';
 import Sun from './Sun';
@@ -18,8 +19,10 @@ function Simulation() {
   const viewRef = useRef();
   const container = useRef();
   const isPaused = useStore((state) => state.isPaused);
+
   const [dpr, setDpr] = useState(1);
   return (
+
     <GridItem area="1 / 1 / 4 / 3">
       <div
         ref={container}
@@ -39,6 +42,7 @@ function Simulation() {
             zIndex: 0,
           }}
         />
+
         <Canvas
           className="canvas"
           onCreated={(state) => {
@@ -53,8 +57,10 @@ function Simulation() {
           }}
           dpr={dpr}
         >
+
           <View index={1} track={viewRef}>
             <Suspense>
+
               <PerformanceMonitor
                 onChange={({ factor }) => setDpr((0.5 + 1.5 * factor).toFixed(1))}
               />
@@ -74,9 +80,10 @@ function Simulation() {
               <Earth />
               <Satellites />
             </Suspense>
-          </View>
 
+          </View>
         </Canvas>
+
       </div>
     </GridItem>
   );

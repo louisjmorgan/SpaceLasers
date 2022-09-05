@@ -6,9 +6,11 @@ import {
 } from '@chakra-ui/react';
 import {
   useState, useEffect, useRef, useCallback, Suspense,
+  useTransition,
 } from 'react';
 import '@fontsource/barlow/700.css';
 import '@fontsource/barlow/400.css';
+import '@fontsource/azeret-mono';
 import shallow from 'zustand/shallow';
 import PerformanceView from 'UI/PerformanceView/PerformanceView';
 import Controls from './UI/Controls';
@@ -34,7 +36,9 @@ function App() {
   const [firstRender, setFirstRender] = useState(false);
   console.log(mission);
   useEffect(() => {
-    if (firstRender) initializeMission(defaultValues);
+    if (firstRender) {
+      initializeMission(defaultValues);
+    }
   }, [firstRender]);
 
   useEffect(() => {
@@ -87,7 +91,6 @@ function App() {
               <>
                 <Simulation />
                 <HUD
-                  satellites={mission.satellites}
                   shouldDisplay={view.name === 'simulation'}
                 />
               </>

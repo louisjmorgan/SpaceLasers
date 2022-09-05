@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import {
-  Center, List, ListItem, VStack,
+  Center, Checkbox, CheckboxGroup, List, ListItem, VStack,
 } from '@chakra-ui/react';
 import { useStore } from 'Model/store';
 import shallow from 'zustand/shallow';
@@ -24,27 +24,19 @@ function SatelliteList({ toggleSelected, selected }) {
   return (
     <VStack width="50%">
       <h4>Show data for</h4>
-      <List width="100%">
+      <CheckboxGroup width="100%">
         {customers.map((customer) => (
-          <Center key={customer.id}>
-            <ListItem
-              onClick={handleSelect}
-              cursor="pointer"
-              id={customer.id}
-              disabled
-              p={3}
-              my={1}
-              justify="space-around"
-              align="center"
-              borderRadius={5}
-              layerStyle={selected.includes(customer) ? 'selected' : ''}
-              width="80%"
-            >
-              {customer.name}
-            </ListItem>
-          </Center>
+          <Checkbox
+            onChange={handleSelect}
+            isChecked={selected.includes(customer)}
+            id={customer.id}
+            key={customer.id}
+            align="start"
+          >
+            {customer.name}
+          </Checkbox>
         ))}
-      </List>
+      </CheckboxGroup>
     </VStack>
   );
 }

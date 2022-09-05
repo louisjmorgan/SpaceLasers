@@ -16,6 +16,19 @@ import shallow from 'zustand/shallow';
 import Chart from './Chart';
 import SatelliteList from './SatelliteList';
 
+const paramChoices = [
+  {
+    chargeState: {
+      name: 'Charge State',
+      selection: ['chargeState', 'chargeStateNoBeams'],
+    },
+    netCurrent: {
+      name: 'Net Current',
+      selection: [],
+    },
+  },
+];
+
 function ChartEditor() {
   const {
     time, customers, spacePowers, averages,
@@ -49,8 +62,15 @@ function ChartEditor() {
         selectedParams={selectedParams}
         selectedSatellites={selectedSatellites}
       />
-      <Flex width="100%">
+      <Flex width="100%" justify="flex-start">
         <SatelliteList toggleSelected={toggleSelected} selected={selectedSatellites} />
+        <Center width="50%">
+          <VStack width="50%">
+            <h4>Choose parameter</h4>
+            <Select />
+          </VStack>
+        </Center>
+        <Box width="20%" />
       </Flex>
     </VStack>
   );

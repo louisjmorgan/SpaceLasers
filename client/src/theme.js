@@ -48,6 +48,12 @@ const layerStyles = {
   },
 };
 
+const textStyles = {
+  number: {
+    fontFamily: '"Azeret Mono", monospace',
+  },
+};
+
 const components = {
   FormControl: {
     baseStyle: {
@@ -75,7 +81,7 @@ const colors = {
 };
 
 const theme = extendTheme({
-  config, styles, fonts, layerStyles, components, colors,
+  config, styles, fonts, layerStyles, textStyles, components, colors,
 });
 
 export default theme;

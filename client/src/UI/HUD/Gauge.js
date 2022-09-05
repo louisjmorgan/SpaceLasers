@@ -1,116 +1,113 @@
+/* eslint-disable react/no-this-in-sfc */
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable react/prop-types */
 /* eslint-disable no-nested-ternary */
-import Pie from '@visx/shape/lib/shapes/Pie';
-import { Group } from '@visx/group';
+
 import {
   useTooltip, Tooltip, defaultStyles,
 } from '@visx/tooltip';
-import { useCallback } from 'react';
+import {
+  useCallback, useEffect, useLayoutEffect, useRef, useState,
+} from 'react';
 
 import {
   Center, Stat, StatHelpText, StatLabel, StatNumber,
 } from '@chakra-ui/react';
+import { useFrameStore } from 'Model/store';
+import { addEffect } from '@react-three/fiber';
+import * as d3 from 'd3';
 
-export default function Gauge({ height, beams, noBeams }) {
-  const width = height;
-  const halfWidth = width / 2;
-  const angle = Math.PI / 2;
+const color = d3.scaleOrdinal(['white', 'grey', 'rgba(255,255,255,0.2)']);
 
-  const beamsData = {
-    id: 1,
-    value: beams - noBeams,
-    color: 'grey',
+const pie = d3.pie()
+  .value((d) => d.value)
+  .startAngle(-Math.PI / 2.2).endAngle(Math.PI / 2.2)
+  .sort(null);
+
+export default function Gauge({ height, selected }) {
+  const frame = useRef(useFrameStore.getState().frame);
+  useEffect(() => {
+    useFrameStore.subscribe(
+      (state) => {
+        frame.current = state.frame;
+      },
+    );
+  }, []);
+
+  const data = useRef();
+
+  const updateData = () => {
+    data.current = [
+      {
+        id: 2,
+        value: selected.performance.chargeStateNoBeams[frame.current] * 100,
+        color: (selected.performance.chargeStateNoBeams[frame.current] > 0.33) ? 'white' : 'red',
+      },
+      {
+        id: 1,
+        value: (selected.performance.chargeState[frame.current]
+            - selected.performance.chargeStateNoBeams[frame.current]) * 100,
+        color: 'grey',
+      },
+      {
+        id: 3,
+        value: 100 - (selected.performance.chargeState[frame.current] * 100),
+        color: 'lightgrey',
+      },
+    ];
+  };
+  const arc = d3.arc().innerRadius(height / 2 - 20)
+    .outerRadius(height / 3 - 10);
+  const pieRef = useRef();
+
+  const createPie = () => {
+    const group = d3.select(pieRef.current);
+    const groupWithData = group.selectAll('g.arc').data(pie(data.current));
+
+    groupWithData.exit().remove();
+
+    const groupWithUpdate = groupWithData
+      .enter()
+      .append('g')
+      .attr('class', 'arc');
+
+    const path = groupWithUpdate
+      .append('path')
+      .merge(groupWithData.select('path.arc'));
+
+    path
+      .attr('class', 'arc')
+      .attr('d', arc)
+      .attr('fill', (d, i) => color(d));
   };
 
-  const noBeamsData = {
-    id: 2,
-    value: noBeams,
-    color: (noBeams > 33) ? 'white' : 'red',
-  };
+  addEffect(() => {
+    if (!pieRef.current) return;
+    updateData();
+    createPie();
+  });
 
-  const {
-    tooltipData,
-    tooltipLeft,
-    tooltipTop,
-    tooltipOpen,
-    showTooltip,
-    hideTooltip,
-  } = useTooltip();
-  const handleMouseOver = useCallback(
-    (coords, datum) => {
-      let text;
-      if (datum === '2') text = 'Without Space Power';
-      if (datum === '1') text = 'With Space Power';
-      if (datum === '3') return;
-      showTooltip({
-        tooltipLeft: coords.x,
-        tooltipTop: coords.y,
-        tooltipData: text,
-      });
-    },
-    [showTooltip],
-  );
+  const ref = useCallback((node) => {
+    pieRef.current = node;
+    updateData();
 
-  const tooltipStyles = {
-    ...defaultStyles,
-    backgroundColor: 'rgba(53,71,125,1)',
-    color: 'white',
-    padding: 12,
-  };
+    createPie(data.current);
+  });
 
   return (
-    <Center height={height}>
-      <Stat align="center">
-        <StatLabel>Charge</StatLabel>
 
-        <svg width={width} height={height / 2}>
-          <Group top={halfWidth} left={halfWidth}>
-            <Pie
-              data={[
-                noBeamsData,
-                beamsData,
-                { id: 3, value: 100 - beams, color: 'rgba(255,255,255,0.2)' },
-              ]}
-              pieValue={(data) => data.value}
-              pieSortValues={null}
-              innerRadius={halfWidth - 30}
-              outerRadius={halfWidth - 15}
-              startAngle={-angle}
-              endAngle={angle}
-              cornerRadius={0}
-            >
-              {(pie) => pie.arcs.map((arc) => (
-                <g
-                  key={arc.data.id}
-                  onMouseOver={(e) => {
-                    handleMouseOver({ x: e.clientX, y: e.clientY }, `${arc.data.id}`);
-                  }}
-                  onMouseOut={hideTooltip}
-                >
-                  <path d={pie.path(arc)} fill={arc.data.color} />
-                </g>
-              ))}
-            </Pie>
-          </Group>
-        </svg>
-        <StatNumber>
-          {`${beams.toPrecision(3)}%`}
-        </StatNumber>
-        <StatHelpText width="100%">{`${noBeams.toPrecision(3)}% without Space Power`}</StatHelpText>
-
-      </Stat>
-      {tooltipOpen && (
-        <Tooltip
-          key={Math.random()}
-          top={tooltipTop - height / 3}
-          left={tooltipLeft}
-          style={tooltipStyles}
-        >
-          <strong>{tooltipData}</strong>
-        </Tooltip>
-      )}
-
-    </Center>
+    <svg width={height} height={height / 2}>
+      <g
+        ref={ref}
+        transform={`translate(${height / 2} ${height / 2})`}
+      />
+    </svg>
   );
 }
+// function change() {
+//   const pie = d3.pie()
+//     .value((d) => d.presses)(data);
+
+//   path = d3.select('#pie').selectAll('path').data(pie);
+// }
