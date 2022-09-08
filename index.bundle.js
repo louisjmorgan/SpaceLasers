@@ -290,9 +290,7 @@ const handleMissionRequest = req => {
       isEclipsed: (0,_simulation__WEBPACK_IMPORTED_MODULE_2__.getEclipsedArray)(customer, sun, time)
     };
   });
-  console.log(req.spacePowers);
   const offsets = (0,_satellite__WEBPACK_IMPORTED_MODULE_1__.getOffsets)(Number(req.spacePowers), req.satellites.length, req.offsets);
-  console.log(offsets);
   const spacePowers = [];
   req.satellites.forEach((satellite, index) => {
     if (!offsets[index]) return;
@@ -3470,19 +3468,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ OrbitTab)
 /* harmony export */ });
-/* harmony import */ var _react_three_fiber__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @react-three/fiber */ "./node_modules/@react-three/fiber/dist/index-05f8627d.esm.js");
-/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/layout/dist/index.esm.js");
-/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/form-control/dist/index.esm.js");
-/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/input/dist/index.esm.js");
-/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/tabs/dist/index.esm.js");
-/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/select/dist/index.esm.js");
-/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/button/dist/index.esm.js");
-/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/textarea/dist/index.esm.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var Util_astronomy_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! Util/astronomy.js */ "./src/Util/astronomy.js");
-/* harmony import */ var _CustomNumberInput__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./CustomNumberInput */ "./src/UI/MissionPlanner/CustomNumberInput.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _react_three_fiber__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @react-three/fiber */ "./node_modules/@react-three/fiber/dist/index-05f8627d.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/layout/dist/index.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/form-control/dist/index.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/input/dist/index.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/tabs/dist/index.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/select/dist/index.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/button/dist/index.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/textarea/dist/index.esm.js");
+/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "./node_modules/d3/src/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var Util_astronomy_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! Util/astronomy.js */ "./src/Util/astronomy.js");
+/* harmony import */ var _CustomNumberInput__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./CustomNumberInput */ "./src/UI/MissionPlanner/CustomNumberInput.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 /* provided dependency */ var __react_refresh_utils__ = __webpack_require__(/*! ./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js */ "./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js");
 __webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/react-refresh/runtime.js */ "./node_modules/react-refresh/runtime.js");
 
@@ -3499,7 +3498,8 @@ __webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/r
 
 
 
-(0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_4__.e)({});
+
+(0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_5__.e)({});
 
 const fields = [{
   id: 'meanMotionDot',
@@ -3507,8 +3507,8 @@ const fields = [{
   label: '1st Derivative of Mean Motion',
   min: -1,
   max: 1,
-  units: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
-    children: ["revs day", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("sup", {
+  units: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("span", {
+    children: ["revs day", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("sup", {
       children: "-2"
     })]
   })
@@ -3518,8 +3518,8 @@ const fields = [{
   label: 'BSTAR',
   min: -2,
   max: 2,
-  units: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
-    children: ["m", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("sup", {
+  units: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("span", {
+    children: ["m", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("sup", {
       children: "-1"
     })]
   })
@@ -3564,8 +3564,8 @@ const fields = [{
   label: 'Mean Motion',
   min: 0,
   max: 16,
-  units: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
-    children: ["revs day", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("sup", {
+  units: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("span", {
+    children: ["revs day", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("sup", {
       children: "-1"
     })]
   })
@@ -3575,13 +3575,22 @@ function OrbitTab({
   satIndex,
   constellations
 }) {
+  const [error, setError] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)();
+
   const handleExtractTle = e => {
     e.preventDefault();
-    console.log(formik.values.satellites[satIndex].orbit.tle);
-    const {
-      tles
-    } = (0,Util_astronomy_js__WEBPACK_IMPORTED_MODULE_1__.parseTLEs)(formik.values.satellites[satIndex].orbit.tle)[0];
-    const satRec = (0,Util_astronomy_js__WEBPACK_IMPORTED_MODULE_1__.twoline2satrec)(tles.tle1, tles.tle2);
+    let satRec;
+
+    try {
+      const {
+        tles
+      } = (0,Util_astronomy_js__WEBPACK_IMPORTED_MODULE_2__.parseTLEs)(formik.values.satellites[satIndex].orbit.tle)[0];
+      satRec = (0,Util_astronomy_js__WEBPACK_IMPORTED_MODULE_2__.twoline2satrec)(tles.tle1, tles.tle2);
+    } catch {
+      setError('Error extracting TLE.  Please enter a valid TLE.');
+      return;
+    }
+
     const newOrbit = {
       epoch: satRec.epochdatetimelocal,
       meanMotionDot: satRec.ndottle,
@@ -3595,30 +3604,36 @@ function OrbitTab({
       tle: formik.values.satellites[satIndex].orbit.tle
     };
     Object.entries(newOrbit).forEach(entry => {
+      if (!entry[1]) {
+        setError(`Error setting ${entry[0]}. Please enter a valid TLE and try again`);
+        return;
+      }
+
       formik.setFieldValue(`satellites[${satIndex}].orbit.[${entry[0]}]`, entry[1]);
     });
+    setError('');
   };
 
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.Fragment, {
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_5__.Flex, {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.Fragment, {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.Flex, {
       justify: "space-around",
       wrap: "wrap",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.FormControl, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.FormControl, {
         width: "65%",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.FormLabel, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.FormLabel, {
           htmlFor: `satellites[${satIndex}].orbit.epoch`,
           children: "Epoch"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.Input, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.Input, {
           id: "epoch",
           name: `satellites[${satIndex}].orbit.epoch`,
           type: "datetime-local",
           variant: "filled",
           onChange: formik.handleChange,
           value: formik.values.satellites[satIndex].orbit.epoch
-        }), !formik.errors.epoch ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.FormHelperText, {}) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.FormErrorMessage, {
+        }), !formik.errors.epoch ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.FormHelperText, {}) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.FormErrorMessage, {
           children: formik.errors.orbit.epoch
         })]
-      }), fields.map(param => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_CustomNumberInput__WEBPACK_IMPORTED_MODULE_2__["default"], {
+      }), fields.map(param => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_CustomNumberInput__WEBPACK_IMPORTED_MODULE_3__["default"], {
         value: formik.values.satellites[satIndex].orbit[param.id],
         step: param.step,
         name: `satellites[${satIndex}].orbit[${param.id}]`,
@@ -3628,77 +3643,83 @@ function OrbitTab({
         min: param.min,
         max: param.max
       }, param.id))]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.Tabs, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.Tabs, {
       p: 10,
       minWidth: "50%",
       maxWidth: "80%",
       align: "center",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.TabList, {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.Tab, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.TabList, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.Tab, {
           children: "Choose"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.Tab, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.Tab, {
           children: "Paste TLE"
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.TabPanels, {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.TabPanel, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.TabPanels, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.TabPanel, {
           pt: 10,
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_5__.Flex, {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.Flex, {
             wrap: "wrap",
             justify: "space-around",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.FormControl, {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.FormControl, {
               width: "40%",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.FormLabel, {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.FormLabel, {
                 htmlFor: `satellites[${satIndex}].orbit.constellation`,
                 children: "Constellation"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.Select, {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.Select, {
                 name: `satellites[${satIndex}].orbit.constellation`,
                 value: formik.values.satellites[satIndex].orbit.constellation,
                 onChange: formik.handleChange,
-                children: constellations.map(c => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                children: constellations.map(c => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("option", {
                   value: c.name,
                   children: c.name
                 }, c.name))
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.FormControl, {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.FormControl, {
               width: "40%",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.FormLabel, {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.FormLabel, {
                 htmlFor: `satellites[${satIndex}].orbit.tle`,
                 children: "Satellite"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.Select, {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.Select, {
                 name: `satellites[${satIndex}].orbit.tle`,
                 value: formik.values.satellites[satIndex].orbit.tle,
                 onChange: formik.handleChange,
-                children: constellations.find(v => v.name === formik.values.satellites[satIndex].orbit.constellation).tles.map((tle, i) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                children: constellations.find(v => v.name === formik.values.satellites[satIndex].orbit.constellation).tles.map((tle, i) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("option", {
                   value: `${tle.name}\n${tle.tles.tle1}\n${tle.tles.tle2}`,
                   children: tle.name
                 }, `${i}${tle.name}`))
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.Button, {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__.Button, {
               onClick: handleExtractTle,
               m: 3,
               children: "Extract"
             })]
-          })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.TabPanel, {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.Text, {
+            color: "red",
+            children: error
+          })]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.TabPanel, {
           pt: 10,
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.FormControl, {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.FormControl, {
             width: "90%",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.FormLabel, {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.FormLabel, {
               htmlFor: `satellites[${satIndex}].orbit.tle`,
               children: "TLE Input"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__.Textarea, {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_12__.Textarea, {
               id: "tle",
               name: `satellites[${satIndex}].orbit.tle`,
               onChange: formik.handleChange,
               value: formik.values.satellites[satIndex].orbit.tle,
               placeholder: "Enter TLE here"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.FormErrorMessage, {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.FormErrorMessage, {
               children: formik.errors.tle
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.Button, {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__.Button, {
             onClick: handleExtractTle,
             m: 3,
             children: "Extract"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.Text, {
+            color: "red",
+            children: error
           })]
         })]
       })]
@@ -4203,8 +4224,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _react_three_fiber__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @react-three/fiber */ "./node_modules/@react-three/fiber/dist/index-05f8627d.esm.js");
-/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/layout/dist/index.esm.js");
+/* harmony import */ var _react_three_fiber__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @react-three/fiber */ "./node_modules/@react-three/fiber/dist/index-05f8627d.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/layout/dist/index.esm.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var d3fc__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! d3fc */ "./node_modules/d3fc/build/d3fc.js");
@@ -4213,8 +4234,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var d3_svg_legend__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! d3-svg-legend */ "./node_modules/d3-svg-legend/indexRollupNext.js");
 /* harmony import */ var _Model_store__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../Model/store */ "./src/Model/store.js");
 /* harmony import */ var _Charts_css__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Charts.css */ "./src/UI/PerformanceView/Charts.css");
-/* harmony import */ var _chartStore__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./chartStore */ "./src/UI/PerformanceView/chartStore.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 /* provided dependency */ var __react_refresh_utils__ = __webpack_require__(/*! ./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js */ "./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js");
 __webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/react-refresh/runtime.js */ "./node_modules/react-refresh/runtime.js");
 
@@ -4234,11 +4254,10 @@ __webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/r
 
 
 
+(0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_7__.e)({});
 
-(0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_8__.e)({});
-
-const colors = [[139, 0, 0, 1], [205, 92, 92, 1], [0, 100, 0, 1], [85, 107, 47, 1], [0, 0, 139, 1], [173, 216, 230, 1]];
-const webglColors = colors.map(color => color.map((c, i) => i < 3 ? c / 255 : 1));
+const colors = [[[139, 0, 0, 1], [205, 92, 92, 1]], [[0, 100, 0, 1], [85, 107, 47, 1]], [[0, 0, 139, 1], [173, 216, 230, 1]], [[48, 25, 52, 1], [147, 112, 219, 1]], [[204, 85, 0, 1], [255, 191, 0, 1]], [[31, 38, 42, 1], [128, 128, 128, 1]]];
+const webglColors = colors.map(color => color.map(col => col.map((c, i) => i < 3 ? c / 255 : 1)));
 const dataHelpers = {
   chargeState: {
     name: 'Charge State',
@@ -4271,8 +4290,12 @@ const dataHelpers = {
 const xExtent = d3fc__WEBPACK_IMPORTED_MODULE_1__.extentDate().accessors([d => d[0].x]);
 const yExtent = d3fc__WEBPACK_IMPORTED_MODULE_1__.extentLinear().accessors([d => d[0].y]).pad([1, 0]);
 
-const getSeries = (index, context) => d3fc__WEBPACK_IMPORTED_MODULE_1__.seriesWebglLine().crossValue(d => d[index].x).mainValue(d => d[index].y).defined(() => 1).equals(previousData => previousData.length > 0).lineWidth(3).context(context).decorate(c => {
-  d3fc__WEBPACK_IMPORTED_MODULE_1__.webglStrokeColor(webglColors[index])(c);
+const getSeries = (index, context, colorMap) => d3fc__WEBPACK_IMPORTED_MODULE_1__.seriesWebglLine().crossValue(d => d[index].x).mainValue(d => d[index].y).defined(() => 1).equals(previousData => previousData.length > 0).lineWidth(3).context(context).decorate(c => {
+  const {
+    i,
+    j
+  } = colorMap[index];
+  d3fc__WEBPACK_IMPORTED_MODULE_1__.webglStrokeColor(webglColors[i][j])(c);
 });
 
 const gridlines = d3fc__WEBPACK_IMPORTED_MODULE_1__.annotationSvgGridline();
@@ -4280,7 +4303,8 @@ const gridlines = d3fc__WEBPACK_IMPORTED_MODULE_1__.annotationSvgGridline();
 function Chart({
   selected,
   shouldUpdate,
-  time
+  time,
+  zoom
 }) {
   const frame = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(_Model_store__WEBPACK_IMPORTED_MODULE_4__.useFrameStore.getState().frame);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
@@ -4304,6 +4328,7 @@ function Chart({
     d3__WEBPACK_IMPORTED_MODULE_2__.select(chartRef.current).datum(data.current).call(chart.current);
   };
 
+  const colorMap = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)();
   const newSeries = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)();
 
   const updateData = () => time.current.map((t, f) => {
@@ -4333,10 +4358,20 @@ function Chart({
       params
     } = selected.current;
     labels.current = satellites.map(satellite => params.map(param => `${satellite.name} ${dataHelpers[param].label}`)).flat();
-    ordinal.current = d3__WEBPACK_IMPORTED_MODULE_2__.scaleOrdinal().domain(labels.current).range(colors.slice(0, labels.length).map(color => `rgb(${color.slice(0, 3)})`));
+    colorMap.current = satellites.map((satellite, i) => params.map((param, j) => ({
+      i,
+      j
+    }))).flat();
+    ordinal.current = d3__WEBPACK_IMPORTED_MODULE_2__.scaleOrdinal().domain(labels.current).range(labels.current.map((label, index) => {
+      const {
+        i,
+        j
+      } = colorMap.current[index];
+      return `rgb(${colors[i][j].slice(0, 3)})`;
+    }));
     series.current = Array.from({
       length: satellites.length * params.length
-    }, (v, i) => getSeries(i, context.current));
+    }, (v, i) => getSeries(i, context.current, colorMap.current));
     if (!multi.current) multi.current = d3fc__WEBPACK_IMPORTED_MODULE_1__.seriesWebglMulti();
     multi.current.series(series.current).context(context.current);
     legend.current = (0,d3_svg_legend__WEBPACK_IMPORTED_MODULE_3__.legendColor)().shape('path', d3__WEBPACK_IMPORTED_MODULE_2__.symbol().type(d3__WEBPACK_IMPORTED_MODULE_2__.symbolSquare).size(150)()).shapePadding(20).labelWrap(100).scale(ordinal.current);
@@ -4355,7 +4390,7 @@ function Chart({
 
   const nextData = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)();
   const prevFrame = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)();
-  (0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_8__.n)(() => {
+  (0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_7__.n)(() => {
     if (prevFrame.current === frame.current) return;
     if (!time.current) return;
 
@@ -4374,11 +4409,10 @@ function Chart({
       data.current = updateData();
       updateChart();
       shouldUpdate.current = false;
-    } // nextData.current = data.current.slice(frame.current - 1500 > 0
-    //   ? frame.current - 1500 : 0, frame.current);
+    }
 
+    nextData.current = data.current.slice(frame.current - zoom.current > 0 ? frame.current - zoom.current : 0, frame.current); // nextData.current = data.current.slice(0, frame.current);
 
-    nextData.current = data.current.slice(0, frame.current);
     chart.current.xDomain(xExtent(nextData.current));
     drawChart();
     prevFrame.current = frame.current;
@@ -4386,12 +4420,12 @@ function Chart({
   const ref = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(node => {
     chartRef.current = node;
   }, []);
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.Box, {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.Box, {
     maxHeight: 500,
     width: "100%",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.Flex, {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.Flex, {
       justify: "center",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
         style: {
           width: '80%',
           height: '500px',
@@ -4399,7 +4433,7 @@ function Chart({
         },
         ref: ref,
         id: "chart"
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("d3fc-svg", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("d3fc-svg", {
         id: "legend",
         ref: legendRef,
         style: {
@@ -4442,7 +4476,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _react_three_fiber__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @react-three/fiber */ "./node_modules/@react-three/fiber/dist/index-05f8627d.esm.js");
 /* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/layout/dist/index.esm.js");
-/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/select/dist/index.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/form-control/dist/index.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/number-input/dist/index.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/select/dist/index.esm.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var zustand_shallow__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! zustand/shallow */ "./node_modules/zustand/esm/shallow.js");
@@ -4517,15 +4553,27 @@ function ChartEditor() {
       selected.current.satellites = selected.current.satellites.filter(v => v.id !== satellite.id);
     } else {
       selected.current.satellites = [...selected.current.satellites, satellite];
+
+      if (selected.current.satellites.length > 6) {
+        selected.current.satellites.splice(0, 1);
+      }
     }
 
-    setSelectedSatellites(selected.current.satellites);
+    (0,react__WEBPACK_IMPORTED_MODULE_0__.startTransition)(() => {
+      setSelectedSatellites(selected.current.satellites);
+    });
     shouldUpdate.current = true;
   };
 
   const handleSelectParam = e => {
     selected.current.params = paramChoices.find(v => v.key === e.target.value).selection;
     shouldUpdate.current = true;
+  };
+
+  const zoom = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(1500);
+
+  const handleZoom = v => {
+    zoom.current = v;
   };
 
   const timeRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)();
@@ -4538,7 +4586,35 @@ function ChartEditor() {
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_Chart__WEBPACK_IMPORTED_MODULE_2__["default"], {
       selected: selected,
       shouldUpdate: shouldUpdate,
-      time: timeRef
+      time: timeRef,
+      zoom: zoom
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.FormControl, {
+      width: "50%",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.Flex, {
+        gap: 3,
+        align: "center",
+        justify: "center",
+        m: 3,
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.FormLabel, {
+          height: "100%",
+          margin: 0,
+          children: "Zoom:"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.NumberInput, {
+          defaultValue: 1500,
+          min: 500,
+          max: 5000,
+          step: 100,
+          onChange: handleZoom,
+          maxWidth: "10rem",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.NumberInputField, {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.NumberInputStepper, {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.NumberIncrementStepper, {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.NumberDecrementStepper, {})]
+          })]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.Text, {
+          flex: 1,
+          align: "left",
+          children: "frames"
+        })]
+      })
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.Flex, {
       width: "100%",
       justify: "flex-start",
@@ -4551,7 +4627,7 @@ function ChartEditor() {
           width: "50%",
           children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
             children: "Choose parameter"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.Select, {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.Select, {
             onChange: handleSelectParam,
             children: paramChoices.map(choice => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("option", {
               value: choice.key,
@@ -4715,8 +4791,10 @@ function SatelliteList({
 
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_5__.VStack, {
     width: "50%",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("h4", {
-      children: "Show data for"
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("h4", {
+      children: ["Show data for", ' ', /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+        children: "(max 6)"
+      })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.CheckboxGroup, {
       width: "100%",
       children: customers.map(customer => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.Checkbox, {
@@ -4852,48 +4930,6 @@ function Summary() {
 }
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Summary);
-
-const $ReactRefreshModuleId$ = __webpack_require__.$Refresh$.moduleId;
-const $ReactRefreshCurrentExports$ = __react_refresh_utils__.getModuleExports(
-	$ReactRefreshModuleId$
-);
-
-function $ReactRefreshModuleRuntime$(exports) {
-	if (false) {}
-}
-
-if (typeof Promise !== 'undefined' && $ReactRefreshCurrentExports$ instanceof Promise) {
-	$ReactRefreshCurrentExports$.then($ReactRefreshModuleRuntime$);
-} else {
-	$ReactRefreshModuleRuntime$($ReactRefreshCurrentExports$);
-}
-
-/***/ }),
-
-/***/ "./src/UI/PerformanceView/chartStore.js":
-/*!**********************************************!*\
-  !*** ./src/UI/PerformanceView/chartStore.js ***!
-  \**********************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _react_three_fiber__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @react-three/fiber */ "./node_modules/@react-three/fiber/dist/index-05f8627d.esm.js");
-/* harmony import */ var zustand_vanilla__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! zustand/vanilla */ "./node_modules/zustand/esm/vanilla.js");
-/* provided dependency */ var __react_refresh_utils__ = __webpack_require__(/*! ./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js */ "./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js");
-__webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/react-refresh/runtime.js */ "./node_modules/react-refresh/runtime.js");
-
-
-
-
-(0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_0__.e)({});
-
-const useChartStore = (0,zustand_vanilla__WEBPACK_IMPORTED_MODULE_1__["default"])(() => ({
-  context: null
-}));
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (useChartStore);
 
 const $ReactRefreshModuleId$ = __webpack_require__.$Refresh$.moduleId;
 const $ReactRefreshCurrentExports$ = __react_refresh_utils__.getModuleExports(
@@ -5276,6 +5312,7 @@ function getCorsFreeUrl(url) {
 function parseTLEs(fileContent) {
   const result = [];
   const lines = fileContent.split('\n');
+  if (lines < 2) throw new Error('Error parsing TLE');
   let current = null;
 
   for (let i = 0; i < lines.length; ++i) {
@@ -5299,7 +5336,7 @@ function parseTLEs(fileContent) {
         }
       };
       result.push(current);
-    }
+    } else throw new Error('Error parsing TLE');
   }
 
   return result;
