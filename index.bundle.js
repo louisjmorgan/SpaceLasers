@@ -2379,10 +2379,10 @@ const statProps = [{
   key: 'chargeState',
   label: '',
   shouldArrows: false,
-  getValue: (frame, selected) => selected.performance.chargeState[frame] * 100,
+  getValue: (frame, selected) => selected.performance.chargeStateNoBeams[frame] * 100,
   formatValue: value => `${value.toPrecision(3)}%`,
-  getHelpText: () => 'w/o Space Power',
-  getHelpNumber: (frame, selected) => `${(selected.performance.chargeStateNoBeams[frame] * 100).toPrecision(3)}% `
+  getHelpText: () => 'w/ Space Power',
+  getHelpNumber: (frame, selected) => `${(selected.performance.chargeState[frame] * 100).toPrecision(3)}% `
 }];
 
 function HUD() {
