@@ -985,7 +985,13 @@ const useStore = (0,zustand__WEBPACK_IMPORTED_MODULE_3__["default"])(set => ({
     return {
       mission,
       satelliteOptions: newOptions,
-      isInitialized: true
+      isInitialized: true,
+      cameraTarget: {
+        name: 'earth',
+        ref: null,
+        lock: true,
+        id: null
+      }
     };
   }),
   setView: e => set(() => ({
