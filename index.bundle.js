@@ -3577,6 +3577,7 @@ function OrbitTab({
 }) {
   const handleExtractTle = e => {
     e.preventDefault();
+    console.log(formik.values.satellites[satIndex].orbit.tle);
     const {
       tles
     } = (0,Util_astronomy_js__WEBPACK_IMPORTED_MODULE_1__.parseTLEs)(formik.values.satellites[satIndex].orbit.tle)[0];
@@ -3598,7 +3599,6 @@ function OrbitTab({
     });
   };
 
-  console.log(constellations);
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.Fragment, {
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_5__.Flex, {
       justify: "space-around",
@@ -4046,7 +4046,7 @@ const defaultSatellite = {
     perigee: 88.9181,
     meanAnomaly: 343.2887,
     meanMotion: 13.16587847,
-    tle: '',
+    tle: 'ONEWEB-0012\n1 44057U 19010A   22250.74391874  .00000001  00000+0 -32174-4 0  9997\n2 44057  87.9135 143.1939 0002746  66.1420 293.9999 13.16594134170187',
     constellation: 'OneWeb'
   },
   power: {
