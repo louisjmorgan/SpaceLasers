@@ -3348,12 +3348,13 @@ function MissionPlanner({
       await new Promise((resolve, reject) => {
         setInitialized(false);
         setTimeout(() => {
-          // try {
-          initializeMission(values);
-          formik.setStatus(''); // } catch (error) {
-          //   formik.setStatus(error.message);
-          //   reject();
-          // }
+          try {
+            initializeMission(values);
+            formik.setStatus('');
+          } catch (error) {
+            formik.setStatus('Error. Please try different orbital parameters and offsets.');
+            reject();
+          }
 
           resolve();
         }, 500);
@@ -3487,6 +3488,8 @@ __webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/r
 
 
 
+/* eslint-disable react/no-array-index-key */
+
 /* eslint-disable react/prop-types */
 
 
@@ -3588,13 +3591,14 @@ function OrbitTab({
       perigee: satRec.argpotle,
       meanAnomaly: satRec.motle,
       meanMotion: satRec.notle,
-      tle: ''
+      tle: formik.values.satellites[satIndex].orbit.tle
     };
     Object.entries(newOrbit).forEach(entry => {
       formik.setFieldValue(`satellites[${satIndex}].orbit.[${entry[0]}]`, entry[1]);
     });
   };
 
+  console.log(constellations);
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.Fragment, {
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_5__.Flex, {
       justify: "space-around",
@@ -3664,10 +3668,10 @@ function OrbitTab({
                 name: `satellites[${satIndex}].orbit.tle`,
                 value: formik.values.satellites[satIndex].orbit.tle,
                 onChange: formik.handleChange,
-                children: constellations.find(v => v.name === formik.values.satellites[satIndex].orbit.constellation).tles.map(tle => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                children: constellations.find(v => v.name === formik.values.satellites[satIndex].orbit.constellation).tles.map((tle, i) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
                   value: `${tle.name}\n${tle.tles.tle1}\n${tle.tles.tle2}`,
                   children: tle.name
-                }, tle.name))
+                }, `${i}${tle.name}`))
               })]
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.Button, {
               onClick: handleExtractTle,
