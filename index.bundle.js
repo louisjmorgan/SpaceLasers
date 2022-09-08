@@ -320,9 +320,12 @@ const handleMissionRequest = req => {
       chargeStateNoBeams: (0,_simulation__WEBPACK_IMPORTED_MODULE_2__.getChargeStates)(customer, time, false)
     };
     const [dischargeSaved, timeCharged] = (0,_simulation__WEBPACK_IMPORTED_MODULE_2__.getDischargeSaved)(customer);
+    const [lowestChargeStateBeams, lowestChargeStateNoBeams] = (0,_simulation__WEBPACK_IMPORTED_MODULE_2__.getLowestChargeState)(customer);
     customer.summary = {
       dischargeSaved,
-      timeCharged
+      timeCharged,
+      lowestChargeStateBeams,
+      lowestChargeStateNoBeams
     };
   });
   spacePowers.forEach(spacePower => {
@@ -340,7 +343,15 @@ const handleMissionRequest = req => {
     },
     summary: {
       dischargeSaved: customers.reduce((prev, current) => prev + current.summary.dischargeSaved, 0),
-      timeCharged: customers.reduce((prev, current) => prev + current.summary.timeCharged, 0)
+      timeCharged: customers.reduce((prev, current) => prev + current.summary.timeCharged, 0),
+      lowestChargeStateBeams: customers.reduce((prev, current) => {
+        const c = current.summary.lowestChargeStateBeams;
+        return prev < c ? prev : c;
+      }, customers[0].summary.lowestChargeStateBeams),
+      lowestChargeStateNoBeams: customers.reduce((prev, current) => {
+        const c = current.summary.lowestChargeStateNoBeams;
+        return prev < c ? prev : c;
+      }, customers[0].summary.lowestChargeStateNoBeams)
     }
   };
   return {
@@ -623,6 +634,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "getDischargeSaved": () => (/* binding */ getDischargeSaved),
 /* harmony export */   "getEarthRotationAngles": () => (/* binding */ getEarthRotationAngles),
 /* harmony export */   "getEclipsedArray": () => (/* binding */ getEclipsedArray),
+/* harmony export */   "getLowestChargeState": () => (/* binding */ getLowestChargeState),
 /* harmony export */   "getSatellitePositions": () => (/* binding */ getSatellitePositions),
 /* harmony export */   "getSources": () => (/* binding */ getSources),
 /* harmony export */   "getSunPositions": () => (/* binding */ getSunPositions),
@@ -796,6 +808,7 @@ function getChargeStates(satellite, timeArray, hasBeams = true) {
     }
 
     chargeState = (0,_Util_power__WEBPACK_IMPORTED_MODULE_2__.getChargeState)(satellite.params, satellite.performance.currentDuties[index], source, chargeState, delta);
+    if (chargeState > 1) return 1;
     return chargeState;
   });
 }
@@ -821,6 +834,13 @@ function getDischargeSaved(satellite) {
   const dischargeSaved = totalCurrent * (_Util_constants__WEBPACK_IMPORTED_MODULE_3__.SIM_LENGTH / (1000 * 60 * 60)) / _Util_constants__WEBPACK_IMPORTED_MODULE_3__.FRAMES;
   timeCharged = timeCharged / _Util_constants__WEBPACK_IMPORTED_MODULE_3__.FRAMES * _Util_constants__WEBPACK_IMPORTED_MODULE_3__.SIM_LENGTH / (1000 * 60);
   return [dischargeSaved, timeCharged];
+}
+
+function getLowestChargeState(satellite) {
+  const lowestBeams = satellite.performance.chargeState.reduce((prev, current) => current < prev ? current : prev, 1);
+  const lowestNoBeams = satellite.performance.chargeStateNoBeams.reduce((prev, current) => current < prev ? current : prev, 1);
+  console.log(lowestBeams, lowestNoBeams);
+  return [lowestBeams, lowestNoBeams];
 }
 
 
@@ -1810,7 +1830,7 @@ function Simulation() {
   const isPaused = (0,_Model_store__WEBPACK_IMPORTED_MODULE_1__.useStore)(state => state.isPaused);
   const [dpr, setDpr] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1);
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.GridItem, {
-    area: "1 / 1 / 4 / 4",
+    area: "1 / 1 / 4 / 3",
     children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
       ref: container,
       style: {
@@ -1845,7 +1865,7 @@ function Simulation() {
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_react_three_drei__WEBPACK_IMPORTED_MODULE_13__.PerformanceMonitor, {
               onChange: ({
                 factor
-              }) => setDpr((0.5 + 1.5 * factor).toFixed(1))
+              }) => setDpr((0.75 + 1.5 * factor).toFixed(1))
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_Camera__WEBPACK_IMPORTED_MODULE_5__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_Frame__WEBPACK_IMPORTED_MODULE_2__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_react_three_drei__WEBPACK_IMPORTED_MODULE_14__.Stars, {
               radius: 100 // Radius of the inner sphere (default=100)
               ,
@@ -4404,6 +4424,7 @@ function Chart({
 
   const nextData = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)();
   const prevFrame = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)();
+  const window = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)();
   (0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_7__.n)(() => {
     if (prevFrame.current === frame.current) return;
     if (!time.current) return;
@@ -4425,7 +4446,8 @@ function Chart({
       shouldUpdate.current = false;
     }
 
-    nextData.current = data.current.slice(frame.current - zoom.current > 0 ? frame.current - zoom.current : 0, frame.current); // nextData.current = data.current.slice(0, frame.current);
+    window.current = frame.current - (frame.current - 500) * (zoom.current / 1000);
+    nextData.current = data.current.slice(frame.current - window.current >= 0 ? frame.current - window.current : 0, frame.current); // nextData.current = data.current.slice(0, frame.current);
 
     chart.current.xDomain(xExtent(nextData.current));
     drawChart();
@@ -4491,7 +4513,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _react_three_fiber__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @react-three/fiber */ "./node_modules/@react-three/fiber/dist/index-05f8627d.esm.js");
 /* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/layout/dist/index.esm.js");
 /* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/form-control/dist/index.esm.js");
-/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/number-input/dist/index.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/slider/dist/index.esm.js");
 /* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/select/dist/index.esm.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
@@ -4584,7 +4606,20 @@ function ChartEditor() {
     shouldUpdate.current = true;
   };
 
-  const zoom = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(1500);
+  const frame = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(_Model_store__WEBPACK_IMPORTED_MODULE_1__.useFrameStore.getState().frame);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    _Model_store__WEBPACK_IMPORTED_MODULE_1__.useFrameStore.subscribe(state => {
+      if (state.frame - 2 > frame.current) {
+        frame.current = state.frame;
+      }
+
+      if (frame.current > state.frame) {
+        frame.current = state.frame;
+      } // frame.current = state.frame;
+
+    });
+  }, []);
+  const zoom = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(300);
 
   const handleZoom = v => {
     zoom.current = v;
@@ -4613,20 +4648,18 @@ function ChartEditor() {
           height: "100%",
           margin: 0,
           children: "Zoom:"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.NumberInput, {
-          defaultValue: 1500,
-          min: 500,
-          max: 5000,
-          step: 100,
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.Slider, {
+          "aria-label": "slider-ex-2",
+          colorScheme: "purple",
+          defaultValue: 300,
+          min: 0,
+          max: 1000,
+          step: 10,
           onChange: handleZoom,
           maxWidth: "10rem",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.NumberInputField, {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.NumberInputStepper, {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.NumberIncrementStepper, {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.NumberDecrementStepper, {})]
-          })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.Text, {
-          flex: 1,
-          align: "left",
-          children: "frames"
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.SliderTrack, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.SliderFilledTrack, {})
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.SliderThumb, {})]
         })]
       })
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.Flex, {
@@ -4876,7 +4909,17 @@ __webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/r
 
 (0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_4__.e)({});
 
+const days = _Util_constants__WEBPACK_IMPORTED_MODULE_2__.SIM_LENGTH / (1000 * 60 * 60 * 24);
 const statProps = [{
+  key: 'duration',
+  name: 'Total Duration',
+  getValue: () => days,
+  format: value => `${value.toFixed(1)} days`,
+  getHelpText: (selected, customers) => {
+    const period = selected.params ? selected.params.orbit.period : customers[0].params.orbit.period;
+    return `${(_Util_constants__WEBPACK_IMPORTED_MODULE_2__.SIM_LENGTH / period).toFixed(2)} orbits`;
+  }
+}, {
   key: 'dischargeSaved',
   name: 'Discharge Saved',
   getValue: selected => selected.summary.dischargeSaved,
@@ -4890,10 +4933,13 @@ const statProps = [{
   name: 'Time spent charging',
   getValue: selected => selected.summary.timeCharged,
   format: value => `${value.toFixed(1)} minutes`,
-  getHelpText: selected => {
-    const days = _Util_constants__WEBPACK_IMPORTED_MODULE_2__.SIM_LENGTH / (1000 * 60 * 60 * 24);
-    return `${(selected.summary.timeCharged * 100 / (days * 60 * 60)).toFixed(1)}% of ${days} days`;
-  }
+  getHelpText: selected => `${(selected.summary.timeCharged * 100 / (days * 60 * 60)).toFixed(1)}% of ${days} days`
+}, {
+  key: 'lowestChargeState',
+  name: 'Lowest Charge State',
+  getValue: selected => selected.summary.lowestChargeStateNoBeams,
+  format: value => `${(value * 100).toFixed(1)}%`,
+  getHelpText: selected => `${(selected.summary.lowestChargeStateBeams * 100).toFixed(1)}% with Space Power`
 }];
 
 function Summary() {
