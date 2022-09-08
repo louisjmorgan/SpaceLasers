@@ -89,7 +89,6 @@ function App() {
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     setFirstRender(true);
   }, []);
-  console.log(isInitialized);
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_17__.ChakraProvider, {
     theme: _theme__WEBPACK_IMPORTED_MODULE_9__["default"],
     children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_18__.Grid, {
@@ -292,6 +291,7 @@ const handleMissionRequest = req => {
     };
   });
   const offsets = (0,_satellite__WEBPACK_IMPORTED_MODULE_1__.getOffsets)(req.spacePowers, req.satellites.length, req.offsets);
+  console.log(offsets);
   const spacePowers = [];
   req.satellites.forEach((satellite, index) => {
     if (!offsets[index]) return;
@@ -530,7 +530,6 @@ function createSatellite(satellite, isCustomer = true) {
 }
 
 function createPowerSatellite(name, orbit, offsets) {
-  console.log(offsets);
   const newOrbit = { ...orbit
   };
   Object.entries(offsets).forEach(offset => {
@@ -3348,7 +3347,8 @@ function MissionPlanner({
           //   formik.setStatus(error.message);
           //   reject();
           // }
-          // resolve();
+
+          resolve();
         }, 500);
       });
     }
@@ -4506,7 +4506,6 @@ function ChartEditor() {
       selected.current.satellites = selected.current.satellites.filter(v => v.id !== satellite.id);
     } else {
       selected.current.satellites = [...selected.current.satellites, satellite];
-      console.log(selected.current.satellites);
     }
 
     setSelectedSatellites(selected.current.satellites);
@@ -4697,7 +4696,6 @@ function SatelliteList({
   } = (0,Model_store__WEBPACK_IMPORTED_MODULE_1__.useStore)(state => ({
     customers: state.mission.satellites.customers
   }), zustand_shallow__WEBPACK_IMPORTED_MODULE_5__["default"]);
-  console.log(selected);
 
   const handleSelect = e => {
     const {
