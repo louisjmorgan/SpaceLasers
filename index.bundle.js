@@ -290,7 +290,8 @@ const handleMissionRequest = req => {
       isEclipsed: (0,_simulation__WEBPACK_IMPORTED_MODULE_2__.getEclipsedArray)(customer, sun, time)
     };
   });
-  const offsets = (0,_satellite__WEBPACK_IMPORTED_MODULE_1__.getOffsets)(req.spacePowers, req.satellites.length, req.offsets);
+  console.log(req.spacePowers);
+  const offsets = (0,_satellite__WEBPACK_IMPORTED_MODULE_1__.getOffsets)(Number(req.spacePowers), req.satellites.length, req.offsets);
   console.log(offsets);
   const spacePowers = [];
   req.satellites.forEach((satellite, index) => {
@@ -533,7 +534,7 @@ function createPowerSatellite(name, orbit, offsets) {
   const newOrbit = { ...orbit
   };
   Object.entries(offsets).forEach(offset => {
-    newOrbit[offset[0]] = orbit[offset[0]] + offset[1];
+    newOrbit[offset[0]] = orbit[offset[0]] + Number(offset[1]);
   });
   const request = { ...POWER_SAT_REQUEST,
     name,
@@ -550,21 +551,26 @@ function getOffsets(spacePowers, customers, offsets) {
   }, () => [offsets]);
 
   if (spacePowers < customers) {
-    const spacing = Math.ceil(customers / spacePowers);
+    const spacing = Math.floor(customers / spacePowers);
+    let total = 0;
     return Array.from({
       length: customers
     }, (value, index) => {
-      if (index % spacing) return [offsets];
-      return null;
+      if (index % spacing) return null;
+      total += 1;
+      if (total > spacePowers) return null;
+      return [offsets];
     });
   }
 
   if (spacePowers > customers) {
-    const ratio = Math.ceil(spacePowers / customers);
+    let ratio = Math.ceil(spacePowers / customers);
+    let total = 0;
     return Array.from({
       length: customers
     }, () => {
       let multiplier = 0;
+      if (total + ratio > spacePowers) ratio = spacePowers - total;
       return Array.from({
         length: ratio
       }, (value, index) => {
@@ -573,6 +579,7 @@ function getOffsets(spacePowers, customers, offsets) {
         Object.entries(offsets).forEach(offset => {
           newOffsets[offset[0]] = offset[1] * multiplier * (0 - 1) ** index;
         });
+        total += 1;
         return newOffsets;
       });
     });
@@ -4663,14 +4670,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _react_three_fiber__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @react-three/fiber */ "./node_modules/@react-three/fiber/dist/index-05f8627d.esm.js");
-/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/layout/dist/index.esm.js");
-/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/checkbox/dist/index.esm.js");
-/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "./node_modules/d3/src/index.js");
-/* harmony import */ var Model_store__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! Model/store */ "./src/Model/store.js");
-/* harmony import */ var zustand_shallow__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! zustand/shallow */ "./node_modules/zustand/esm/shallow.js");
-/* harmony import */ var _Charts_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Charts.css */ "./src/UI/PerformanceView/Charts.css");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _react_three_fiber__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @react-three/fiber */ "./node_modules/@react-three/fiber/dist/index-05f8627d.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/layout/dist/index.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/checkbox/dist/index.esm.js");
+/* harmony import */ var zustand_shallow__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! zustand/shallow */ "./node_modules/zustand/esm/shallow.js");
+/* harmony import */ var _Model_store__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../Model/store */ "./src/Model/store.js");
+/* harmony import */ var _Charts_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Charts.css */ "./src/UI/PerformanceView/Charts.css");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 /* provided dependency */ var __react_refresh_utils__ = __webpack_require__(/*! ./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js */ "./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js");
 __webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/react-refresh/runtime.js */ "./node_modules/react-refresh/runtime.js");
 
@@ -4684,8 +4690,7 @@ __webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/r
 
 
 
-
-(0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_4__.e)({});
+(0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_3__.e)({});
 
 function SatelliteList({
   toggleSelected,
@@ -4693,9 +4698,9 @@ function SatelliteList({
 }) {
   const {
     customers
-  } = (0,Model_store__WEBPACK_IMPORTED_MODULE_1__.useStore)(state => ({
+  } = (0,_Model_store__WEBPACK_IMPORTED_MODULE_0__.useStore)(state => ({
     customers: state.mission.satellites.customers
-  }), zustand_shallow__WEBPACK_IMPORTED_MODULE_5__["default"]);
+  }), zustand_shallow__WEBPACK_IMPORTED_MODULE_4__["default"]);
 
   const handleSelect = e => {
     const {
@@ -4704,13 +4709,13 @@ function SatelliteList({
     toggleSelected(id);
   };
 
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.VStack, {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_5__.VStack, {
     width: "50%",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h4", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("h4", {
       children: "Show data for"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.CheckboxGroup, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.CheckboxGroup, {
       width: "100%",
-      children: customers.map(customer => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.Checkbox, {
+      children: customers.map(customer => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.Checkbox, {
         onChange: handleSelect,
         id: customer.id,
         align: "start",
