@@ -530,6 +530,7 @@ function createSatellite(satellite, isCustomer = true) {
 }
 
 function createPowerSatellite(name, orbit, offsets) {
+  console.log(offsets);
   const newOrbit = { ...orbit
   };
   Object.entries(offsets).forEach(offset => {
@@ -2218,6 +2219,8 @@ function Gauge({
       if (state.frame - 2 > frame.current) {
         frame.current = state.frame;
       }
+
+      if (frame.current > state.frame) frame.current = state.frame;
     });
   }, []);
   const data = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)();
@@ -5151,8 +5154,7 @@ function generateTLE(orbitElements) {
   if (bstar > 0) bstarMant = ` ${bstarMant.substring(0, 5)}`;
   const bstarExp = Math.ceil(Math.log10(Math.abs(bstar)));
   const tle1 = `1 00000C 00000A   ${epochYr}${epochDay}${epochFraction} ${meanMotionDotString}  00000-0 ${bstarMant}${bstarExp} 0  0000`;
-  console.log(inclination);
-  let inclinationString = String(Number(inclination.toFixed(4)));
+  let inclinationString = String(inclination.toFixed(4));
   if (inclination < 100) inclinationString = ` ${inclinationString}`;
   let rightAscensionString = String(rightAscension.toFixed(4));
 
