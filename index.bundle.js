@@ -4078,7 +4078,7 @@ const defaultValues = {
       perigee: 88.9181,
       meanAnomaly: 343.2887,
       meanMotion: 13.16587847,
-      tle: '',
+      tle: 'ONEWEB-0012\n1 44057U 19010A   22250.74391874  .00000001  00000+0 -32174-4 0  9997\n2 44057  87.9135 143.1939 0002746  66.1420 293.9999 13.16594134170187',
       constellation: 'OneWeb'
     },
     power: {
@@ -4110,7 +4110,7 @@ const defaultValues = {
       perigee: 76.2503,
       meanAnomaly: 352.9196,
       meanMotion: 13.16593118,
-      tle: '',
+      tle: 'ONEWEB-0012\n1 44057U 19010A   22250.74391874  .00000001  00000+0 -32174-4 0  9997\n2 44057  87.9135 143.1939 0002746  66.1420 293.9999 13.16594134170187',
       constellation: 'OneWeb'
     },
     power: {
@@ -4142,7 +4142,7 @@ const defaultValues = {
       perigee: 89.1265,
       meanAnomaly: 358.4823,
       meanMotion: 13.16600059,
-      tle: '',
+      tle: 'ONEWEB-0012\n1 44057U 19010A   22250.74391874  .00000001  00000+0 -32174-4 0  9997\n2 44057  87.9135 143.1939 0002746  66.1420 293.9999 13.16594134170187',
       constellation: 'OneWeb'
     },
     power: {
