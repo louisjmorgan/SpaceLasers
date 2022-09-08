@@ -130,8 +130,8 @@ function App() {
         area: view.simulationArea,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_18__.Grid, {
           h: '100%',
-          templateColumns: '1fr 0.125fr',
-          templateRows: '2fr 0.5fr 0.125fr',
+          templateColumns: '1fr 0.25fr',
+          templateRows: '0.125fr 1.75fr 0.625fr 0.125fr',
           children: [isInitialized ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.Fragment, {
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_Simulation_Simulation__WEBPACK_IMPORTED_MODULE_11__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_UI__WEBPACK_IMPORTED_MODULE_8__.HUD, {})]
           }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_19__.Spinner, {
@@ -139,13 +139,18 @@ function App() {
             top: "50%",
             left: "50%",
             transform: 'translate(-50%, -50%)'
-          }), view.name === 'mission' || view.name === 'performance' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_18__.GridItem, {
-            area: '3 / 2 / 4 / 3',
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_20__.Button, {
-              value: 'simulation',
-              onClick: setView,
-              children: "Return"
-            })
+          }), view.name === 'mission' || view.name === 'performance' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.Fragment, {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_18__.GridItem, {
+              area: '4 / 2 / 5 / 4',
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_20__.Button, {
+                value: 'simulation',
+                onClick: setView,
+                children: "Return"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_18__.GridItem, {
+              area: '1 / 1 / 1 / 3',
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_UI_Controls__WEBPACK_IMPORTED_MODULE_5__["default"], {})
+            })]
           }) : '']
         })
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_UI__WEBPACK_IMPORTED_MODULE_8__.MissionPlanner, {
@@ -1805,7 +1810,7 @@ function Simulation() {
   const isPaused = (0,_Model_store__WEBPACK_IMPORTED_MODULE_1__.useStore)(state => state.isPaused);
   const [dpr, setDpr] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1);
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.GridItem, {
-    area: "1 / 1 / 4 / 3",
+    area: "1 / 1 / 4 / 4",
     children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
       ref: container,
       style: {
@@ -2121,10 +2126,12 @@ function Controls() {
   }, []);
   const {
     time,
-    satellites
+    satellites,
+    view
   } = (0,_Model_store__WEBPACK_IMPORTED_MODULE_2__.useStore)(state => ({
     time: state.mission.time,
-    satellites: state.mission.satellites
+    satellites: state.mission.satellites,
+    view: state.view
   }), zustand_shallow__WEBPACK_IMPORTED_MODULE_5__["default"]);
   const timeRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)();
   (0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_4__.n)(() => {
@@ -2133,11 +2140,12 @@ function Controls() {
   });
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.Flex, {
     align: "center",
-    justify: "center",
+    justify: view.name === 'simulation' ? 'center' : 'space-between',
     height: "100%",
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.Text, {
       ref: timeRef,
       width: "22ch",
+      m: 2,
       children: new Date(time[0]).toString().slice(0, 21)
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.Menu, {
       closeOnSelect: false,
@@ -2499,7 +2507,7 @@ function HUD() {
   });
   if (!satellites) return;
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.GridItem, {
-    area: '2 / 1 / 3 / 3',
+    area: '3 / 1 / 4 / 3',
     zIndex: 99,
     transform: view.name === 'simulation' ? '' : 'translate(-9999px, 0)',
     position: view.name === 'simulation' ? '' : 'absolute',
