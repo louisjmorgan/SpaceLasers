@@ -4883,7 +4883,7 @@ const statProps = [{
   format: value => `${value.toFixed(2)}Ah`,
   getHelpText: (selected, customers) => {
     if (selected.params) return `${(selected.summary.dischargeSaved / selected.params.battery.capacity).toFixed(1)} full batteries`;
-    return `${(selected.summary.dischargeSaved / customers[0].battery.capacity).toFixed(1)} full batteriesd`;
+    return `${(selected.summary.dischargeSaved / customers[0].params.battery.capacity).toFixed(1)} full batteries`;
   }
 }, {
   key: 'timeCharged',
@@ -4913,6 +4913,7 @@ function Summary() {
   };
 
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.VStack, {
+    width: "100%",
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h3", {
       children: "Summary"
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.Center, {
@@ -4928,9 +4929,15 @@ function Summary() {
         })]
       })
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.StatGroup, {
+      as: _chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.Flex,
+      wrap: "wrap",
+      width: "100%",
+      justify: "center",
+      align: "center",
       children: statProps.map(stat => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.Stat, {
         m: 5,
-        width: "100%",
+        minWidth: "20ch",
+        align: "center",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.StatLabel, {
           children: stat.name
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.StatNumber, {
