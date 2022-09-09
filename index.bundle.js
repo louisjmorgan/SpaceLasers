@@ -921,7 +921,10 @@ const views = {
     templateColumns: '1fr 2fr',
     templateAreas: `"simulation performance"
   "summary performance"
-  "footer footer"`
+  "footer footer"`,
+    simulationArea: 'simulation',
+    headerArea: '',
+    footerArea: 'footer'
   }
 };
 const useFrameStore = (0,zustand_vanilla__WEBPACK_IMPORTED_MODULE_2__["default"])(() => ({
