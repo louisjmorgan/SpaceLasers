@@ -945,14 +945,22 @@ const useStore = (0,zustand__WEBPACK_IMPORTED_MODULE_3__["default"])(set => ({
   mission: null,
   isInitialized: false,
   satelliteObj: null,
+  shouldLoop: false,
+  isFinished: false,
+  setLoop: shouldLoop => set(() => ({
+    shouldLoop
+  })),
+  setFinished: isFinished => set(() => ({
+    isFinished
+  })),
   storeObj: obj => set(() => ({
     satelliteObj: obj
   })),
-  setInitialized: shouldInitialized => set(() => ({
-    isInitialized: shouldInitialized
+  setInitialized: isInitialized => set(() => ({
+    isInitialized
   })),
-  togglePaused: () => set(state => ({
-    isPaused: !state.isPaused
+  setPaused: isPaused => set(() => ({
+    isPaused
   })),
   setSpeed: speed => set(() => ({
     speed
@@ -1397,35 +1405,46 @@ function Frame() {
   }, []);
   const {
     isPaused,
-    speed
+    speed,
+    shouldLoop,
+    setFinished,
+    isFinished,
+    setPaused
   } = (0,_Model_store__WEBPACK_IMPORTED_MODULE_1__.useStore)(state => ({
-    isPaused: state.isPaused,
-    speed: state.speed
+    setPaused: state.setPaused,
+    speed: state.speed,
+    shouldLoop: state.shouldLoop,
+    setFinished: state.setFinished,
+    isFinished: state.isFinished,
+    isPaused: state.isPaused
   }), zustand_shallow__WEBPACK_IMPORTED_MODULE_4__["default"]);
   const frame = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(0);
   (0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_3__.z)(({
     clock
   }, delta) => {
-    if (!isPaused) {
-      let newFrame = frame.current + Math.round(_Util_constants__WEBPACK_IMPORTED_MODULE_2__.FRAMES * (delta * 1000 * _Util_constants__WEBPACK_IMPORTED_MODULE_2__.MIN_SPEED * speed / _Util_constants__WEBPACK_IMPORTED_MODULE_2__.SIM_LENGTH));
+    let newFrame = frame.current + Math.round(_Util_constants__WEBPACK_IMPORTED_MODULE_2__.FRAMES * (delta * 1000 * _Util_constants__WEBPACK_IMPORTED_MODULE_2__.MIN_SPEED * speed / _Util_constants__WEBPACK_IMPORTED_MODULE_2__.SIM_LENGTH));
 
-      if (newFrame >= _Util_constants__WEBPACK_IMPORTED_MODULE_2__.FRAMES) {
-        newFrame = 0;
-      }
+    if (newFrame >= _Util_constants__WEBPACK_IMPORTED_MODULE_2__.FRAMES - 1) {
+      newFrame = 0;
 
-      if (newFrame !== frame.current) {
-        frame.current = newFrame;
-        updateFrame(newFrame);
+      if (!shouldLoop) {
+        setFinished(true); // setPaused(true);
+
+        return; // clock.stop();
       }
+    }
+
+    if (newFrame !== frame.current) {
+      frame.current = newFrame;
+      updateFrame(newFrame);
     }
   });
   const {
     clock
   } = (0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_3__.y)();
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
-    if (isPaused === true) clock.stop();
-    clock.start();
-  }, [isPaused]);
+    if (isPaused || isFinished) clock.stop();else clock.start();
+  }, [isPaused, isFinished]);
   return null;
 }
 
@@ -1789,13 +1808,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
-/* harmony import */ var _react_three_fiber__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @react-three/fiber */ "./node_modules/@react-three/fiber/dist/index-05f8627d.esm.js");
-/* harmony import */ var _react_three_fiber__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @react-three/fiber */ "./node_modules/@react-three/fiber/dist/react-three-fiber.esm.js");
-/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/layout/dist/index.esm.js");
-/* harmony import */ var _react_three_drei__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @react-three/drei */ "./node_modules/@react-three/drei/web/View.js");
-/* harmony import */ var _react_three_drei__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @react-three/drei */ "./node_modules/@react-three/drei/core/PerformanceMonitor.js");
-/* harmony import */ var _react_three_drei__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @react-three/drei */ "./node_modules/@react-three/drei/core/Stars.js");
+/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
+/* harmony import */ var _react_three_fiber__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @react-three/fiber */ "./node_modules/@react-three/fiber/dist/index-05f8627d.esm.js");
+/* harmony import */ var _react_three_fiber__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @react-three/fiber */ "./node_modules/@react-three/fiber/dist/react-three-fiber.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/layout/dist/index.esm.js");
+/* harmony import */ var _react_three_drei__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @react-three/drei */ "./node_modules/@react-three/drei/web/View.js");
+/* harmony import */ var _react_three_drei__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @react-three/drei */ "./node_modules/@react-three/drei/core/PerformanceMonitor.js");
+/* harmony import */ var _react_three_drei__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! @react-three/drei */ "./node_modules/@react-three/drei/core/Stars.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _Model_store__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Model/store */ "./src/Model/store.js");
@@ -1804,7 +1823,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Sun__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Sun */ "./src/Simulation/Sun.js");
 /* harmony import */ var _Camera__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Camera */ "./src/Simulation/Camera.js");
 /* harmony import */ var _Satellites__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./Satellites */ "./src/Simulation/Satellites.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _UI_LoopDialog__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../UI/LoopDialog */ "./src/UI/LoopDialog.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 /* provided dependency */ var __react_refresh_utils__ = __webpack_require__(/*! ./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js */ "./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js");
 __webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/react-refresh/runtime.js */ "./node_modules/react-refresh/runtime.js");
 
@@ -1827,8 +1847,9 @@ __webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/r
 
 
 
-(0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_8__.e)({
-  Camera: three__WEBPACK_IMPORTED_MODULE_9__.Camera
+
+(0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_9__.e)({
+  Camera: three__WEBPACK_IMPORTED_MODULE_10__.Camera
 });
 
 function Simulation() {
@@ -1836,9 +1857,9 @@ function Simulation() {
   const container = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)();
   const isPaused = (0,_Model_store__WEBPACK_IMPORTED_MODULE_1__.useStore)(state => state.isPaused);
   const [dpr, setDpr] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1);
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.GridItem, {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__.GridItem, {
     area: "1 / 1 / 4 / 3",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
       ref: container,
       style: {
         width: '100%',
@@ -1846,7 +1867,7 @@ function Simulation() {
         position: 'relative' // display: `${shouldDisplay ? 'block' : 'none'}`,
 
       },
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_UI_LoopDialog__WEBPACK_IMPORTED_MODULE_7__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
         ref: viewRef,
         style: {
           width: '100%',
@@ -1854,7 +1875,7 @@ function Simulation() {
           display: 'inline-block',
           zIndex: 0
         }
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_react_three_fiber__WEBPACK_IMPORTED_MODULE_11__.Canvas, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_react_three_fiber__WEBPACK_IMPORTED_MODULE_12__.Canvas, {
         className: "canvas",
         onCreated: state => {
           state.events.connect(container.current);
@@ -1866,14 +1887,14 @@ function Simulation() {
           left: '0px'
         },
         dpr: dpr,
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_react_three_drei__WEBPACK_IMPORTED_MODULE_12__.View, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_react_three_drei__WEBPACK_IMPORTED_MODULE_13__.View, {
           track: viewRef,
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(react__WEBPACK_IMPORTED_MODULE_0__.Suspense, {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_react_three_drei__WEBPACK_IMPORTED_MODULE_13__.PerformanceMonitor, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)(react__WEBPACK_IMPORTED_MODULE_0__.Suspense, {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_react_three_drei__WEBPACK_IMPORTED_MODULE_14__.PerformanceMonitor, {
               onChange: ({
                 factor
               }) => setDpr((0.75 + 1.5 * factor).toFixed(1))
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_Camera__WEBPACK_IMPORTED_MODULE_5__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_Frame__WEBPACK_IMPORTED_MODULE_2__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_react_three_drei__WEBPACK_IMPORTED_MODULE_14__.Stars, {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_Camera__WEBPACK_IMPORTED_MODULE_5__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_Frame__WEBPACK_IMPORTED_MODULE_2__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_react_three_drei__WEBPACK_IMPORTED_MODULE_15__.Stars, {
               radius: 100 // Radius of the inner sphere (default=100)
               ,
               depth: 50 // Depth of area where stars should fit (default=50)
@@ -1886,7 +1907,7 @@ function Simulation() {
               ,
               fade: true,
               speed: isPaused ? 0 : 1
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_Sun__WEBPACK_IMPORTED_MODULE_4__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_Earth__WEBPACK_IMPORTED_MODULE_3__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_Satellites__WEBPACK_IMPORTED_MODULE_6__["default"], {})]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_Sun__WEBPACK_IMPORTED_MODULE_4__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_Earth__WEBPACK_IMPORTED_MODULE_3__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_Satellites__WEBPACK_IMPORTED_MODULE_6__["default"], {})]
           })
         })
       })]
@@ -2055,22 +2076,38 @@ __webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/r
 function SimControls() {
   const {
     isPaused,
-    togglePaused,
+    setPaused,
     speed,
-    setSpeed
+    setSpeed,
+    shouldLoop,
+    setLoop,
+    isFinished
   } = (0,_Model_store__WEBPACK_IMPORTED_MODULE_2__.useStore)(state => ({
     isPaused: state.isPaused,
-    togglePaused: state.togglePaused,
+    setPaused: state.setPaused,
     speed: state.speed,
-    setSpeed: state.setSpeed
+    setSpeed: state.setSpeed,
+    shouldLoop: state.shouldLoop,
+    setLoop: state.setLoop,
+    isFinished: state.isFinished
   }), zustand_shallow__WEBPACK_IMPORTED_MODULE_5__["default"]);
+
+  const handlePaused = () => {
+    setPaused(!isPaused);
+  };
+
+  const handleLoop = e => {
+    setLoop(e.target.checked);
+  };
+
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.Fragment, {
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.MenuItem, {
       as: _chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.Flex,
       justify: "space-between",
       align: "center",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.Button, {
-        onClick: () => togglePaused(),
+        onClick: handlePaused,
+        isDisabled: isFinished,
         children: isPaused ? 'Resume' : 'Pause'
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.FormLabel, {
         htmlFor: "loop",
@@ -2078,7 +2115,9 @@ function SimControls() {
         mb: 0,
         children: ["Loop", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.Switch, {
           id: "loop",
-          mx: 1
+          mx: 1,
+          isChecked: shouldLoop,
+          onChange: handleLoop
         })]
       })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.MenuItem, {
@@ -2088,7 +2127,7 @@ function SimControls() {
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__.Slider, {
         name: "speed",
         value: speed,
-        onChange: v => setSpeed(v),
+        onChange: setSpeed,
         min: 1,
         max: 10,
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__.SliderTrack, {
@@ -2130,6 +2169,9 @@ function CameraControls({
         onChange: v => setLockCamera(v === '1'),
         value: cameraTarget.lock ? '1' : '0',
         disabled: cameraTarget.name === 'earth',
+        as: _chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.Flex,
+        justify: "space-around",
+        width: "100%",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_13__.Radio, {
           value: "1",
           children: "Lock"
@@ -2356,19 +2398,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _react_three_fiber__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @react-three/fiber */ "./node_modules/@react-three/fiber/dist/index-05f8627d.esm.js");
-/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/layout/dist/index.esm.js");
-/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/select/dist/index.esm.js");
-/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/button/dist/index.esm.js");
-/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/stat/dist/index.esm.js");
+/* harmony import */ var _react_three_fiber__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @react-three/fiber */ "./node_modules/@react-three/fiber/dist/index-05f8627d.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/layout/dist/index.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/select/dist/index.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/button/dist/index.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/stat/dist/index.esm.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var zustand_shallow__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! zustand/shallow */ "./node_modules/zustand/esm/shallow.js");
+/* harmony import */ var zustand_shallow__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! zustand/shallow */ "./node_modules/zustand/esm/shallow.js");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! d3 */ "./node_modules/d3/src/index.js");
 /* harmony import */ var _Model_store__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../Model/store */ "./src/Model/store.js");
 /* harmony import */ var _Gauge__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Gauge */ "./src/UI/HUD/Gauge.js");
 /* harmony import */ var _HUD_css__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./HUD.css */ "./src/UI/HUD/HUD.css");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _Simulation_Frame__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../Simulation/Frame */ "./src/Simulation/Frame.js");
+/* harmony import */ var _Util_constants__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../Util/constants */ "./src/Util/constants.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 /* provided dependency */ var __react_refresh_utils__ = __webpack_require__(/*! ./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js */ "./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js");
 __webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/react-refresh/runtime.js */ "./node_modules/react-refresh/runtime.js");
 
@@ -2393,7 +2437,9 @@ __webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/r
 
 
 
-(0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_6__.e)({});
+
+
+(0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_8__.e)({});
 
 function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -2435,7 +2481,9 @@ function HUD() {
     detachCamera,
     cameraTarget,
     satelliteOptions,
-    view
+    view,
+    isFinished,
+    isPaused
   } = (0,_Model_store__WEBPACK_IMPORTED_MODULE_2__.useStore)(state => ({
     satellites: state.mission.satellites,
     toggleLabel: state.toggleLabel,
@@ -2444,8 +2492,10 @@ function HUD() {
     attachCamera: state.attachCamera,
     detachCamera: state.detachCamera,
     cameraTarget: state.cameraTarget,
-    view: state.view
-  }), zustand_shallow__WEBPACK_IMPORTED_MODULE_7__["default"]); // const [selected, setSelected] = useState(satellites.customers[0]);
+    view: state.view,
+    isFinished: state.isFinished,
+    isPaused: state.isPaused
+  }), zustand_shallow__WEBPACK_IMPORTED_MODULE_9__["default"]); // const [selected, setSelected] = useState(satellites.customers[0]);
   // const selected = useRef(satellites.customers[0]);
 
   const [selected, setSelected] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(satellites.customers[0]);
@@ -2493,8 +2543,10 @@ function HUD() {
     });
   }, []);
   const prevFrame = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)();
-  (0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_6__.n)(() => {
+  (0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_8__.n)(() => {
     if (prevFrame.current === frame.current) return;
+    if (frame.current > _Util_constants__WEBPACK_IMPORTED_MODULE_6__.FRAMES) return;
+    if (isPaused || isFinished) return;
     statRefs.current.forEach(stat => {
       if (!stat.ref) return;
       const parent = d3__WEBPACK_IMPORTED_MODULE_1__.select(stat.ref);
@@ -2505,7 +2557,15 @@ function HUD() {
       }
 
       if (parent.classed('hide')) d3__WEBPACK_IMPORTED_MODULE_1__.select(stat.ref).classed('hide', false);
-      const value = stat.getValue(frame.current, selected);
+      let value;
+
+      try {
+        value = stat.getValue(frame.current, selected);
+      } catch (error) {
+        console.log(error, frame.current, selected, stat);
+        return;
+      }
+
       parent.selectAll('.chakra-stat__number').select('span').text(stat.formatValue(value));
       parent.selectAll('.chakra-stat__help-text').select('.help-text').text(stat.getHelpText(frame.current, selected));
 
@@ -2533,34 +2593,34 @@ function HUD() {
     prevFrame.current = frame.current;
   });
   if (!satellites) return;
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.GridItem, {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.GridItem, {
     area: '3 / 1 / 4 / 3',
     zIndex: 99,
     transform: view.name === 'simulation' ? '' : 'translate(-9999px, 0)',
     position: view.name === 'simulation' ? '' : 'absolute',
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.Flex, {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.Flex, {
       height: "100%",
       justify: "space-between",
       "align-items": "center",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.Center, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.Center, {
         flex: 1,
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.Box, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.Box, {
           px: 2,
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_9__.Select, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__.Select, {
             onChange: handleSelectSatellite,
-            children: [satellites.customers.map(customer => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("option", {
+            children: [satellites.customers.map(customer => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("option", {
               value: customer.id,
               children: customer.name
-            }, customer.id)), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("option", {
+            }, customer.id)), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("option", {
               value: "fleet",
               children: "Fleet"
             })]
           })
-        }), selected.name !== 'fleet' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.ButtonGroup, {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.Button, {
+        }), selected.name !== 'fleet' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_12__.ButtonGroup, {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_12__.Button, {
             onClick: handleLabel,
             children: satelliteOptions.get(selected.id).showLabel ? 'Hide Label' : 'Show Label'
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.Button // onClick={
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_12__.Button // onClick={
           //     cameraTarget.id === selected.id
           //       ? () => detachCamera() : () => attachCamera(selected.id)
           //   }
@@ -2568,64 +2628,64 @@ function HUD() {
             onClick: handleCamera,
             children: cameraTarget.id === selected.id ? 'Detach Camera' : 'Attach Camera'
           })]
-        }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.Button, {
+        }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_12__.Button, {
           onClick: hideAllLabels,
           children: 'Hide All Labels'
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.Box, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.Box, {
         height: "100%",
         flex: 1,
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.Center, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__.Stat, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.Center, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_13__.Stat, {
             align: "center",
             ref: handleStatRefs,
             id: 'chargeState',
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__.StatLabel, {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_13__.StatLabel, {
               children: "Charge"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_Gauge__WEBPACK_IMPORTED_MODULE_3__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_Gauge__WEBPACK_IMPORTED_MODULE_3__["default"], {
               height: 200,
               selected: selected,
               styles: {
                 position: 'absolute'
               }
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__.StatNumber, {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_13__.StatNumber, {
               textStyle: "number",
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {})
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__.StatHelpText, {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {})
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_13__.StatHelpText, {
               width: "100%",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.Text, {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.Text, {
                 as: 'span',
                 textStyle: "number",
                 className: "help-number"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
                 className: "help-text"
               })]
             })]
           })
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.Center, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.Center, {
         flex: 1,
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.Box, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__.StatGroup, {
-            children: statProps.slice(0, 2).map(stat => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__.Stat, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_10__.Box, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_13__.StatGroup, {
+            children: statProps.slice(0, 2).map(stat => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_13__.Stat, {
               width: "30ch",
               id: stat.key,
               ref: handleStatRefs,
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__.StatLabel, {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_13__.StatLabel, {
                 children: stat.label
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__.StatNumber, {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_13__.StatNumber, {
                 textStyle: "number",
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {})
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__.StatHelpText, {
-                children: [stat.shouldArrows ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.Fragment, {
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__.StatArrow, {
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {})
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_13__.StatHelpText, {
+                children: [stat.shouldArrows ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.Fragment, {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_13__.StatArrow, {
                     type: "increase",
                     className: "up-arrow hide"
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_11__.StatArrow, {
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_13__.StatArrow, {
                     type: "decrease",
                     className: "down-arrow hide"
                   })]
-                }) : '', /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+                }) : '', /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
                   className: "help-text"
                 })]
               })]
@@ -2638,6 +2698,111 @@ function HUD() {
 }
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (HUD);
+
+const $ReactRefreshModuleId$ = __webpack_require__.$Refresh$.moduleId;
+const $ReactRefreshCurrentExports$ = __react_refresh_utils__.getModuleExports(
+	$ReactRefreshModuleId$
+);
+
+function $ReactRefreshModuleRuntime$(exports) {
+	if (false) {}
+}
+
+if (typeof Promise !== 'undefined' && $ReactRefreshCurrentExports$ instanceof Promise) {
+	$ReactRefreshCurrentExports$.then($ReactRefreshModuleRuntime$);
+} else {
+	$ReactRefreshModuleRuntime$($ReactRefreshCurrentExports$);
+}
+
+/***/ }),
+
+/***/ "./src/UI/LoopDialog.js":
+/*!******************************!*\
+  !*** ./src/UI/LoopDialog.js ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _react_three_fiber__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @react-three/fiber */ "./node_modules/@react-three/fiber/dist/index-05f8627d.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/hooks/dist/index.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/modal/dist/index.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/layout/dist/index.esm.js");
+/* harmony import */ var _chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @chakra-ui/react */ "./node_modules/@chakra-ui/button/dist/index.esm.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _Model_store__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Model/store */ "./src/Model/store.js");
+/* harmony import */ var _PerformanceView_Summary__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./PerformanceView/Summary */ "./src/UI/PerformanceView/Summary.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* provided dependency */ var __react_refresh_utils__ = __webpack_require__(/*! ./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js */ "./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js");
+__webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/react-refresh/runtime.js */ "./node_modules/react-refresh/runtime.js");
+
+
+
+
+
+
+
+
+
+(0,_react_three_fiber__WEBPACK_IMPORTED_MODULE_4__.e)({});
+
+function LoopDialog() {
+  const {
+    isOpen,
+    onOpen,
+    onClose
+  } = (0,_chakra_ui_react__WEBPACK_IMPORTED_MODULE_5__.useDisclosure)();
+  const {
+    isFinished,
+    setFinished,
+    setLoop,
+    setPaused
+  } = (0,_Model_store__WEBPACK_IMPORTED_MODULE_1__.useStore)(state => ({
+    isFinished: state.isFinished,
+    setFinished: state.setFinished,
+    setLoop: state.setLoop,
+    setPaused: state.setPaused
+  }));
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    if (isFinished) onOpen();
+  }, [isFinished]);
+
+  const handleReplay = e => {
+    setLoop(true);
+    setFinished(false);
+    onClose();
+  };
+
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.Modal, {
+    isCentered: true,
+    isOpen: isOpen,
+    onClose: onClose,
+    closeOnOverlayClick: false,
+    size: "lg",
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.ModalOverlay, {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.ModalContent, {
+      bg: "background.100",
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.ModalHeader, {
+        align: "center",
+        fontSize: "1.5rem",
+        children: "Simulation Complete!"
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_7__.Center, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.ModalBody, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_PerformanceView_Summary__WEBPACK_IMPORTED_MODULE_2__["default"], {})
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_6__.ModalFooter, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_8__.Button, {
+          onClick: handleReplay,
+          children: "Restart"
+        })
+      })]
+    })]
+  });
+}
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (LoopDialog);
 
 const $ReactRefreshModuleId$ = __webpack_require__.$Refresh$.moduleId;
 const $ReactRefreshCurrentExports$ = __react_refresh_utils__.getModuleExports(
@@ -4940,7 +5105,7 @@ const statProps = [{
   name: 'Time spent charging',
   getValue: selected => selected.summary.timeCharged,
   format: value => `${value.toFixed(1)} minutes`,
-  getHelpText: selected => `${(selected.summary.timeCharged * 100 / (days * 60 * 60)).toFixed(1)}% of ${days} days`
+  getHelpText: selected => `${(selected.summary.timeCharged * 100 / (days * 60 * 60)).toFixed(1)}% of ${days.toFixed(1)} days`
 }, {
   key: 'lowestChargeState',
   name: 'Lowest Charge State',
