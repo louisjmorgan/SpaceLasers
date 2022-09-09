@@ -157,7 +157,12 @@ function App() {
         shouldDisplay: view.name === 'mission'
       }), isInitialized ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(UI_PerformanceView_PerformanceView__WEBPACK_IMPORTED_MODULE_4__["default"], {}) : '', /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_18__.GridItem, {
         area: view.footerArea,
-        children: "Footer"
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_chakra_ui_react__WEBPACK_IMPORTED_MODULE_18__.Text, {
+          align: "center",
+          fontSize: "0.75rem",
+          color: "grey",
+          children: "Copyright \xA9 SPACE POWER Ltd 2022. All Rights Reserved."
+        })
       })]
     })
   });
@@ -839,7 +844,6 @@ function getDischargeSaved(satellite) {
 function getLowestChargeState(satellite) {
   const lowestBeams = satellite.performance.chargeState.reduce((prev, current) => current < prev ? current : prev, 1);
   const lowestNoBeams = satellite.performance.chargeStateNoBeams.reduce((prev, current) => current < prev ? current : prev, 1);
-  console.log(lowestBeams, lowestNoBeams);
   return [lowestBeams, lowestNoBeams];
 }
 
