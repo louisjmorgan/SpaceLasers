@@ -128,23 +128,23 @@ function generateTLE(orbitElements) {
   else bstarExp = '+0';
 
   const tle1 = `1 00000C 00000A   ${epochYr}${epochDay}${epochFraction} ${meanMotionDotString}  00000-0 ${bstarMant}${bstarExp} 0  0000`;
-  let inclinationString = String(Number(inclination).toFixed(4));
-  if (inclination < 100) inclinationString = ` ${inclinationString}`;
+  const inclinationString = String(Number(inclination).toFixed(4));
+  // if (inclination < 100) inclinationString = ` ${inclinationString}`;
 
-  let rightAscensionString = String(Number(rightAscension).toFixed(4));
-  if (rightAscension < 100) { rightAscensionString = ` ${rightAscensionString}`; }
+  const rightAscensionString = String(Number(rightAscension).toFixed(4));
+  // if (rightAscension < 100) { rightAscensionString = ` ${rightAscensionString}`; }
 
   const eccentricityString = String(
     Number(eccentricity).toFixed(8),
-  ).substring(2);
+  ).substring(2, 9);
   let perigeeString = String(Number(perigee).toFixed(4));
   if (perigee < 100) perigeeString = ` ${perigeeString}`;
 
-  let meanAnomalyString = String(Number(meanAnomaly).toFixed(4));
-  if (meanAnomalyString < 100) { meanAnomalyString = ` ${meanAnomalyString}`; }
+  const meanAnomalyString = String(Number(meanAnomaly).toFixed(4));
+  // if (meanAnomalyString < 100) { meanAnomalyString = ` ${meanAnomalyString}`; }
 
-  const meanMotionString = String(Number(meanMotion).toPrecision(10));
-  const tle2 = `2 00000 ${inclinationString} ${rightAscensionString} ${eccentricityString} ${perigeeString} ${meanAnomalyString} ${meanMotionString}    00`;
+  const meanMotionString = String(Number(meanMotion).toPrecision(9));
+  const tle2 = `2 00000 ${inclinationString.padStart(8)} ${rightAscensionString.padStart(8)} ${eccentricityString} ${perigeeString.padStart(8)} ${meanAnomalyString} ${meanMotionString.padStart(11)}    00`;
 
   return {
     tle1,
@@ -181,6 +181,7 @@ function twoline2satrec(longstr1, longstr2) {
   satrec.inclo = parseFloat(longstr2.substring(8, 16));
   satrec.nodeo = parseFloat(longstr2.substring(17, 25));
   satrec.ecco = parseFloat(`.${longstr2.substring(26, 33)}`);
+  console.log(satrec.ecco);
   satrec.argpo = parseFloat(longstr2.substring(34, 42));
   satrec.mo = parseFloat(longstr2.substring(43, 51));
   satrec.no = parseFloat(longstr2.substring(52, 63));

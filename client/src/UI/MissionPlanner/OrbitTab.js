@@ -98,7 +98,7 @@ export default function OrbitTab({ formik, satIndex, constellations }) {
     let satRec;
     try {
       const { tles } = parseTLEs(formik.values.satellites[satIndex].orbit.tle)[0];
-
+      console.log(tles);
       satRec = twoline2satrec(tles.tle1, tles.tle2);
     } catch {
       setError('Error extracting TLE.  Please enter a valid TLE.');
