@@ -8,31 +8,54 @@ import {
   MenuItem, MenuList, Radio, RadioGroup, Select, Slider,
   SliderFilledTrack, SliderThumb, SliderTrack, Switch, Text,
 } from '@chakra-ui/react';
+import { addEffect } from '@react-three/fiber';
+import { select } from 'd3';
+import { useEffect, useRef } from 'react';
 import shallow from 'zustand/shallow';
-import { useStore } from '../Model/store';
+import { useFrameStore, useStore } from '../Model/store';
 
 function SimControls() {
   const {
-    isPaused, togglePaused, speed, setSpeed,
+    isPaused, setPaused, speed, setSpeed, shouldLoop, setLoop, isFinished,
   } = useStore(
     (state) => ({
       isPaused: state.isPaused,
-      togglePaused: state.togglePaused,
+      setPaused: state.setPaused,
       speed: state.speed,
       setSpeed: state.setSpeed,
+      shouldLoop: state.shouldLoop,
+      setLoop: state.setLoop,
+      isFinished: state.isFinished,
     }),
     shallow,
   );
+
+  const handlePaused = () => {
+    setPaused(!isPaused);
+  };
+
+  const handleLoop = (e) => {
+    setLoop(e.target.checked);
+  };
+
   return (
     <>
       <MenuItem as={Flex} justify="space-between" align="center">
 
-        <Button onClick={() => togglePaused()}>
+        <Button
+          onClick={handlePaused}
+          isDisabled={isFinished}
+        >
           {isPaused ? 'Resume' : 'Pause'}
         </Button>
         <FormLabel htmlFor="loop" alignSelf="center" mb={0}>
           Loop
-          <Switch id="loop" mx={1} />
+          <Switch
+            id="loop"
+            mx={1}
+            isChecked={shouldLoop}
+            onChange={handleLoop}
+          />
         </FormLabel>
       </MenuItem>
       <MenuItem>
@@ -40,7 +63,7 @@ function SimControls() {
         <Slider
           name="speed"
           value={speed}
-          onChange={(v) => setSpeed(v)}
+          onChange={setSpeed}
           min={1}
           max={10}
         >
@@ -83,7 +106,14 @@ function CameraControls({
       </Select>
 
       <MenuItem>
-        <RadioGroup onChange={(v) => setLockCamera(v === '1')} value={cameraTarget.lock ? '1' : '0'} disabled={cameraTarget.name === 'earth'}>
+        <RadioGroup
+          onChange={(v) => setLockCamera(v === '1')}
+          value={cameraTarget.lock ? '1' : '0'}
+          disabled={cameraTarget.name === 'earth'}
+          as={Flex}
+          justify="space-around"
+          width="100%"
+        >
           <Radio value="1">Lock</Radio>
           <Radio value="0">Watch</Radio>
         </RadioGroup>
@@ -93,14 +123,37 @@ function CameraControls({
 }
 
 /* eslint-disable react/prop-types */
-function Controls({
-  times, satellites,
-}) {
-  // const frame = useStore((state) => state.frame);
-  if (!times) return;
+function Controls() {
+  const frame = useRef(useFrameStore.getState().frame);
+  useEffect(() => {
+    useFrameStore.subscribe(
+      (state) => {
+        frame.current = state.frame;
+      },
+    );
+  }, []);
+  const {
+    time, satellites, view,
+  } = useStore(
+    (state) => ({
+      time: state.mission.time,
+      satellites: state.mission.satellites,
+      view: state.view,
+    }),
+    shallow,
+  );
+  const timeRef = useRef();
+  const date = useRef(new Date());
+  addEffect(() => {
+    if (!date.current) return;
+    if (!timeRef.current) return;
+    date.current.setTime(Number(time[frame.current]));
+    select(timeRef.current)
+      .text(date.current.toString().slice(0, 21));
+  });
   return (
-    <Flex align="center">
-      <Text width="22ch">{new Date(times[0]).toString().slice(0, 21)}</Text>
+    <Flex align="center" justify={view.name === 'simulation' ? 'center' : 'space-between'} height="100%">
+      <Text ref={timeRef} width="22ch" m={2} />
       <Menu closeOnSelect={false}>
         <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
           Controls

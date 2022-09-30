@@ -1,8 +1,9 @@
+/* eslint-disable react/no-array-index-key */
 /* eslint-disable react/prop-types */
 import {
   Button,
   Flex, FormControl, FormErrorMessage, FormHelperText, FormLabel,
-  Input, Select, Tab, TabList, TabPanel, TabPanels, Tabs, Textarea,
+  Input, Select, Tab, TabList, TabPanel, TabPanels, Tabs, Text, Textarea,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { parseTLEs, twoline2satrec } from 'Util/astronomy.js';
@@ -91,29 +92,42 @@ const fields = [
 ];
 
 export default function OrbitTab({ formik, satIndex, constellations }) {
+  const [error, setError] = useState();
   const handleExtractTle = (e) => {
     e.preventDefault();
-    const { tles } = parseTLEs(formik.values.satellites[satIndex].orbit.tle)[0];
+    let satRec;
+    try {
+      const { tles } = parseTLEs(formik.values.satellites[satIndex].orbit.tle)[0];
 
-    const satRec = twoline2satrec(tles.tle1, tles.tle2);
+      satRec = twoline2satrec(tles.tle1, tles.tle2);
+    } catch {
+      setError('Error extracting TLE.  Please enter a valid TLE.');
+      return;
+    }
     const newOrbit = {
       epoch: satRec.epochdatetimelocal,
       meanMotionDot: satRec.ndottle,
-      bstar: satRec.bstar,
+      bstar: satRec.bstar || satRec.bstar.toFixed(5),
       inclination: satRec.inclotle,
       rightAscension: satRec.nodeotle,
       eccentricity: satRec.ecco,
       perigee: satRec.argpotle,
       meanAnomaly: satRec.motle,
       meanMotion: satRec.notle,
-      tle: '',
+      tle: formik.values.satellites[satIndex].orbit.tle,
     };
     Object.entries(newOrbit).forEach(
       (entry) => {
+        if (!entry[1]) {
+          setError(`Error setting ${entry[0]}. Please enter a valid TLE and try again`);
+          return;
+        }
         formik.setFieldValue(`satellites[${satIndex}].orbit.[${entry[0]}]`, entry[1]);
       },
     );
+    setError('');
   };
+
   return (
     <>
       <Flex justify="space-around" wrap="wrap">
@@ -185,7 +199,14 @@ export default function OrbitTab({ formik, satIndex, constellations }) {
                   {constellations.find(
                     (v) => v.name === formik.values.satellites[satIndex].orbit.constellation,
                   ).tles
-                    .map((tle) => (<option key={tle.name} value={`${tle.name}\n${tle.tles.tle1}\n${tle.tles.tle2}`}>{tle.name}</option>))}
+                    .map((tle, i) => (
+                      <option
+                        key={`${i}${tle.name}`}
+                        value={`${tle.name}\n${tle.tles.tle1}\n${tle.tles.tle2}`}
+                      >
+                        {tle.name}
+                      </option>
+                    ))}
                 </Select>
               </FormControl>
               <Button
@@ -195,6 +216,8 @@ export default function OrbitTab({ formik, satIndex, constellations }) {
                 Extract
               </Button>
             </Flex>
+            <Text color="red">{error}</Text>
+
           </TabPanel>
 
           <TabPanel pt={10}>
@@ -215,6 +238,7 @@ export default function OrbitTab({ formik, satIndex, constellations }) {
             >
               Extract
             </Button>
+            <Text color="red">{error}</Text>
           </TabPanel>
         </TabPanels>
       </Tabs>

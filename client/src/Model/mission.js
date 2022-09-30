@@ -12,9 +12,10 @@ import {
   getBeams,
   getBeamDuties,
   getChargeStates,
-  getTotalCharged,
+  getDischargeSaved,
   getEarthRotationAngles,
   getSources,
+  getLowestChargeState,
 } from './simulation';
 
 const MissionSchema = Yup.object().shape({
@@ -188,9 +189,7 @@ const handleMissionRequest = (req) => {
       isEclipsed: getEclipsedArray(customer, sun, time),
     };
   });
-
-  const offsets = getOffsets(req.spacePowers, req.satellites.length, req.offsets);
-
+  const offsets = getOffsets(Number(req.spacePowers), req.satellites.length, req.offsets);
   const spacePowers = [];
 
   req.satellites.forEach((satellite, index) => {
@@ -223,11 +222,13 @@ const handleMissionRequest = (req) => {
       chargeState: getChargeStates(customer, time),
       chargeStateNoBeams: getChargeStates(customer, time, false),
     };
+    const [dischargeSaved, timeCharged] = getDischargeSaved(customer);
+    const [lowestChargeStateBeams, lowestChargeStateNoBeams] = getLowestChargeState(customer);
     customer.summary = {
-      totalCharged: getTotalCharged(
-        customer.performance.chargeState,
-        customer.performance.chargeStateNoBeams,
-      ),
+      dischargeSaved,
+      timeCharged,
+      lowestChargeStateBeams,
+      lowestChargeStateNoBeams,
     };
   });
 
@@ -240,11 +241,24 @@ const handleMissionRequest = (req) => {
   });
 
   // calculate averages
-  const averages = {
-    name: 'averages',
+
+  const fleet = {
+    name: 'fleet',
     performance: {
       chargeState: time.map((t, index) => customers.reduce((prev, current) => prev + current.performance.chargeState[index], 0) / customers.length),
       chargeStateNoBeams: time.map((t, index) => customers.reduce((prev, current) => prev + current.performance.chargeStateNoBeams[index], 0) / customers.length),
+    },
+    summary: {
+      dischargeSaved: customers.reduce((prev, current) => prev + current.summary.dischargeSaved, 0),
+      timeCharged: customers.reduce((prev, current) => prev + current.summary.timeCharged, 0),
+      lowestChargeStateBeams: customers.reduce((prev, current) => {
+        const c = current.summary.lowestChargeStateBeams;
+        return prev < c ? prev : c;
+      }, customers[0].summary.lowestChargeStateBeams),
+      lowestChargeStateNoBeams: customers.reduce((prev, current) => {
+        const c = current.summary.lowestChargeStateNoBeams;
+        return prev < c ? prev : c;
+      }, customers[0].summary.lowestChargeStateNoBeams),
     },
   };
 
@@ -254,7 +268,7 @@ const handleMissionRequest = (req) => {
     satellites: {
       customers,
       spacePowers,
-      averages,
+      fleet,
     },
     beams,
     sun,

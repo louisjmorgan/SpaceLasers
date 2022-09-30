@@ -2,14 +2,12 @@
 /* eslint-disable max-len */
 import { v4 as uuidv4 } from 'uuid';
 
-const {
-  earthRadius,
-} = require('satellite.js/lib/constants');
-const {
+import { earthRadius } from 'satellite.js/lib/constants';
+import {
   getOrbitAtTime, getSunPosition, getEarthRotationAngle, getDistance,
-} = require('../Util/astronomy');
-const { isEclipsed, getChargeState } = require('../Util/power');
-const { SIM_LENGTH, FRAMES, BEAM_DISTANCE } = require('../Util/constants');
+} from '../Util/astronomy';
+import { isEclipsed, getChargeState, getNetCurrent } from '../Util/power';
+import { SIM_LENGTH, FRAMES, BEAM_DISTANCE } from '../Util/constants';
 
 function getTimeArray(initial) {
   const initialMillisecs = initial.getTime();
@@ -158,12 +156,37 @@ function getChargeStates(satellite, timeArray, hasBeams = true) {
       if (source === 'beam') source = 'eclipsed';
     }
     chargeState = getChargeState(satellite.params, satellite.performance.currentDuties[index], source, chargeState, delta);
+    if (chargeState > 1) return 1;
+    if (chargeState < 0) return 0;
     return chargeState;
   });
 }
 
-function getTotalCharged(beam, noBeam) {
-  return beam.map((chargeStateBeam, index) => chargeStateBeam - noBeam[index]);
+function getDischargeSaved(satellite) {
+  let timeCharged = 0;
+  const totalCurrent = satellite.performance.sources.reduce((prev, source, i) => {
+    const currentDuty = satellite.performance.currentDuties[i];
+    const netCurrent = getNetCurrent(satellite.params, source, currentDuty);
+    let sourceNoBeams = source;
+    if (source === 'sun and beam') {
+      sourceNoBeams = 'sun';
+      timeCharged += 1;
+    } else if (source === 'beam') {
+      timeCharged += 1;
+      sourceNoBeams = 'eclipsed';
+    }
+    const netCurrentNoBeams = getNetCurrent(satellite.params, sourceNoBeams, currentDuty);
+    return (netCurrent - netCurrentNoBeams) + prev;
+  }, 0);
+  const dischargeSaved = (totalCurrent * (SIM_LENGTH / (1000 * 60 * 60))) / FRAMES;
+  timeCharged = ((timeCharged / FRAMES) * SIM_LENGTH) / (1000 * 60);
+  return [dischargeSaved, timeCharged];
+}
+
+function getLowestChargeState(satellite) {
+  const lowestBeams = satellite.performance.chargeState.reduce((prev, current) => (current < prev ? current : prev), 1);
+  const lowestNoBeams = satellite.performance.chargeStateNoBeams.reduce((prev, current) => (current < prev ? current : prev), 1);
+  return [lowestBeams, lowestNoBeams];
 }
 
 export {
@@ -177,5 +200,6 @@ export {
   getChargeStates,
   getBeams,
   getBeamDuties,
-  getTotalCharged,
+  getDischargeSaved,
+  getLowestChargeState,
 };

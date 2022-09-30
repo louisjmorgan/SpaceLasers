@@ -14,34 +14,49 @@ function Frame() {
     useFrameStore.setState({ frame });
   }, []);
 
-  const { isPaused, speed } = useStore(
-    (state) => ({ isPaused: state.isPaused, speed: state.speed }),
+  const {
+    isPaused, speed, shouldLoop, setFinished, isFinished, setPaused,
+  } = useStore(
+    (state) => ({
+      setPaused: state.setPaused,
+      speed: state.speed,
+      shouldLoop: state.shouldLoop,
+      setFinished: state.setFinished,
+      isFinished: state.isFinished,
+      isPaused: state.isPaused,
+    }),
     shallow,
   );
 
   const frame = useRef(0);
   useFrame(({ clock }, delta) => {
-    if (!isPaused) {
-      let newFrame = frame.current + Math.round(
-        FRAMES * ((delta * 1000 * MIN_SPEED * speed) / (SIM_LENGTH)),
-      );
+    let newFrame = frame.current + Math.round(
+      FRAMES * ((delta * 1000 * MIN_SPEED * speed) / (SIM_LENGTH)),
+    );
 
-      if (newFrame >= FRAMES) {
-        newFrame = 0;
+    if (newFrame >= FRAMES - 1) {
+      newFrame = 0;
+
+      if (!shouldLoop) {
+        setFinished(true);
+        // setPaused(true);
+        return;
+        // clock.stop();
       }
-      if (newFrame !== frame.current) {
-        frame.current = newFrame;
-        updateFrame(newFrame);
-      }
+    }
+
+    if (newFrame !== frame.current) {
+      frame.current = newFrame;
+      updateFrame(newFrame);
     }
   });
 
   const { clock } = useThree();
 
   useEffect(() => {
-    if (isPaused === true) clock.stop();
-    clock.start();
-  }, [isPaused]);
+    if (isPaused || isFinished) clock.stop();
+    else clock.start();
+  }, [isPaused, isFinished]);
 
   return null;
 }

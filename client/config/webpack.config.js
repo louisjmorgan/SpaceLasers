@@ -1,21 +1,29 @@
+/* eslint-disable */
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const webpack = require('webpack')
 
 let mode = 'development';
-let target = 'web';
+const target = 'web';
 const plugins = [
   new CleanWebpackPlugin(),
   new HtmlWebpackPlugin({
     title: 'Space Power Simulator',
     template: path.resolve(__dirname, '..', './src/index.html'),
   }),
+  new webpack.ProvidePlugin({
+    // Make a global `process` variable that points to the `process` package,
+    // because the `util` package expects there to be a global variable named `process`.
+         // Thanks to https://stackoverflow.com/a/65018686/14239942
+    process: 'process/browser'
+ })
 ];
 
 if (process.env.NODE_ENV === 'production') {
   mode = 'production';
-  target = 'browserslist';
+  // target = 'browserslist';
 } else if (process.env.NODE_ENV === 'test') {
   mode = 'test';
 } else {
@@ -28,19 +36,31 @@ module.exports = {
 
   target,
 
-  entry: path.resolve(__dirname, '..', './src/index.js'),
+  entry: {
+    index: path.resolve(__dirname, '..', './src/index.js'),
+  },
 
   output: {
     path: path.resolve(__dirname, '..', 'dist'),
-    filename: 'bundle.js',
+    filename: '[name].bundle.js',
     assetModuleFilename: 'assets/[hash][ext][query]',
+  },
+
+  optimization: {
+    concatenateModules: false,
   },
 
   module: {
     rules: [
       {
+        test: /\.m?js$/,
+        resolve: {
+          fullySpecified: false,
+        },
+      },
+      {
         test: /\.jsx?$/,
-        exclude: /node_modules/,
+        exclude: [/node_modules/],
         use: {
           loader: 'babel-loader',
         },

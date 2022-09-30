@@ -1,4 +1,3 @@
-import { Vector3 } from 'three';
 import create from 'zustand';
 import createVanilla from 'zustand/vanilla';
 import { handleMissionRequest } from './mission';
@@ -10,7 +9,7 @@ const defaultOptions = {
 const views = {
   simulation: {
     name: 'simulation',
-    templateRows: '0.5fr 2fr 0.125fr',
+    templateRows: '0.375fr 2.125fr 0.125fr',
     templateColumns: '1fr',
     templateAreas: '',
     simulationArea: ' 1 / 1 / 4 / 2',
@@ -35,6 +34,9 @@ const views = {
     templateAreas: `"simulation performance"
   "summary performance"
   "footer footer"`,
+    simulationArea: 'simulation',
+    headerArea: '',
+    footerArea: 'footer',
   },
 };
 
@@ -55,7 +57,15 @@ const useStore = create((set) => ({
   satelliteOptions: new Map(),
   view: views.simulation,
   mission: null,
-  togglePaused: () => set((state) => ({ isPaused: !state.isPaused })),
+  isInitialized: false,
+  satelliteObj: null,
+  shouldLoop: false,
+  isFinished: false,
+  setLoop: (shouldLoop) => set(() => ({ shouldLoop })),
+  setFinished: (isFinished) => set(() => ({ isFinished })),
+  storeObj: (obj) => set(() => ({ satelliteObj: obj })),
+  setInitialized: (isInitialized) => set(() => ({ isInitialized })),
+  setPaused: (isPaused) => set(() => ({ isPaused })),
   setSpeed: (speed) => set(() => ({ speed })),
   attachCamera: (id) => set((state) => ({
     cameraTarget: {
@@ -105,7 +115,6 @@ const useStore = create((set) => ({
   })),
   storeRef: (id, ref) => set((state) => ({ refs: new Map(state.refs).set(id, ref) })),
   initializeMission: (values) => set(() => {
-    set(() => ({ mission: null }));
     const mission = handleMissionRequest(values);
     const satellites = [...mission.satellites.customers, ...mission.satellites.spacePowers];
     const newOptions = new Map();
@@ -119,9 +128,16 @@ const useStore = create((set) => ({
     return ({
       mission,
       satelliteOptions: newOptions,
+      isInitialized: true,
+      cameraTarget: {
+        name: 'earth',
+        ref: null,
+        lock: true,
+        id: null,
+      },
     });
   }),
-  setView: (view) => set(() => ({ view: views[`${view}`] })),
+  setView: (e) => set(() => ({ view: views[`${e.target.value}`] })),
 }));
 
 export { useStore, useFrameStore };

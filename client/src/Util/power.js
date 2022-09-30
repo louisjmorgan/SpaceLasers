@@ -1,14 +1,13 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable import/prefer-default-export */
-const THREE = require('three');
-const { earthRadius } = require('satellite.js/lib/constants');
-const { SIM_LENGTH, FRAMES } = require('./constants');
+import { earthRadius } from 'satellite.js/lib/constants';
+import { Vector3 } from 'three';
 
-const earthPosition = new THREE.Vector3(0, 0, 0);
-const sunPosition = new THREE.Vector3();
-const satPosition = new THREE.Vector3();
-const sunEarth = new THREE.Vector3();
-const sunSat = new THREE.Vector3();
+const earthPosition = new Vector3(0, 0, 0);
+const sunPosition = new Vector3();
+const satPosition = new Vector3();
+const sunEarth = new Vector3();
+const sunSat = new Vector3();
 
 function isEclipsed(satellite, sun) {
   sunPosition.fromArray([sun.x, sun.y, sun.z]);
@@ -29,6 +28,11 @@ function isEclipsed(satellite, sun) {
   return true;
 }
 
+function getNetCurrent(params, source, currentDuty) {
+  const powerProfile = params.load.powerProfiles[source];
+  return powerProfile[currentDuty];
+}
+
 function getChargeState(
   params,
   currentDuty,
@@ -36,8 +40,7 @@ function getChargeState(
   chargeState,
   delta,
 ) {
-  const powerProfile = params.load.powerProfiles[source];
-  const netCurrent = powerProfile[currentDuty];
+  const netCurrent = getNetCurrent(params, source, currentDuty);
   const { capacity } = params.battery;
 
   if (chargeState >= 1.0 && netCurrent >= 0) {
@@ -56,4 +59,4 @@ function getChargeState(
   );
 }
 
-module.exports = { isEclipsed, getChargeState };
+export { isEclipsed, getChargeState, getNetCurrent };

@@ -113,38 +113,38 @@ function generateTLE(orbitElements) {
   ).substring(1);
 
   let meanMotionDotString = String(
-    meanMotionDot.toFixed(8),
+    Number(meanMotionDot).toFixed(8),
   ).substring(1);
   if (meanMotionDot < 0) { meanMotionDotString = `-${meanMotionDotString.substring(1)}`; }
   if (meanMotionDot >= 0) { meanMotionDotString = ` ${meanMotionDotString}`; }
 
-  let bstarMant = String(bstar.toExponential(5))
+  let bstarMant = String(Number(bstar).toExponential(5))
     .split('.')
     .join('')
     .substring(0, 6);
-  if (bstar > 0) bstarMant = ` ${bstarMant.substring(0, 5)}`;
-  const bstarExp = Math.ceil(Math.log10(Math.abs(bstar)));
+  if (bstar >= 0) bstarMant = ` ${bstarMant.substring(0, 5)}`;
+  let bstarExp = 0;
+  if (Number(bstar) !== 0) bstarExp = Math.ceil(Math.log10(Math.abs(bstar)));
+  else bstarExp = '+0';
 
   const tle1 = `1 00000C 00000A   ${epochYr}${epochDay}${epochFraction} ${meanMotionDotString}  00000-0 ${bstarMant}${bstarExp} 0  0000`;
-
-  let inclinationString = String(inclination.toFixed(4));
+  let inclinationString = String(Number(inclination).toFixed(4));
   if (inclination < 100) inclinationString = ` ${inclinationString}`;
 
-  let rightAscensionString = String(rightAscension.toFixed(4));
+  let rightAscensionString = String(Number(rightAscension).toFixed(4));
   if (rightAscension < 100) { rightAscensionString = ` ${rightAscensionString}`; }
 
   const eccentricityString = String(
-    eccentricity.toFixed(7),
+    Number(eccentricity).toFixed(7),
   ).substring(2);
-
-  let perigeeString = String(perigee.toFixed(4));
+  let perigeeString = String(Number(perigee).toFixed(4));
   if (perigee < 100) perigeeString = ` ${perigeeString}`;
 
-  let meanAnomalyString = String(meanAnomaly.toFixed(4));
+  let meanAnomalyString = String(Number(meanAnomaly).toFixed(4));
   if (meanAnomalyString < 100) { meanAnomalyString = ` ${meanAnomalyString}`; }
 
-  const meanMotionString = String(meanMotion.toPrecision(10));
-  const tle2 = `2 00000 ${inclinationString} ${rightAscensionString} ${eccentricityString} ${perigeeString} ${meanAnomalyString} ${meanMotionString}    00`;
+  const meanMotionString = String(Number(meanMotion).toPrecision(10));
+  const tle2 = `2 00000 ${inclinationString} ${rightAscensionString}  ${eccentricityString} ${perigeeString} ${meanAnomalyString} ${meanMotionString}    00`;
 
   return {
     tle1,
@@ -177,7 +177,6 @@ function twoline2satrec(longstr1, longstr2) {
       10,
     )}E${longstr1.substring(59, 61)}`,
   );
-
   // satrec.satnum = longstr2.substring(2, 7);
   satrec.inclo = parseFloat(longstr2.substring(8, 16));
   satrec.nodeo = parseFloat(longstr2.substring(17, 25));
@@ -185,7 +184,6 @@ function twoline2satrec(longstr1, longstr2) {
   satrec.argpo = parseFloat(longstr2.substring(34, 42));
   satrec.mo = parseFloat(longstr2.substring(43, 51));
   satrec.no = parseFloat(longstr2.substring(52, 63));
-
   // ---- find no, ndot, nddot ----
   satrec.notle = satrec.no;
   satrec.no /= xpdotp; //   rad/min
@@ -261,7 +259,7 @@ function getCorsFreeUrl(url) {
 function parseTLEs(fileContent) {
   const result = [];
   const lines = fileContent.split('\n');
-
+  if (lines < 2) throw new Error('Error parsing TLE');
   let current = null;
   for (let i = 0; i < lines.length; ++i) {
     const line = lines[i].trim();
@@ -282,7 +280,7 @@ function parseTLEs(fileContent) {
         tles: { ...current.tles, tle2: line },
       };
       result.push(current);
-    }
+    } else throw new Error('Error parsing TLE');
   }
 
   return result;
@@ -318,14 +316,12 @@ function getPositionFromTLE(satellite, date) {
     satellite.orbit,
     date,
   );
-
   const positionEci = positionVelocity.position;
   return toThree(positionEci);
 }
 
 function getOrbitAtTime(satellite, time) {
   const pos = getPositionFromTLE(satellite, time);
-  // return new THREE.Vector3(pos.x, pos.y, pos.z);
   return { x: pos.x, y: pos.y, z: pos.z };
 }
 

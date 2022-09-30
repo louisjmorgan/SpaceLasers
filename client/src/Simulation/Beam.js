@@ -29,6 +29,7 @@ function Beam({
     });
     meshes.current = getLaserMeshes(1, material.current);
     meshes.current.forEach((mesh) => laser.current.add(mesh));
+    // laser.current.rotateY(-Math.PI / 2);
   }, []);
 
   const frame = useRef(useFrameStore.getState().frame);

@@ -1,8 +1,8 @@
 /* eslint-disable react/prop-types */
-import { Flex } from '@chakra-ui/react';
+import { Button, Flex } from '@chakra-ui/react';
 import CustomNumberInput from './CustomNumberInput';
 
-const fields = [
+const pvFields = [
   {
     id: 'pvVoltage',
     step: 0.1,
@@ -36,12 +36,57 @@ const fields = [
   },
 ];
 
+const batteryFields = [
+  {
+    id: 'batteryVoltage',
+    step: 0.1,
+    label: 'Voltage',
+    min: 0,
+    units: 'V',
+  },
+  {
+    id: 'capacity',
+    step: 0.01,
+    label: 'Capacity',
+    min: 0,
+    units: 'Ah',
+  },
+  {
+    id: 'powerStoringConsumption',
+    step: 0.1,
+    label: 'Power storing consumption',
+    min: 0,
+    units: 'W',
+  },
+];
+
 function PowerTab({ satIndex, formik }) {
+  const handleCopyToSiblings = () => {
+    pvFields.forEach((param) => {
+      formik.values.satellites.forEach((satellite, index) => {
+        if (index === satIndex) return;
+        formik.setFieldValue(
+          `satellites[${index}].power[${param.id}]`,
+          formik.values.satellites[satIndex].power[param.id],
+        );
+      });
+    });
+    batteryFields.forEach((param) => {
+      formik.values.satellites.forEach((satellite, index) => {
+        if (index === satIndex) return;
+        formik.setFieldValue(
+          `satellites[${index}].power[${param.id}]`,
+          formik.values.satellites[satIndex].power[param.id],
+        );
+      });
+    });
+  };
+
   return (
     <>
       <h3>Photovoltaic</h3>
       <Flex wrap="wrap" justify="space-around" mb={10}>
-        {fields.map((param) => (
+        {pvFields.map((param) => (
           <CustomNumberInput
             value={formik.values.satellites[satIndex].power[param.id]}
             step={param.step}
@@ -58,29 +103,7 @@ function PowerTab({ satIndex, formik }) {
 
       <h3>Battery</h3>
       <Flex wrap="wrap" justify="space-around">
-        {[
-          {
-            id: 'batteryVoltage',
-            step: 0.1,
-            label: 'Voltage',
-            min: 0,
-            units: 'V',
-          },
-          {
-            id: 'capacity',
-            step: 0.01,
-            label: 'Capacity',
-            min: 0,
-            units: 'Ah',
-          },
-          {
-            id: 'powerStoringConsumption',
-            step: 0.1,
-            label: 'Power storing consumption',
-            min: 0,
-            units: 'W',
-          },
-        ].map((param) => (
+        {batteryFields.map((param) => (
           <CustomNumberInput
             value={formik.values.satellites[satIndex].power[param.id]}
             step={param.step}
@@ -94,6 +117,9 @@ function PowerTab({ satIndex, formik }) {
           />
         ))}
       </Flex>
+      <Button onClick={handleCopyToSiblings} m={10}>
+        Copy to all
+      </Button>
     </>
   );
 }

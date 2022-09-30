@@ -5,7 +5,7 @@ const BEAM_DISTANCE = 1000;
 const MIN_SPEED = 600;
 const FRAMES = SIM_LENGTH * (FPmS / MIN_SPEED);
 
-module.exports = {
+export {
   SIM_LENGTH,
   MIN_SPEED,
   FRAMES,

@@ -49,7 +49,10 @@ function MissionPlanner({ shouldDisplay }) {
   const [satIndex, setSatIndex] = useState(0);
   const [constellations, setConstellations] = useState();
 
-  const initializeMission = useStore((state) => state.initializeMission);
+  const { initializeMission, setInitialized } = useStore((state) => ({
+    initializeMission: state.initializeMission,
+    setInitialized: state.setInitialized,
+  }));
 
   useEffect(() => {
     setConstellations((fetchTLEs(urls)));
@@ -62,6 +65,8 @@ function MissionPlanner({ shouldDisplay }) {
     onSubmit: async (values) => {
       formik.setSubmitting(true);
       await new Promise((resolve, reject) => {
+        setInitialized(false);
+
         setTimeout(() => {
           try {
             initializeMission(values);

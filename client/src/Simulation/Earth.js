@@ -10,7 +10,7 @@ import { useLoader, useFrame } from '@react-three/fiber';
 import { TextureLoader } from 'three/src/loaders/TextureLoader';
 import * as THREE from 'three';
 import { useFrameStore, useStore } from '../Model/store';
-import earthTexture from '../Assets/Textures/earth-texture-master.jpg';
+import earthTexture from '../Assets/Textures/earth-texture.jpg';
 import gradientTexture from '../Assets/Textures/twoTone.jpg';
 
 function Earth() {

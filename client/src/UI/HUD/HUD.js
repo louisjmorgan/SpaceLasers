@@ -4,19 +4,20 @@
 /* eslint-disable react/prop-types */
 import {
   Flex, Select, Stat, StatLabel, StatNumber,
-  Box, Center, StatGroup, GridItem, StatHelpText, StatArrow, ButtonGroup, Button, StatUpArrow, StatDownArrow, Text,
+  Box, Center, StatGroup, GridItem, StatHelpText, ButtonGroup,
+  Button, Text,
 } from '@chakra-ui/react';
 import {
   useCallback, useEffect, useRef, useState,
 } from 'react';
-import { ParentSize } from '@visx/responsive';
 import shallow from 'zustand/shallow';
-import { useFrameStore, useStore } from 'Model/store';
 import { addEffect } from '@react-three/fiber';
 import * as d3 from 'd3';
+import { TriangleUpIcon } from '@chakra-ui/icons';
+import { useFrameStore, useStore } from '../../Model/store';
 import Gauge from './Gauge';
 import './HUD.css';
-import { TriangleDownIcon, TriangleUpIcon } from '@chakra-ui/icons';
+import { FRAMES } from '../../Util/constants';
 
 function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -53,19 +54,17 @@ const statProps = [
     key: 'chargeState',
     label: '',
     shouldArrows: false,
-    getValue: (frame, selected) => selected.performance.chargeState[frame] * 100,
+    getValue: (frame, selected) => selected.performance.chargeStateNoBeams[frame] * 100,
     formatValue: (value) => `${(value).toPrecision(3)}%`,
-    getHelpText: () => 'w/o Space Power',
-    getHelpNumber: (frame, selected) => `${(selected.performance.chargeStateNoBeams[frame] * 100).toPrecision(3)}% `,
+    getHelpText: () => 'w/ Space Power',
+    getHelpNumber: (frame, selected) => `${(selected.performance.chargeState[frame] * 100).toPrecision(3)}% `,
   },
 ];
 
-function HUD({
-  shouldDisplay,
-}) {
+function HUD() {
   const {
     satellites, toggleLabel, toggleAllLabels, attachCamera,
-    detachCamera, cameraTarget, satelliteOptions,
+    detachCamera, cameraTarget, satelliteOptions, view, isFinished, isPaused,
   } = useStore(
     (state) => ({
       satellites: state.mission.satellites,
@@ -75,6 +74,9 @@ function HUD({
       attachCamera: state.attachCamera,
       detachCamera: state.detachCamera,
       cameraTarget: state.cameraTarget,
+      view: state.view,
+      isFinished: state.isFinished,
+      isPaused: state.isPaused,
     }),
     shallow,
   );
@@ -89,12 +91,9 @@ function HUD({
 
   const handleSelectSatellite = (e) => {
     const selection = e.target.value;
-    if (selection === 'all') {
-      // selected.current = satellites.averages;
-      setSelected(() => satellites.averages);
+    if (selection === 'fleet') {
+      setSelected(() => satellites.fleet);
     } else {
-      // selected.current = satellites.customers.find((customer) => (
-      //   customer.id === selection));
       setSelected(() => satellites.customers.find((customer) => (
         customer.id === selection)));
     }
@@ -117,7 +116,8 @@ function HUD({
   useEffect(() => {
     useFrameStore.subscribe(
       (state) => {
-        if (state.frame - 10 > frame.current) { frame.current = state.frame; }
+        if (state.frame - 10 > frame.current) frame.current = state.frame;
+        if (frame.current > state.frame) frame.current = state.frame;
       },
     );
   }, []);
@@ -136,67 +136,73 @@ function HUD({
     );
   }, []);
 
-  console.log(statRefs.current);
+  const prevFrame = useRef();
+  const arrow = useRef();
+  const parent = useRef();
   addEffect(() => {
+    // if (prevFrame.current === frame.current) return;
+    if (frame.current > FRAMES) return;
+    // if (isPaused || isFinished) return;
     statRefs.current.forEach((stat) => {
       if (!stat.ref) return;
-      const parent = d3.select(stat.ref);
+      parent.current = d3.select(stat.ref);
 
-      if (selected.name === 'averages' && stat.key !== 'chargeState') {
-        if (!parent.classed('hide')) d3.select(stat.ref).classed('hide', true);
+      if (selected.name === 'fleet' && stat.key !== 'chargeState') {
+        if (!parent.current.classed('hide')) d3.select(stat.ref).classed('hide', true);
         return;
       }
-      if (parent.classed('hide')) d3.select(stat.ref).classed('hide', false);
+      if (parent.current.classed('hide')) d3.select(stat.ref).classed('hide', false);
+      let value;
+      try {
+        value = stat.getValue(frame.current, selected);
+      } catch {
+        return;
+      }
 
-      const value = stat.getValue(frame.current, selected);
-
-      parent.selectAll('.chakra-stat__number')
+      parent.current.selectAll('.chakra-stat__number')
         .select('span')
         .text(stat.formatValue(value));
 
-      parent.selectAll('.chakra-stat__help-text')
+      parent.current.selectAll('.chakra-stat__help-text')
         .select('.help-text')
         .text(stat.getHelpText(frame.current, selected));
 
       if (stat.getHelpNumber) {
-        parent.selectAll('.chakra-stat__help-text')
+        parent.current.selectAll('.chakra-stat__help-text')
           .select('.help-number')
           .text(stat.getHelpNumber(frame.current, selected));
       }
 
       if (stat.shouldArrows) {
-        const upArrow = parent.select('.chakra-stat__help-text').select('.up-arrow');
-        const downArrow = parent.select('.chakra-stat__help-text').select('.down-arrow');
+        arrow.current = parent.current.select('.chakra-stat__help-text').select('.up-arrow');
+
         if (value > 0) {
-          upArrow.attr('visibility', 'visible');
-          upArrow.style('position', 'relative');
-          downArrow.attr('visibility', 'hidden');
-          downArrow.style('position', 'absolute');
+          if (arrow.current.select('path').attr('fill') !== 'rgb(72,187, 120, 1') arrow.current.select('path').attr('fill', 'rgb(72,187, 120, 1');
+          if (arrow.current.attr('transform') !== 'rotate(0,0,0)') arrow.current.attr('transform', 'rotate(0 0 0)');
         } else {
-          upArrow.attr('visibility', 'hidden');
-          upArrow.style('position', 'absolute');
-          downArrow.attr('visibility', 'visible');
-          downArrow.style('position', 'relative');
+          if (arrow.current.select('path').attr('fill') !== 'rgb(245,101, 101, 1') arrow.current.select('path').attr('fill', 'rgb(245,101, 101, 1');
+          if (arrow.current.attr('transform') !== 'rotate(180,0,0)') arrow.current.attr('transform', 'rotate(180 0 0)');
         }
       }
     });
+    prevFrame.current = frame.current;
   });
 
   if (!satellites) return;
   return (
-    <GridItem area={'2 / 1 / 3 / 3'} zIndex={99}>
-      <Flex height="100%" justify="space-between" align-items="center" display={shouldDisplay ? 'flex' : 'none'}>
+    <GridItem area={'3 / 1 / 4 / 3'} zIndex={99} transform={view.name === 'simulation' ? '' : 'translate(-9999px, 0)'} position={view.name === 'simulation' ? '' : 'absolute'}>
+      <Flex height="100%" justify="space-between" align-items="center">
         <Center flex={1}>
           <Box px={2}>
             <Select onChange={handleSelectSatellite}>
               {satellites.customers.map((customer) => (
                 <option key={customer.id} value={customer.id}>{customer.name}</option>
               ))}
-              <option value="all">Average</option>
+              <option value="fleet">Fleet</option>
             </Select>
 
           </Box>
-          {selected.name !== 'averages'
+          {selected.name !== 'fleet'
             ? (
               <ButtonGroup>
                 <Button onClick={handleLabel}>
@@ -221,10 +227,8 @@ function HUD({
               align="center"
               ref={handleStatRefs}
               id={'chargeState'}
-
             >
               <StatLabel>Charge</StatLabel>
-
               <Gauge
                 height={200}
                 selected={selected}
@@ -256,10 +260,7 @@ function HUD({
                   <StatHelpText>
                     {stat.shouldArrows
                       ? (
-                        <>
-                          <StatArrow type="increase" className="up-arrow hide" />
-                          <StatArrow type="decrease" className="down-arrow hide" />
-                        </>
+                        <TriangleUpIcon className="up-arrow" m={1} ml={0} />
                       )
                       : '' }
                     <span className="help-text" />

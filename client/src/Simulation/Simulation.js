@@ -1,19 +1,18 @@
 /* eslint-disable react/jsx-curly-brace-presence */
 /* eslint-disable react/prop-types */
-import { Canvas, useLoader } from '@react-three/fiber';
-import { Box, GridItem, Spinner } from '@chakra-ui/react';
+import { Canvas } from '@react-three/fiber';
+import { Box, GridItem } from '@chakra-ui/react';
 import {
-  Html,
   Stars, View, PerformanceMonitor,
 } from '@react-three/drei';
 import { Suspense, useRef, useState } from 'react';
-import { useStore } from 'Model/store';
-import { TextureLoader } from 'three/src/loaders/TextureLoader';
+import { useStore } from '../Model/store';
 import Frame from './Frame';
 import Earth from './Earth';
 import Sun from './Sun';
 import Camera from './Camera';
 import Satellites from './Satellites';
+import LoopDialog from '../UI/LoopDialog';
 
 function Simulation() {
   const viewRef = useRef();
@@ -48,7 +47,6 @@ function Simulation() {
           onCreated={(state) => {
             state.events.connect(container.current);
           }}
-          mode="concurrent"
           style={{
             pointerEvents: 'none',
             position: 'fixed',
@@ -58,11 +56,11 @@ function Simulation() {
           dpr={dpr}
         >
 
-          <View index={1} track={viewRef}>
+          <View track={viewRef}>
             <Suspense>
 
               <PerformanceMonitor
-                onChange={({ factor }) => setDpr((0.5 + 1.5 * factor).toFixed(1))}
+                onChange={({ factor }) => setDpr((0.75 + 1.5 * factor).toFixed(1))}
               />
               <Camera />
               <Frame />

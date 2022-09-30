@@ -54,7 +54,7 @@ function Satellite({
     <Instance
       ref={ref}
       scale={0.01}
-      onClick={() => toggleLabel(satellite.id)}
+      // onClick={() => toggleLabel(satellite.id)}
       color={satelliteOptions.color || 'red'}
       up={[0, 0, 1]}
     >

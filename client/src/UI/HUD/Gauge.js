@@ -5,18 +5,11 @@
 /* eslint-disable no-nested-ternary */
 
 import {
-  useTooltip, Tooltip, defaultStyles,
-} from '@visx/tooltip';
-import {
-  useCallback, useEffect, useLayoutEffect, useRef, useState,
+  useCallback, useEffect, useRef,
 } from 'react';
-
-import {
-  Center, Stat, StatHelpText, StatLabel, StatNumber,
-} from '@chakra-ui/react';
-import { useFrameStore } from 'Model/store';
 import { addEffect } from '@react-three/fiber';
 import * as d3 from 'd3';
+import { useFrameStore } from '../../Model/store';
 
 const color = d3.scaleOrdinal(['white', 'grey', 'rgba(255,255,255,0.2)']);
 
@@ -30,13 +23,13 @@ export default function Gauge({ height, selected }) {
   useEffect(() => {
     useFrameStore.subscribe(
       (state) => {
-        frame.current = state.frame;
+        if (state.frame - 2 > frame.current) { frame.current = state.frame; }
+        if (frame.current > state.frame) frame.current = state.frame;
       },
     );
   }, []);
 
   const data = useRef();
-
   const updateData = () => {
     data.current = [
       {
@@ -61,37 +54,43 @@ export default function Gauge({ height, selected }) {
     .outerRadius(height / 3 - 10);
   const pieRef = useRef();
 
+  const group = useRef();
+  const groupWithData = useRef();
+  const groupWithUpdate = useRef();
+  const path = useRef();
   const createPie = () => {
-    const group = d3.select(pieRef.current);
-    const groupWithData = group.selectAll('g.arc').data(pie(data.current));
+    group.current = d3.select(pieRef.current);
+    groupWithData.current = group.current.selectAll('g.arc').data(pie(data.current));
 
-    groupWithData.exit().remove();
+    groupWithData.current.exit().remove();
 
-    const groupWithUpdate = groupWithData
+    groupWithUpdate.current = groupWithData.current
       .enter()
       .append('g')
       .attr('class', 'arc');
 
-    const path = groupWithUpdate
+    path.current = groupWithUpdate.current
       .append('path')
-      .merge(groupWithData.select('path.arc'));
+      .merge(groupWithData.current.select('path.arc'));
 
-    path
+    path.current
       .attr('class', 'arc')
       .attr('d', arc)
-      .attr('fill', (d, i) => color(d));
+      .attr('fill', (d) => color(d));
   };
 
+  const prevFrame = useRef();
   addEffect(() => {
+    if (prevFrame === frame.current) return;
     if (!pieRef.current) return;
     updateData();
     createPie();
+    prevFrame.current = frame.current;
   });
 
   const ref = useCallback((node) => {
     pieRef.current = node;
     updateData();
-
     createPie(data.current);
   });
 

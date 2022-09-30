@@ -83,12 +83,11 @@ function createSatellite(satellite, isCustomer = true) {
     epoch: new Date(satellite.orbit.epoch),
   });
   const orbit = twoline2satrec(tles.tle1, tles.tle2);
-
   try {
     getOrbitAtTime({ orbit }, new Date());
-  } catch {
+  } catch (err) {
     const error = `Unable to propagate orbital parameters for ${satellite.name}. ${
-      isCustomer ? 'Please try different values or choose a TLE.' : 'Please try different offsets in the power configuration menu.'}`;
+      isCustomer ? '\nPlease try different values or choose a TLE.' : '\nPlease try different offsets in the power configuration menu.'}`;
     throw new Error(error);
   }
 
@@ -140,7 +139,7 @@ function createSatellite(satellite, isCustomer = true) {
 function createPowerSatellite(name, orbit, offsets) {
   const newOrbit = { ...orbit };
   Object.entries(offsets).forEach((offset) => {
-    newOrbit[offset[0]] = orbit[offset[0]] + offset[1];
+    newOrbit[offset[0]] = orbit[offset[0]] + Number(offset[1]);
   });
 
   const request = {
@@ -156,24 +155,31 @@ function getOffsets(spacePowers, customers, offsets) {
   if (spacePowers === 0) return [];
   if (spacePowers === customers) return Array.from({ length: customers }, () => [offsets]);
   if (spacePowers < customers) {
-    const spacing = Math.ceil(customers / spacePowers);
+    const spacing = Math.floor(customers / spacePowers);
+    let total = 0;
     return Array.from({ length: customers }, (value, index) => {
-      if (index % spacing) return [offsets];
-      return null;
+      if (index % spacing) return null;
+      total += 1;
+      if (total > spacePowers) return null;
+      return [offsets];
     });
   }
   if (spacePowers > customers) {
-    const ratio = Math.ceil(spacePowers / customers);
+    let ratio = Math.ceil(spacePowers / customers);
+    let total = 0;
     return Array.from(
       { length: customers },
       () => {
         let multiplier = 0;
+        if ((total + ratio) > spacePowers) ratio = spacePowers - total;
         return Array.from({ length: ratio }, (value, index) => {
           if (index % 2 === 0) multiplier += 1;
           const newOffsets = {};
           Object.entries(offsets).forEach((offset) => {
             newOffsets[offset[0]] = offset[1] * multiplier * ((0 - 1) ** index);
           });
+          total += 1;
+
           return newOffsets;
         });
       },
