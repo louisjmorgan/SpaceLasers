@@ -135,7 +135,7 @@ function generateTLE(orbitElements) {
   if (rightAscension < 100) { rightAscensionString = ` ${rightAscensionString}`; }
 
   const eccentricityString = String(
-    Number(eccentricity).toFixed(7),
+    Number(eccentricity).toFixed(8),
   ).substring(2);
   let perigeeString = String(Number(perigee).toFixed(4));
   if (perigee < 100) perigeeString = ` ${perigeeString}`;
@@ -144,7 +144,7 @@ function generateTLE(orbitElements) {
   if (meanAnomalyString < 100) { meanAnomalyString = ` ${meanAnomalyString}`; }
 
   const meanMotionString = String(Number(meanMotion).toPrecision(10));
-  const tle2 = `2 00000 ${inclinationString} ${rightAscensionString}  ${eccentricityString} ${perigeeString} ${meanAnomalyString} ${meanMotionString}    00`;
+  const tle2 = `2 00000 ${inclinationString} ${rightAscensionString} ${eccentricityString} ${perigeeString} ${meanAnomalyString} ${meanMotionString}    00`;
 
   return {
     tle1,
