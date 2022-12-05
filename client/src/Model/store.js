@@ -1,6 +1,7 @@
 import create from 'zustand';
 import createVanilla from 'zustand/vanilla';
 import { handleMissionRequest } from './mission';
+import optimizeSpacePower from './optimizer';
 
 const defaultOptions = {
   showLabel: false,
@@ -114,8 +115,23 @@ const useStore = create((set) => ({
     },
   })),
   storeRef: (id, ref) => set((state) => ({ refs: new Map(state.refs).set(id, ref) })),
-  initializeMission: (values) => set(() => {
-    const mission = handleMissionRequest(values);
+  initializeMission: (values) => set(async () => {
+    const offsetVector = (async () => {
+      await optimizeSpacePower(values);
+    })();
+    console.log(offsetVector);
+    const optimisedValues = {
+      ...values,
+      offsets: {
+        inclination: offsetVector[0],
+        rightAscension: offsetVector[1],
+        eccentricity: offsetVector[2],
+        perigee: offsetVector[3],
+        meanAnomaly: offsetVector[4],
+        meanMotion: offsetVector[5],
+      },
+    };
+    const mission = handleMissionRequest(optimisedValues);
     const satellites = [...mission.satellites.customers, ...mission.satellites.spacePowers];
     const newOptions = new Map();
     satellites.forEach((satellite) => {

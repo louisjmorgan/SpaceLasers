@@ -82,7 +82,6 @@ function createSatellite(satellite, isCustomer = true) {
     ...satellite.orbit,
     epoch: new Date(satellite.orbit.epoch),
   });
-  console.log(tles);
   const orbit = twoline2satrec(tles.tle1, tles.tle2);
   try {
     getOrbitAtTime({ orbit }, new Date());

@@ -9,10 +9,10 @@ import {
 import { isEclipsed, getChargeState, getNetCurrent } from '../Util/power';
 import { SIM_LENGTH, FRAMES, BEAM_DISTANCE } from '../Util/constants';
 
-function getTimeArray(initial) {
+function getTimeArray(initial, length, frames) {
   const initialMillisecs = initial.getTime();
-  const mspf = SIM_LENGTH / FRAMES;
-  return Array.from({ length: FRAMES }, (value, index) => {
+  const mspf = length / frames;
+  return Array.from({ length: frames }, (value, index) => {
     const time = initialMillisecs + index * mspf;
     return time;
   });
@@ -164,9 +164,19 @@ function getChargeStates(satellite, timeArray, hasBeams = true) {
 
 function getDischargeSaved(satellite) {
   let timeCharged = 0;
-  const totalCurrent = satellite.performance.sources.reduce((prev, source, i) => {
+  const totalCurrentBeams = satellite.performance.sources.reduce((prev, source, i) => {
     const currentDuty = satellite.performance.currentDuties[i];
     const netCurrent = getNetCurrent(satellite.params, source, currentDuty);
+    return netCurrent + prev;
+  }, 0);
+  const totalDischargeBeams = satellite.performance.sources.reduce((prev, source, i) => {
+    const currentDuty = satellite.performance.currentDuties[i];
+    const netCurrent = getNetCurrent(satellite.params, source, currentDuty);
+    if (netCurrent < 0) return netCurrent + prev;
+    return prev;
+  }, 0);
+  const totalCurrentNoBeams = satellite.performance.sources.reduce((prev, source, i) => {
+    const currentDuty = satellite.performance.currentDuties[i];
     let sourceNoBeams = source;
     if (source === 'sun and beam') {
       sourceNoBeams = 'sun';
@@ -176,11 +186,13 @@ function getDischargeSaved(satellite) {
       sourceNoBeams = 'eclipsed';
     }
     const netCurrentNoBeams = getNetCurrent(satellite.params, sourceNoBeams, currentDuty);
-    return (netCurrent - netCurrentNoBeams) + prev;
+    return netCurrentNoBeams + prev;
   }, 0);
-  const dischargeSaved = (totalCurrent * (SIM_LENGTH / (1000 * 60 * 60))) / FRAMES;
+  const totalHours = (SIM_LENGTH / (1000 * 60 * 60)) / FRAMES;
+  const totalDischarge = Math.abs(totalDischargeBeams * totalHours);
+  const dischargeSaved = (totalCurrentBeams - totalCurrentNoBeams) * totalHours;
   timeCharged = ((timeCharged / FRAMES) * SIM_LENGTH) / (1000 * 60);
-  return [dischargeSaved, timeCharged];
+  return [totalDischarge, dischargeSaved, timeCharged];
 }
 
 function getLowestChargeState(satellite) {

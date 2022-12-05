@@ -30,7 +30,7 @@
     "eslint-plugin-react-hooks": "^4.5.0",
     "gh-pages": "^4.0.0",
     "html-webpack-plugin": "^5.5.0",
-    "jest": "^28.1.0",
+    "jest": "^28.1.3",
     "prettier": "^2.6.2",
     "react-refresh": "^0.13.0",
     "react-test-renderer": "^18.1.0",
@@ -50,6 +50,7 @@
     "@fontsource/barlow": "^4.5.8",
     "@react-three/drei": "^9.25.2",
     "@react-three/fiber": "^8.3.0",
+    "@react-three/test-renderer": "^8.0.17",
     "@visx/visx": "^2.12.2",
     "c3": "^0.4.24",
     "chart.js": "^3.9.1",
@@ -75,6 +76,7 @@
     "satellite.js": "^4.1.4",
     "three": "^0.143.0",
     "uuid": "^8.3.2",
+    "w-optimization": "^1.0.6",
     "yup": "^0.32.11",
     "zustand": "^4.1.1"
   }

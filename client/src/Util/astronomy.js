@@ -181,7 +181,6 @@ function twoline2satrec(longstr1, longstr2) {
   satrec.inclo = parseFloat(longstr2.substring(8, 16));
   satrec.nodeo = parseFloat(longstr2.substring(17, 25));
   satrec.ecco = parseFloat(`.${longstr2.substring(26, 33)}`);
-  console.log(satrec.ecco);
   satrec.argpo = parseFloat(longstr2.substring(34, 42));
   satrec.mo = parseFloat(longstr2.substring(43, 51));
   satrec.no = parseFloat(longstr2.substring(52, 63));

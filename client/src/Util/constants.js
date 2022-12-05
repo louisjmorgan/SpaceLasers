@@ -6,6 +6,7 @@ const MIN_SPEED = 600;
 const FRAMES = SIM_LENGTH * (FPmS / MIN_SPEED);
 
 export {
+  FPmS,
   SIM_LENGTH,
   MIN_SPEED,
   FRAMES,

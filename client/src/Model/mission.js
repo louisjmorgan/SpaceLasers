@@ -2,6 +2,8 @@
 /* eslint-disable max-len */
 /* eslint-disable no-param-reassign */
 import * as Yup from 'yup';
+import { generateTLE, twoline2satrec } from '../Util/astronomy';
+import { FRAMES, SIM_LENGTH } from '../Util/constants';
 import { createSatellite, createPowerSatellite, getOffsets } from './satellite';
 import {
   getTimeArray,
@@ -166,22 +168,20 @@ const MissionSchema = Yup.object().shape({
   }),
 });
 
-const handleMissionRequest = (req) => {
-  // try {
-  //   missionSchema.validate(req);
-  // } catch (err) {
-  //   console.log(err);
-  //   return new Error({ type: err.name, message: `${err.path} ${err.message}` });
-  // }
-
-  // initialize customers
-  const customers = req.satellites.map((customer) => createSatellite(customer));
-  // initialize global simulation parameters
-  const time = getTimeArray(customers[0].params.orbit.epochdate);
+const simulateBaseData = (baseSatellite, length, frames) => {
+  const tles = generateTLE({
+    ...baseSatellite.orbit,
+    epoch: new Date(baseSatellite.orbit.epoch),
+  });
+  const orbit = twoline2satrec(tles.tle1, tles.tle2);
+  const time = getTimeArray(orbit.epochdate, length, frames);
   const sun = getSunPositions(time);
   const earth = getEarthRotationAngles(time);
+  return [time, sun, earth];
+};
 
-  // simulate customer orbits and duties
+const initializeCustomers = (satellites, time, sun) => {
+  const customers = satellites.map((customer) => createSatellite(customer));
   customers.forEach((customer) => {
     customer.positions = getSatellitePositions(customer.params, time);
     customer.performance = {
@@ -189,19 +189,27 @@ const handleMissionRequest = (req) => {
       isEclipsed: getEclipsedArray(customer, sun, time),
     };
   });
-  const offsets = getOffsets(Number(req.spacePowers), req.satellites.length, req.offsets);
+  return customers;
+};
+
+const initializeSpacePowers = (offsetObj, satellites, spacePowersCount) => {
+  const offsets = getOffsets(Number(spacePowersCount), satellites.length, offsetObj);
   const spacePowers = [];
-
-  req.satellites.forEach((satellite, index) => {
+  satellites.forEach((satellite, index) => {
     if (!offsets[index]) return;
-    return offsets[index].forEach((offset) => spacePowers.push(createPowerSatellite(
-      `Space Power ${index + 1}`,
-      satellite.orbit,
-      offset,
-    )));
+    return offsets[index].forEach((offset) => {
+      spacePowers.push(createPowerSatellite(
+        `Space Power ${index + 1}`,
+        satellite.orbit,
+        offset,
+      ));
+    });
   });
+  return spacePowers;
+};
 
-  // simulate space power orbits and initialize beams
+const simulateSpacePowers = (time, sun, satellitesReq, customers, offsetObj, spacePowersCount) => {
+  const spacePowers = initializeSpacePowers(offsetObj, satellitesReq, spacePowersCount);
   const beams = [];
   spacePowers.forEach((spacePower) => {
     spacePower.positions = getSatellitePositions(spacePower.params, time);
@@ -210,10 +218,14 @@ const handleMissionRequest = (req) => {
       currentDuties: getBeamDuties(satBeams, time),
       isEclipsed: getEclipsedArray(spacePower, sun, time),
     };
+    spacePower.performance.sources = getSources(spacePower, satBeams, time);
+    spacePower.performance.chargeState = getChargeStates(spacePower, time);
     beams.push(...satBeams);
   });
+  return [spacePowers, beams];
+};
 
-  // simulate batteries
+const simulateBatteries = (customers, time, beams) => {
   customers.forEach((customer) => {
     customer.performance.sources = getSources(customer, beams, time);
 
@@ -222,46 +234,46 @@ const handleMissionRequest = (req) => {
       chargeState: getChargeStates(customer, time),
       chargeStateNoBeams: getChargeStates(customer, time, false),
     };
-    const [dischargeSaved, timeCharged] = getDischargeSaved(customer);
+    const [totalDischarge, dischargeSaved, timeCharged] = getDischargeSaved(customer);
     const [lowestChargeStateBeams, lowestChargeStateNoBeams] = getLowestChargeState(customer);
     customer.summary = {
+      totalDischarge,
       dischargeSaved,
       timeCharged,
       lowestChargeStateBeams,
       lowestChargeStateNoBeams,
     };
   });
+};
 
-  spacePowers.forEach((spacePower) => {
-    spacePower.performance.sources = getSources(spacePower, beams, time);
-    spacePower.performance = {
-      ...spacePower.performance,
-      chargeState: getChargeStates(spacePower, time),
-    };
-  });
+const simulateFleet = (time, customers) => ({
+  name: 'fleet',
+  performance: {
+    chargeState: time.map((t, index) => customers.reduce((prev, current) => prev + current.performance.chargeState[index], 0) / customers.length),
+    chargeStateNoBeams: time.map((t, index) => customers.reduce((prev, current) => prev + current.performance.chargeStateNoBeams[index], 0) / customers.length),
+  },
+  summary: {
+    totalDischarge: customers.reduce((prev, current) => prev + current.summary.totalDischarge, 0),
+    dischargeSaved: customers.reduce((prev, current) => prev + current.summary.dischargeSaved, 0),
+    timeCharged: customers.reduce((prev, current) => prev + current.summary.timeCharged, 0),
+    lowestChargeStateBeams: customers.reduce((prev, current) => {
+      const c = current.summary.lowestChargeStateBeams;
+      return prev < c ? prev : c;
+    }, customers[0].summary.lowestChargeStateBeams),
+    lowestChargeStateNoBeams: customers.reduce((prev, current) => {
+      const c = current.summary.lowestChargeStateNoBeams;
+      return prev < c ? prev : c;
+    }, customers[0].summary.lowestChargeStateNoBeams),
+  },
+});
 
-  // calculate averages
-
-  const fleet = {
-    name: 'fleet',
-    performance: {
-      chargeState: time.map((t, index) => customers.reduce((prev, current) => prev + current.performance.chargeState[index], 0) / customers.length),
-      chargeStateNoBeams: time.map((t, index) => customers.reduce((prev, current) => prev + current.performance.chargeStateNoBeams[index], 0) / customers.length),
-    },
-    summary: {
-      dischargeSaved: customers.reduce((prev, current) => prev + current.summary.dischargeSaved, 0),
-      timeCharged: customers.reduce((prev, current) => prev + current.summary.timeCharged, 0),
-      lowestChargeStateBeams: customers.reduce((prev, current) => {
-        const c = current.summary.lowestChargeStateBeams;
-        return prev < c ? prev : c;
-      }, customers[0].summary.lowestChargeStateBeams),
-      lowestChargeStateNoBeams: customers.reduce((prev, current) => {
-        const c = current.summary.lowestChargeStateNoBeams;
-        return prev < c ? prev : c;
-      }, customers[0].summary.lowestChargeStateNoBeams),
-    },
-  };
-
+const handleMissionRequest = (req, length = SIM_LENGTH, frames = FRAMES) => {
+  const [time, sun, earth] = simulateBaseData(req.satellites[0], length, frames);
+  const customers = initializeCustomers(req.satellites, time, sun);
+  const [spacePowers, beams] = simulateSpacePowers(time, sun, req.satellites, customers, req.offsets, req.spacePowers);
+  simulateBatteries(customers, time, beams);
+  const fleet = simulateFleet(time, customers);
+  // console.log(fleet);
   return {
     success: true,
     time,
