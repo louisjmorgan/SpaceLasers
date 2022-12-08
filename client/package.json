@@ -4,10 +4,12 @@
     "start": "webpack serve --config config/webpack.config.js",
     "start-prod": "NODE_ENV=production webpack serve --config config/webpack.config.js",
     "build-dev": "webpack --config config/webpack.config.js",
+    "build-wp": "NODE_ENV=production PUBLIC_URL=/wp-content/reactpress/apps/simulator/build/ webpack --config config/webpack.config.js",
     "build": "NODE_ENV=production webpack --config config/webpack.config.js",
     "test": "NODE_ENV=test jest",
     "deploy": "gh-pages -d dist"
   },
+  
   "devDependencies": {
     "@babel/core": "^7.18.0",
     "@babel/preset-env": "^7.18.0",

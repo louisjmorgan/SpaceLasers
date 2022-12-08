@@ -6,7 +6,7 @@ import {
   Input, Select, Tab, TabList, TabPanel, TabPanels, Tabs, Text, Textarea,
 } from '@chakra-ui/react';
 import { useState } from 'react';
-import { parseTLEs, twoline2satrec } from 'Util/astronomy.js';
+import { parseTLEs, twoline2satrec } from '../../Util/astronomy';
 import CustomNumberInput from './CustomNumberInput';
 
 const fields = [
