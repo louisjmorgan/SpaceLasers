@@ -1,5 +1,5 @@
 /* eslint-disable quotes */
-import { extendTheme } from '@chakra-ui/react';
+import { extendTheme, withDefaultColorScheme } from '@chakra-ui/react';
 import { mode } from '@chakra-ui/theme-tools';
 
 const config = {
@@ -74,21 +74,20 @@ const components = {
     variants: {
       outline: {
         border: '2px solid',
-        borderColor: 'green.100',
+        borderColor: 'green.500',
         color: 'white',
       },
       solid: {
         color: 'white',
-        padding: '1.5rem',
         textTransform: 'uppercase',
+        backgroundColor: 'whiteAlpha.100',
         _hover: {
-          backgroundColor: 'green.100',
+          backgroundColor: 'green.500',
         },
       },
       active: {
         color: 'white',
-        padding: '1.5rem',
-        backgroundColor: 'green.100',
+        backgroundColor: 'green.500',
         textTransform: 'uppercase',
       },
     },
@@ -102,11 +101,32 @@ const colors = {
     300: 'rgba(22,22,22,1)',
   },
   green: {
-    100: '#28d659',
+    main: "#28D759",
+    50: "#EAFBEE",
+    100: "#C3F4D1",
+    200: "#9CEDB3",
+    300: "#76E595",
+    400: "#4FDE77",
+    500: "#28D759",
+    600: "#20AC47",
+    700: "#188136",
+    800: "#105624",
+    900: "#082B12",
+  },
+  accent: {
+    50: "#28D759",
+    100: "#28D759",
+    200: "#28D759",
+    300: "#28D759",
   },
 };
 
-const theme = extendTheme({
+const colorScheme = withDefaultColorScheme({
+  colorScheme: 'accent',
+  components: ['Switch', 'Tabs', 'Slider', 'Radio'],
+});
+
+const theme = extendTheme(colorScheme, {
   config, styles, fonts, layerStyles, textStyles, components, colors,
 });
 

@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-curly-brace-presence */
 import {
   ChakraProvider,
-  Grid, GridItem, Spinner, Flex, Text,
+  Grid, GridItem, Spinner, Flex, Text, DarkMode,
 } from '@chakra-ui/react';
 import {
   useState, useEffect,
@@ -69,65 +69,67 @@ function App() {
 
   return (
     <ChakraProvider theme={theme}>
-      <Grid
-        minHeight={'100vh'}
-        width={'100vw'}
-        maxWidth={'100vw'}
-        templateRows={view.templateRows}
-        templateColumns={view.templateColumns}
-        templateAreas={view.templateAreas}
-        position="relative"
-      >
-        <GridItem area={view.headerArea} display={view.name === 'simulation' ? '' : 'none'} zIndex={99}>
-          <Grid
-            h={'100%'}
-            templateColumns={'1fr 1fr 1fr'}
-            templateRows={'1fr 2fr'}
-            templateAreas={
+      <DarkMode>
+        <Grid
+          minHeight={'100vh'}
+          width={'100vw'}
+          maxWidth={'100vw'}
+          templateRows={view.templateRows}
+          templateColumns={view.templateColumns}
+          templateAreas={view.templateAreas}
+          position="relative"
+        >
+          <GridItem area={view.headerArea} display={view.name === 'simulation' ? '' : 'none'} zIndex={99}>
+            <Grid
+              h={'100%'}
+              templateColumns={'1fr 1fr 1fr'}
+              templateRows={'1fr 2fr'}
+              templateAreas={
                `". . ."
                "menu-buttons title controls"`
             }
-          >
-            <MenuButtons />
-            <GridItem area={'title'}>
-              <Flex align="center" height="100%" justify="center" gap={2}>
-                {/* <h1>Space Power Simulator</h1>
+            >
+              <MenuButtons />
+              <GridItem area={'title'}>
+                <Flex align="center" height="100%" justify="center" gap={2}>
+                  {/* <h1>Space Power Simulator</h1>
                 <span>(beta)</span> */}
-              </Flex>
-            </GridItem>
-            <GridItem area={'controls'}>
-              { isInitialized
-                ? (
-                  <Controls />
-                )
-                : '' }
-            </GridItem>
-          </Grid>
-        </GridItem>
-        <GridItem position="relative" area={view.simulationArea}>
-          <Grid
-            h={'100%'}
-            maxWidth={'100vw'}
-            overflow={'hidden'}
-            templateColumns={'1fr 0.25fr'}
-            templateRows={`0.125fr 1.75fr 0.625fr ${view.name === 'simulation' ? '0.125fr' : ''}`}
-          >
-            { isInitialized ? (
-              <>
-                <Simulation />
-                <HUD />
-              </>
-            ) : <Spinner position="absolute" top="50%" left="50%" transform={'translate(-50%, -50%)'} />}
-          </Grid>
-        </GridItem>
-        <FormWrapper />
-        <GridItem area={view.footerArea}>
-          <Text align="center" fontSize="0.75rem" color="grey">
-            Copyright © SPACE POWER Ltd 2022. All Rights Reserved.
-          </Text>
-        </GridItem>
-        <LoopDialog />
-      </Grid>
+                </Flex>
+              </GridItem>
+              <GridItem area={'controls'}>
+                { isInitialized
+                  ? (
+                    <Controls />
+                  )
+                  : '' }
+              </GridItem>
+            </Grid>
+          </GridItem>
+          <GridItem position="relative" area={view.simulationArea}>
+            <Grid
+              h={'100%'}
+              maxWidth={'100vw'}
+              overflow={'hidden'}
+              templateColumns={'1fr 0.25fr'}
+              templateRows={`0.125fr 1.75fr 0.625fr ${view.name === 'simulation' ? '0.125fr' : ''}`}
+            >
+              { isInitialized ? (
+                <>
+                  <Simulation />
+                  <HUD />
+                </>
+              ) : <Spinner position="absolute" top="50%" left="50%" transform={'translate(-50%, -50%)'} />}
+            </Grid>
+          </GridItem>
+          <FormWrapper />
+          <GridItem area={view.footerArea}>
+            <Text align="center" fontSize="0.75rem" color="grey">
+              Copyright © SPACE POWER Ltd 2022. All Rights Reserved.
+            </Text>
+          </GridItem>
+          <LoopDialog />
+        </Grid>
+      </DarkMode>
     </ChakraProvider>
   );
 }

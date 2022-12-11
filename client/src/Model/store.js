@@ -118,6 +118,15 @@ const useSimStore = create((set) => ({
       lock,
     },
   })),
+  updateName: (id, name) => (set((state) => {
+    const prev = state.satelliteOptions.get(id);
+    return ({
+      satelliteOptions: new Map(state.satelliteOptions).set(id, {
+        ...prev,
+        name,
+      }),
+    });
+  })),
   storeRef: (id, ref) => set((state) => ({ refs: new Map(state.refs).set(id, ref) })),
   initializeMission: (values) => set(() => {
     const mission = handleMissionRequest(values);
@@ -127,7 +136,7 @@ const useSimStore = create((set) => ({
       newOptions.set(satellite.id, {
         ...defaultOptions,
         name: satellite.name,
-        color: satellite.isCustomer ? 'red' : 'yellow',
+        color: satellite.isCustomer ? 'indianred' : '#28d659',
       });
     });
     return ({
@@ -148,6 +157,7 @@ const useUIStore = create((set) => ({
   isOpen: {
     satellites: false,
     satelliteConfig: false,
+    spacePowerConfig: false,
   },
   satIndex: 0,
   constellations: [],

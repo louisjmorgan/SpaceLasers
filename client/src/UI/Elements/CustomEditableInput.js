@@ -5,7 +5,7 @@ import {
 import EditableControls from '../MissionPlanner/EditableControls';
 
 function CustomEditableInput({
-  value, name, form, onSubmit,
+  value, name, form, onSubmit, isDisabled = false,
 }) {
   return (
     <FormControl>
@@ -15,8 +15,8 @@ function CustomEditableInput({
         defaultValue={value}
         align="center"
         width="auto"
-        cursor="pointer"
         justify="space-between"
+        isDisabled={isDisabled}
         p={3}
         px={5}
         onSubmit={(v) => {
@@ -24,7 +24,7 @@ function CustomEditableInput({
             `${name}`,
             v,
           );
-          onSubmit();
+          onSubmit(v);
         }}
         onCancel={(v) => {
           form.setFieldValue(
@@ -42,7 +42,7 @@ function CustomEditableInput({
           type="text"
           variant="filled"
         />
-        <EditableControls />
+        {/* <EditableControls /> */}
       </Editable>
     </FormControl>
   );

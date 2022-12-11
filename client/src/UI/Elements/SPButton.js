@@ -9,7 +9,7 @@ function SPButton({ onClick, children }) {
       minWidth="15ch"
       clipPath="polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)"
       border="2px solid"
-      borderColor="green.100"
+      borderColor="green.500"
       textTransform="uppercase"
       fontWeight="bold"
       type="button"
@@ -32,7 +32,7 @@ function SPButton({ onClick, children }) {
       <Box
         position="absolute"
         inset={0}
-        backgroundColor="green.100"
+        backgroundColor="green.500"
         zIndex={-1}
         transform="scaleX(0)"
         transition="transform 0.3s ease-in-out"

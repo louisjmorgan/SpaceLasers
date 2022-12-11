@@ -66,7 +66,7 @@ function SatelliteConfig({ formik }) {
             <FormLabel my={0}>
               Edit
             </FormLabel>
-            <Select value={satIndex} onChange={onSelectSatellite} width="20ch">
+            <Select variant="filled" value={satIndex} onChange={onSelectSatellite} width="20ch">
               {formik.values.satellites.map((satellite, index) => (
                 <option
                   key={satellite.id}

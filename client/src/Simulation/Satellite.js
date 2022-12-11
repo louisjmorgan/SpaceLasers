@@ -66,7 +66,7 @@ function Satellite({
           }}
         >
           <p>
-            {satellite.name}
+            {satelliteOptions.name}
           </p>
         </Html>
       ) : (

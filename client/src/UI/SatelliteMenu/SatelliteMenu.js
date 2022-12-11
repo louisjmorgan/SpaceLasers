@@ -1,15 +1,20 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable react/prop-types */
 /* eslint-disable import/no-extraneous-dependencies */
+import { ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons';
 import { Center, Flex, Text } from '@chakra-ui/layout';
 import {
-  Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerFooter, DrawerHeader, DrawerOverlay,
+  Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerFooter, DrawerHeader,
 } from '@chakra-ui/modal';
+import { Button } from '@chakra-ui/react';
 import { useState } from 'react';
 import shallow from 'zustand/shallow';
 import { useUIStore } from '../../Model/store';
 import { defaultValues } from '../../Util/defaultInputs';
 import SPButton from '../Elements/SPButton';
 import SatelliteList from './SatelliteList';
+import SpacePowerConfig from './SpacePowerConfig';
+import SpacePowerList from './SpacePowerList';
 
 function SatelliteMenu({ formik }) {
   const {
@@ -41,6 +46,19 @@ function SatelliteMenu({ formik }) {
     formik.handleSubmit();
   };
 
+  const [showSatellites, setShowSatellites] = useState({
+    payload: true,
+    spacePower: true,
+  });
+
+  const onShowSatellites = (e) => {
+    console.log(e);
+    setShowSatellites((prev) => ({
+      ...prev,
+      [`${e.target.id}`]: !prev[e.target.id],
+    }));
+  };
+
   return (
     <Drawer
       isOpen={isOpen}
@@ -50,10 +68,46 @@ function SatelliteMenu({ formik }) {
     >
       <DrawerContent bg="background.100" py={10}>
         <DrawerCloseButton />
-        <DrawerHeader textAlign="center" textTransform="uppercase">Satellites</DrawerHeader>
-
+        <DrawerHeader as="h2" textAlign="center" fontSize="2rem" textTransform="uppercase">Satellites</DrawerHeader>
         <DrawerBody>
-          <SatelliteList formik={formik} />
+          <Center m={3}>
+            <Button
+              rightIcon={(
+                <ChevronDownIcon
+                  transform={showSatellites.payload ? '' : 'rotate(-90deg)'}
+                  transition="transform 0.1s ease-out"
+                />
+              )}
+              id="payload"
+              variant="ghost"
+              textTransform="uppercase"
+              onClick={onShowSatellites}
+              fontSize="1.25rem"
+            >
+              Payload
+            </Button>
+          </Center>
+          {showSatellites.payload ? <SatelliteList formik={formik} /> : '' }
+          <Center m={3} mt={10}>
+            <Button
+              rightIcon={(
+                <ChevronDownIcon
+                  transform={showSatellites.spacePower ? '' : 'rotate(-90deg)'}
+                  transition="transform 0.1s ease-out"
+                />
+              )}
+              id="spacePower"
+              variant="ghost"
+              onClick={onShowSatellites}
+              textTransform="uppercase"
+              fontSize="1.25rem"
+            >
+              Space Power
+            </Button>
+          </Center>
+          {showSatellites.spacePower
+            ? (isEditing ? <SpacePowerConfig formik={formik} /> : <SpacePowerList />)
+            : ''}
           <Center mt={10}>
             {
           isEditing ? (

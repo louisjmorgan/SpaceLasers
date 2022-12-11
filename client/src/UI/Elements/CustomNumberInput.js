@@ -19,22 +19,19 @@ function CustomNumberInput({
     <FormControl
       p={5}
       isInvalid={errors}
-      minWidth="30ch"
-      maxWidth={`${label.length + 5}ch`}
       as={Flex}
       direction="column"
-      align="start"
+      maxWidth="30ch"
     >
       <FormLabel
         htmlFor={`${name}`}
-        width={`${label.length + 5}ch`}
       >
         {label}
       </FormLabel>
       <Flex
-        width="30ch"
         gap={1}
         align="center"
+        justify="centerr"
       >
         <NumberInput
           id={name}
@@ -59,7 +56,7 @@ function CustomNumberInput({
             <NumberDecrementStepper />
           </NumberInputStepper>
         </NumberInput>
-        <Text flex={1} align="left">{units}</Text>
+        {units ? <Text flex={1} align="left">{units}</Text> : ''}
       </Flex>
       <FormErrorMessage>{errors}</FormErrorMessage>
     </FormControl>

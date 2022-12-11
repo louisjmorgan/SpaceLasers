@@ -47,26 +47,33 @@ function SimControls() {
   };
 
   return (
-    <>
-      <MenuItem as={Flex} justify="space-between" align="center">
-
+    <Flex direction="column" align="center" gap={5} p="2ch">
+      <MenuItem
+        as={Flex}
+        justify="space-between"
+        align="stretch"
+        p={0}
+        bg="background.100"
+      >
         <Button
           onClick={handlePaused}
           isDisabled={isFinished}
         >
           {isPaused ? 'Resume' : 'Pause'}
         </Button>
-        <FormLabel htmlFor="loop" alignSelf="center" mb={0}>
+        <FormLabel htmlFor="loop" alignSelf="center" m={0}>
           Loop
           <Switch
             id="loop"
-            mx={1}
+            ml={1}
             isChecked={shouldLoop}
             onChange={handleLoop}
           />
         </FormLabel>
       </MenuItem>
-      <MenuItem>
+      <MenuItem
+        bg="background.100"
+      >
         <FormLabel htmlFor="speed">Speed</FormLabel>
         <Slider
           name="speed"
@@ -81,7 +88,7 @@ function SimControls() {
           <SliderThumb />
         </Slider>
       </MenuItem>
-    </>
+    </Flex>
   );
 }
 
@@ -100,12 +107,19 @@ function CameraControls({
     shallow,
   );
   return (
-    <>
+    <Flex
+      direction="column"
+      align="center"
+      gap={5}
+      p="2ch"
+    >
 
-      <Select onChange={(e) => {
-        if (e.target.value === 'earth') detachCamera();
-        else attachCamera(e.target.value);
-      }}
+      <Select
+        onChange={(e) => {
+          if (e.target.value === 'earth') detachCamera();
+          else attachCamera(e.target.value);
+        }}
+        width="20ch"
       >
         <option value="earth">Earth</option>
         {satellites.customers.map((customer) => (
@@ -113,7 +127,7 @@ function CameraControls({
         ))}
       </Select>
 
-      <MenuItem>
+      <MenuItem bg="background.100">
         <RadioGroup
           onChange={(v) => setLockCamera(v === '1')}
           value={cameraTarget.lock ? '1' : '0'}
@@ -126,7 +140,7 @@ function CameraControls({
           <Radio value="0">Watch</Radio>
         </RadioGroup>
       </MenuItem>
-    </>
+    </Flex>
   );
 }
 
@@ -164,10 +178,14 @@ function Controls() {
     <Flex align="center" justify={view.name === 'simulation' ? 'center' : 'space-between'} height="100%">
       <Text ref={timeRef} width="22ch" m={2} />
       <Menu closeOnSelect={false}>
-        <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+        <MenuButton
+          as={Button}
+          rightIcon={<ChevronDownIcon />}
+          _expanded={{ bg: 'green.500' }}
+        >
           Controls
         </MenuButton>
-        <MenuList>
+        <MenuList bg="background.100">
           <MenuGroup title="Animation">
             <SimControls />
           </MenuGroup>
