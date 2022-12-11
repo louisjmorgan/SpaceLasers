@@ -1,42 +1,45 @@
 /* eslint-disable react/jsx-curly-brace-presence */
 import {
-  Center,
   ChakraProvider,
-  Grid, GridItem, Spinner, Button, Flex, Text,
+  Grid, GridItem, Spinner, Flex, Text,
 } from '@chakra-ui/react';
 import {
-  useState, useEffect, useRef, useCallback, Suspense,
-  useTransition,
-  useMemo,
+  useState, useEffect,
   useLayoutEffect,
 } from 'react';
 import '@fontsource/barlow/700.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/azeret-mono';
 import shallow from 'zustand/shallow';
-import PerformanceView from 'UI/PerformanceView/PerformanceView';
 import { useGLTF } from '@react-three/drei';
 import Controls from './UI/Controls';
-import { useStore } from './Model/store';
-import { defaultValues } from './UI/MissionPlanner/defaultInputs';
-import { MissionPlanner, HUD } from './UI';
+import { useSimStore, useUIStore } from './Model/store';
+import { defaultValues } from './Util/defaultInputs';
 import theme from './theme';
-import ViewButtons from './UI/ViewButtons';
+import MenuButtons from './UI/MenuButtons';
 import Simulation from './Simulation/Simulation';
 import SatelliteGLB from './Assets/Mesh/lowpolysat.glb';
-import ReturnButton from './UI/ReturnButton';
 import LoopDialog from './UI/LoopDialog';
+import FormWrapper from './UI/FormWrapper';
+import HUD from './UI/HUD';
 
 function App() {
   const {
-    view, setView, initializeMission, isInitialized, storeObj,
-  } = useStore(
+    initializeMission, isInitialized, storeObj,
+  } = useSimStore(
     (state) => ({
-      view: state.view,
-      setView: state.setView,
       initializeMission: state.initializeMission,
       isInitialized: state.isInitialized,
       storeObj: state.storeObj,
+    }),
+    shallow,
+  );
+
+  const {
+    view,
+  } = useUIStore(
+    (state) => ({
+      view: state.view,
     }),
     shallow,
   );
@@ -74,14 +77,14 @@ function App() {
             templateRows={'1fr 2fr'}
             templateAreas={
                `". . ."
-               "views title controls"`
+               "menu-buttons title controls"`
             }
           >
-            <ViewButtons />
+            <MenuButtons />
             <GridItem area={'title'}>
               <Flex align="center" height="100%" justify="center" gap={2}>
-                <h1>Space Power Simulator</h1>
-                <span>(beta)</span>
+                {/* <h1>Space Power Simulator</h1>
+                <span>(beta)</span> */}
               </Flex>
             </GridItem>
             <GridItem area={'controls'}>
@@ -107,31 +110,16 @@ function App() {
                 <HUD />
               </>
             ) : <Spinner position="absolute" top="50%" left="50%" transform={'translate(-50%, -50%)'} />}
-            {((view.name === 'mission') || (view.name === 'performance'))
-              ? (
-                <>
-                  <ReturnButton />
-                  <GridItem area={'1 / 1 / 1 / 3'}>
-                    <Controls />
-                  </GridItem>
-                </>
-              ) : ''}
           </Grid>
         </GridItem>
-        <MissionPlanner shouldDisplay={view.name === 'mission'} />
-        {isInitialized ? (
-          <PerformanceView />
-        )
-          : ''}
+        <FormWrapper />
         <GridItem area={view.footerArea}>
           <Text align="center" fontSize="0.75rem" color="grey">
             Copyright © SPACE POWER Ltd 2022. All Rights Reserved.
           </Text>
         </GridItem>
         <LoopDialog />
-
       </Grid>
-
     </ChakraProvider>
   );
 }

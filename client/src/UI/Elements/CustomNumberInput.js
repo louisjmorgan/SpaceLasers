@@ -11,21 +11,31 @@ import {
 import { getIn } from 'formik';
 
 function CustomNumberInput({
-  value, min, max, label, name, units, step, formik,
+  value, min, max, label, name, units, step, formik, sideEffect = () => null,
 }) {
   const errors = getIn(formik.errors, name);
 
   return (
     <FormControl
-      maxWidth="40%"
       p={5}
       isInvalid={errors}
+      minWidth="30ch"
+      maxWidth={`${label.length + 5}ch`}
       as={Flex}
       direction="column"
       align="start"
     >
-      <FormLabel htmlFor={`${name}`}>{label}</FormLabel>
-      <Flex gap={1} align="center">
+      <FormLabel
+        htmlFor={`${name}`}
+        width={`${label.length + 5}ch`}
+      >
+        {label}
+      </FormLabel>
+      <Flex
+        width="30ch"
+        gap={1}
+        align="center"
+      >
         <NumberInput
           id={name}
           name={`${name}`}
@@ -34,6 +44,8 @@ function CustomNumberInput({
               `${name}`,
               v,
             );
+            formik.setFieldTouched(`${name}`, true);
+            sideEffect();
           }}
           value={value}
           step={step}

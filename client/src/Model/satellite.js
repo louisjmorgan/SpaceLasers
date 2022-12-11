@@ -28,12 +28,16 @@ const PV_SOURCES = {
 
 const POWER_SAT_REQUEST = {
   power: {
-    pvVoltage: 4.7,
-    currentDensity: 170.5,
-    area: 0.0128,
-    batteryVoltage: 3.6,
-    capacity: 1.125,
-    powerStoringConsumption: 1.2,
+    pv: {
+      voltage: 4.7,
+      currentDensity: 170.5,
+      area: 0.0128,
+      powerStoringConsumption: 1.2,
+    },
+    battery: {
+      batteryVoltage: 3.6,
+      capacity: 1.125,
+    },
   },
   duties: [
     {
@@ -95,14 +99,14 @@ function createSatellite(satellite, isCustomer = true) {
 
   const pv = {
     sources: PV_SOURCES,
-    voltage: satellite.power.pvVoltage,
-    currentDensity: satellite.power.currentDensity,
-    area: satellite.power.area,
+    voltage: satellite.power.pv.voltage,
+    currentDensity: satellite.power.pv.currentDensity,
+    area: satellite.power.pv.area,
   };
 
   const battery = {
-    voltage: satellite.power.batteryVoltage,
-    capacity: satellite.power.capacity,
+    voltage: satellite.power.battery.voltage,
+    capacity: satellite.power.battery.capacity,
   };
 
   const duties = satellite.duties.map((duty) => ({
@@ -117,7 +121,7 @@ function createSatellite(satellite, isCustomer = true) {
   duties.unshift({
     name: 'Power storing',
     type: 'power storing',
-    consumption: satellite.power.powerStoringConsumption,
+    consumption: satellite.power.pv.powerStoringConsumption,
   });
   const powerProfiles = generatePowerProfiles(pv, duties, battery);
   return {

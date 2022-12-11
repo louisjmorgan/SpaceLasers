@@ -10,7 +10,7 @@ const config = {
 const styles = {
   global: (props) => ({
     body: {
-      bg: mode('white', '#110916')(props),
+      bg: mode('white', 'rgb(22,22,22)')(props),
       fontFamily: `'Barlow', sans-serif`,
     },
     h1: {
@@ -25,7 +25,7 @@ const styles = {
     h3: {
       fontSize: '1.25rem',
       fontWeight: 'bold',
-      padding: '1.5rem',
+      // padding: '1.5rem',
     },
     h4: {
       fontSize: '1rem',
@@ -65,8 +65,31 @@ const components = {
       xl: {
         dialog: {
           height: "auto",
-          minWidth: "50vw",
+          minWidth: "60vw",
         },
+      },
+    },
+  },
+  Button: {
+    variants: {
+      outline: {
+        border: '2px solid',
+        borderColor: 'green.100',
+        color: 'white',
+      },
+      solid: {
+        color: 'white',
+        padding: '1.5rem',
+        textTransform: 'uppercase',
+        _hover: {
+          backgroundColor: 'green.100',
+        },
+      },
+      active: {
+        color: 'white',
+        padding: '1.5rem',
+        backgroundColor: 'green.100',
+        textTransform: 'uppercase',
       },
     },
   },
@@ -74,9 +97,12 @@ const components = {
 
 const colors = {
   background: {
-    100: 'hsl(276.9,41.9%,20%)',
-    200: 'hsl(276.9,41.9%,10%)',
-    300: 'hsl(276.9,41.9%,6.1%)',
+    100: 'rgba(22,22,22,0.5)',
+    200: 'rgba(22,22,22,0.9)',
+    300: 'rgba(22,22,22,1)',
+  },
+  green: {
+    100: '#28d659',
   },
 };
 

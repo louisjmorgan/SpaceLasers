@@ -12,17 +12,15 @@ import {
 import { useFormik } from 'formik';
 import { useEffect, useState } from 'react';
 
-import { getCorsFreeUrl, loadTLEs } from 'Util/astronomy';
-import { useStore } from 'Model/store';
-import { handleMissionRequest, MissionSchema } from '../../Model/mission';
-
+import { getCorsFreeUrl, loadTLEs } from '../../Util/astronomy';
+import { useStore } from '../../Model/store';
+import { MissionSchema } from '../../Model/mission';
 import SatelliteList from './SatelliteList';
-
-import OrbitTab from './OrbitTab';
-import PowerTab from './PowerTab';
-import DutyTab from './DutyTab';
+import OrbitTab from '../SatelliteMenu/OrbitTab';
+import PowerTab from '../SatelliteMenu/PowerTab';
+import DutyTab from '../SatelliteMenu/DutyTab';
 import ConfigModal from './ConfigModal';
-import { defaultValues } from './defaultInputs';
+import { defaultValues } from '../../Util/defaultInputs';
 
 function fetchTLEs(urls) {
   const tles = [];
@@ -64,9 +62,10 @@ function MissionPlanner({ shouldDisplay }) {
     validateOnBlur: true,
     onSubmit: async (values) => {
       formik.setSubmitting(true);
+      const isValid = await formik.validateForm(values);
+      console.log(isValid);
       await new Promise((resolve, reject) => {
         setInitialized(false);
-
         setTimeout(() => {
           try {
             initializeMission(values);

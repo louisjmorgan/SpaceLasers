@@ -12,17 +12,25 @@ import { addEffect } from '@react-three/fiber';
 import { select } from 'd3';
 import { useEffect, useRef } from 'react';
 import shallow from 'zustand/shallow';
-import { useFrameStore, useStore } from '../Model/store';
+import { useFrameStore, useSimStore, useUIStore } from '../Model/store';
 
 function SimControls() {
   const {
-    isPaused, setPaused, speed, setSpeed, shouldLoop, setLoop, isFinished,
-  } = useStore(
+    isPaused, setPaused, speed, setSpeed,
+  } = useSimStore(
     (state) => ({
       isPaused: state.isPaused,
       setPaused: state.setPaused,
       speed: state.speed,
       setSpeed: state.setSpeed,
+    }),
+    shallow,
+  );
+
+  const {
+    shouldLoop, setLoop, isFinished,
+  } = useUIStore(
+    (state) => ({
       shouldLoop: state.shouldLoop,
       setLoop: state.setLoop,
       isFinished: state.isFinished,
@@ -82,7 +90,7 @@ function CameraControls({
 }) {
   const {
     cameraTarget, attachCamera, detachCamera, setLockCamera,
-  } = useStore(
+  } = useSimStore(
     (state) => ({
       cameraTarget: state.cameraTarget,
       attachCamera: state.attachCamera,
@@ -133,15 +141,16 @@ function Controls() {
     );
   }, []);
   const {
-    time, satellites, view,
-  } = useStore(
+    time, satellites,
+  } = useSimStore(
     (state) => ({
       time: state.mission.time,
       satellites: state.mission.satellites,
-      view: state.view,
     }),
     shallow,
   );
+  const view = useUIStore((state) => state.view, shallow);
+
   const timeRef = useRef();
   const date = useRef(new Date());
   addEffect(() => {

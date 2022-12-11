@@ -5,8 +5,8 @@ import {
 } from '@chakra-ui/react';
 import { FieldArray, FormikProvider } from 'formik';
 import { v4 as uuidv4 } from 'uuid';
-import CustomEditableInput from './CustomEditableInput';
-import { defaultSatellite } from './defaultInputs';
+import CustomEditableInput from '../Elements/CustomEditableInput';
+import { defaultSatellite } from '../../Util/defaultInputs';
 
 function SatelliteListItem({
   satellite, index, satIndex, setSatIndex, form, remove,

@@ -6,9 +6,9 @@ import {
   Editable, EditableInput, EditablePreview, Flex, FormControl, FormLabel, Input, Select,
 } from '@chakra-ui/react';
 import { FieldArray, FormikProvider } from 'formik';
-import CustomNumberInput from './CustomNumberInput';
-import { defaultDuty } from './defaultInputs';
-import EditableControls from './EditableControls';
+import CustomNumberInput from '../Elements/CustomNumberInput';
+import { defaultDuty } from '../../Util/defaultInputs';
+import EditableControls from '../MissionPlanner/EditableControls';
 
 const defaultFields = [
   {

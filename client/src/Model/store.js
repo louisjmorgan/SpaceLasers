@@ -1,10 +1,11 @@
+import { set } from 'lodash';
 import create from 'zustand';
 import createVanilla from 'zustand/vanilla';
 import { handleMissionRequest } from './mission';
-import optimizeSpacePower from './optimizer';
 
 const defaultOptions = {
   showLabel: false,
+  isVisible: true,
 };
 
 const views = {
@@ -45,7 +46,7 @@ const useFrameStore = createVanilla(() => ({
   frame: 0,
 }));
 
-const useStore = create((set) => ({
+const useSimStore = create((set) => ({
   isPaused: false,
   speed: 1,
   cameraTarget: {
@@ -55,35 +56,23 @@ const useStore = create((set) => ({
     id: null,
   },
   refs: new Map(),
-  satelliteOptions: new Map(),
-  view: views.simulation,
   mission: null,
   isInitialized: false,
   satelliteObj: null,
-  shouldLoop: false,
-  isFinished: false,
-  setLoop: (shouldLoop) => set(() => ({ shouldLoop })),
-  setFinished: (isFinished) => set(() => ({ isFinished })),
+  satelliteOptions: new Map(),
   storeObj: (obj) => set(() => ({ satelliteObj: obj })),
   setInitialized: (isInitialized) => set(() => ({ isInitialized })),
   setPaused: (isPaused) => set(() => ({ isPaused })),
   setSpeed: (speed) => set(() => ({ speed })),
-  attachCamera: (id) => set((state) => ({
-    cameraTarget: {
-      ...state.cameraTarget,
-      ref: state.refs.get(id),
-      id,
-      name: state.satelliteOptions.get(id).name,
-    },
-  })),
-  detachCamera: () => set((state) => ({
-    cameraTarget: {
-      ...state.cameraTarget,
-      name: 'earth',
-      ref: null,
-      id: null,
-    },
-  })),
+  toggleVisibility: (id) => set((state) => {
+    const prev = state.satelliteOptions.get(id);
+    return ({
+      satelliteOptions: new Map(state.satelliteOptions).set(id, {
+        ...prev,
+        isVisible: !prev.isVisible,
+      }),
+    });
+  }),
   toggleLabel: (id) => set((state) => {
     const prev = state.satelliteOptions.get(id);
     return ({
@@ -108,6 +97,22 @@ const useStore = create((set) => ({
       satelliteOptions: newOptions,
     });
   }),
+  attachCamera: (id) => set((state) => ({
+    cameraTarget: {
+      ...state.cameraTarget,
+      ref: state.refs.get(id),
+      id,
+      name: state.satelliteOptions.get(id).name,
+    },
+  })),
+  detachCamera: () => set((state) => ({
+    cameraTarget: {
+      ...state.cameraTarget,
+      name: 'earth',
+      ref: null,
+      id: null,
+    },
+  })),
   setLockCamera: (lock) => set((state) => ({
     cameraTarget: {
       ...state.cameraTarget,
@@ -115,23 +120,8 @@ const useStore = create((set) => ({
     },
   })),
   storeRef: (id, ref) => set((state) => ({ refs: new Map(state.refs).set(id, ref) })),
-  initializeMission: (values) => set(async () => {
-    const offsetVector = (async () => {
-      await optimizeSpacePower(values);
-    })();
-    console.log(offsetVector);
-    const optimisedValues = {
-      ...values,
-      offsets: {
-        inclination: offsetVector[0],
-        rightAscension: offsetVector[1],
-        eccentricity: offsetVector[2],
-        perigee: offsetVector[3],
-        meanAnomaly: offsetVector[4],
-        meanMotion: offsetVector[5],
-      },
-    };
-    const mission = handleMissionRequest(optimisedValues);
+  initializeMission: (values) => set(() => {
+    const mission = handleMissionRequest(values);
     const satellites = [...mission.satellites.customers, ...mission.satellites.spacePowers];
     const newOptions = new Map();
     satellites.forEach((satellite) => {
@@ -153,7 +143,39 @@ const useStore = create((set) => ({
       },
     });
   }),
-  setView: (e) => set(() => ({ view: views[`${e.target.value}`] })),
 }));
 
-export { useStore, useFrameStore };
+const useUIStore = create((set) => ({
+  isOpen: {
+    satellites: false,
+    satelliteConfig: false,
+  },
+  satIndex: 0,
+  constellations: [],
+  isEditing: false,
+  isAdvanced: false,
+  view: views.simulation,
+  shouldLoop: false,
+  isFinished: false,
+  setLoop: (shouldLoop) => set(() => ({ shouldLoop })),
+  setFinished: (isFinished) => set(() => ({ isFinished })),
+  setView: (e) => set(() => ({ view: views[`${e.target.value}`] })),
+  openMenu: (e) => set((state) => ({
+    isOpen: {
+      ...state.isOpen,
+      [`${e.target.value}`]: true,
+    },
+  })),
+  closeMenu: (e) => set((state) => ({
+    isOpen: {
+      ...state.isOpen,
+      [`${e}`]: false,
+    },
+  })),
+  setEditing: (e) => set(() => ({ isEditing: e })),
+  setAdvanced: (e) => set(() => ({ isAdvanced: e })),
+  setConstellations: (e) => set(() => ({ constellations: e })),
+  setSatIndex: (e) => set(() => ({ satIndex: e })),
+}));
+
+export { useSimStore, useFrameStore, useUIStore };

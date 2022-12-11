@@ -8,23 +8,19 @@ import { useFrame } from '@react-three/fiber';
 import { useCallback, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import shallow from 'zustand/shallow';
-import { useFrameStore, useStore } from '../Model/store';
+import { useFrameStore, useSimStore, useUIStore } from '../Model/store';
 
 const earth = new THREE.Vector3(0, 0, 0);
 
 function Satellite({
   satellite,
 }) {
-  const {
-    storeRef, toggleLabel, satelliteOptions,
-  } = useStore(
-    (state) => ({
-      storeRef: state.storeRef,
-      toggleLabel: state.toggleLabel,
-      satelliteOptions: state.satelliteOptions.get(satellite.id),
-    }),
-    shallow,
-  );
+  const { storeRef, toggleLabel, satelliteOptions } = useSimStore((state) => ({
+    storeRef: state.storeRef,
+    toggleLabel: state.toggleLabel,
+    satelliteOptions: state.satelliteOptions.get(satellite.id),
+  }), shallow);
+
   const satRef = useRef();
   const ref = useCallback((node) => {
     if (node !== null) {
@@ -50,7 +46,8 @@ function Satellite({
     satRef.current.lookAt(earth);
   });
 
-  return (
+  return satelliteOptions.isVisible
+    && (
     <Instance
       ref={ref}
       scale={0.01}
@@ -76,7 +73,7 @@ function Satellite({
         ''
       )}
     </Instance>
-  );
+    );
 }
 
 export default Satellite;

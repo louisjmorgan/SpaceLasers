@@ -1,10 +1,9 @@
 /* eslint-disable react/prop-types */
 import { Instances, useGLTF } from '@react-three/drei';
 import { useLoader } from '@react-three/fiber';
-import { useStore } from 'Model/store';
-import { useLayoutEffect } from 'react';
 import { TextureLoader } from 'three';
 import shallow from 'zustand/shallow';
+import { useSimStore } from '../Model/store';
 import Beam from './Beam';
 import Satellite from './Satellite';
 import gradientTexture from '../Assets/Textures/twoTone.jpg';
@@ -12,7 +11,7 @@ import gradientTexture from '../Assets/Textures/twoTone.jpg';
 function Satellites() {
   const {
     customers, spacePowers, beams, satelliteObj,
-  } = useStore(
+  } = useSimStore(
     (state) => ({
       customers: state.mission.satellites.customers,
       spacePowers: state.mission.satellites.spacePowers,

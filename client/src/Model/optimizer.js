@@ -2,15 +2,15 @@ import nelderMead from 'w-optimization/src/nelderMead.mjs';
 import { FRAMES, SIM_LENGTH } from '../Util/constants';
 import { handleMissionRequest } from './mission';
 
-function optimizeSpacePower(req) {
+async function optimizeSpacePower(req) {
   function dischargeLoss(offsetVector) {
     const offsetObj = {
-      inclination: offsetVector[0],
-      rightAscension: offsetVector[1],
-      eccentricity: offsetVector[2],
-      perigee: offsetVector[3],
-      meanAnomaly: offsetVector[4],
-      meanMotion: offsetVector[5],
+      inclination: Math.abs(offsetVector[0]),
+      rightAscension: Math.abs(offsetVector[1]),
+      eccentricity: Math.abs(offsetVector[2]),
+      perigee: Math.abs(offsetVector[3]),
+      meanAnomaly: Math.abs(offsetVector[4]),
+      meanMotion: Math.abs(offsetVector[5]),
     };
 
     const testReq = {
@@ -23,14 +23,27 @@ function optimizeSpacePower(req) {
       const result = mission.satellites.fleet.summary.totalDischarge;
       return result;
     } catch {
-      return Infinity;
+      return NaN;
     }
   }
 
-  const offsetVector = [6, 0, 0, 0, 0, 0];
-  let result;
-  nelderMead(dischargeLoss, offsetVector).then((res) => { result = res; });
-  return result;
+  const offsetVector = [
+    req.offsets.inclination,
+    req.offsets.rightAscension,
+    req.offsets.eccentricity,
+    req.offsets.perigee,
+    req.offsets.meanAnomaly,
+    req.offsets.meanMotion,
+  ];
+  const result = await nelderMead(dischargeLoss, offsetVector);
+  return {
+    inclination: Math.abs(result.x[0]),
+    rightAscension: Math.abs(result.x[1]),
+    eccentricity: Math.abs(result.x[2]),
+    perigee: Math.abs(result.x[3]),
+    meanAnomaly: Math.abs(result.x[4]),
+    meanMotion: Math.abs(result.x[5]),
+  };
 }
 
 export default optimizeSpacePower;

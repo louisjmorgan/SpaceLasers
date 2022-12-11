@@ -2,7 +2,7 @@
 import {
   Editable, EditableInput, EditablePreview, Flex, FormControl, Input,
 } from '@chakra-ui/react';
-import EditableControls from './EditableControls';
+import EditableControls from '../MissionPlanner/EditableControls';
 
 function CustomEditableInput({
   value, name, form, onSubmit,
@@ -16,7 +16,9 @@ function CustomEditableInput({
         align="center"
         width="auto"
         cursor="pointer"
-        justify="center"
+        justify="space-between"
+        p={3}
+        px={5}
         onSubmit={(v) => {
           form.setFieldValue(
             `${name}`,
@@ -33,7 +35,7 @@ function CustomEditableInput({
       >
         <EditablePreview />
         <Input
-          textAlign="center"
+          textAlign="left"
           as={EditableInput}
           id="name"
           name={name}

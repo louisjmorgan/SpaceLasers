@@ -4,7 +4,8 @@ import {
   Button, Center, Flex, Modal, ModalBody, ModalCloseButton, ModalContent,
   ModalFooter, ModalHeader, ModalOverlay, useDisclosure,
 } from '@chakra-ui/react';
-import CustomNumberInput from './CustomNumberInput';
+import CustomNumberInput from '../Elements/CustomNumberInput';
+import optimizeSpacePower from '../../Model/optimizer';
 
 const fields = [
   {
@@ -64,6 +65,14 @@ const fields = [
 
 function ConfigModal({ formik }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const onOptimize = async () => {
+    const result = await optimizeSpacePower(formik.values);
+    console.log(result);
+    Object.entries(result).forEach(([key, value]) => {
+      formik.setFieldValue(`offsets[${key}]`, value);
+    });
+  };
   return (
     <>
       <Button onClick={onOpen}>
@@ -87,7 +96,7 @@ function ConfigModal({ formik }) {
                 max={10}
               />
             </Center>
-            <h3 align="center">Offsets</h3>
+            <h3>Offsets</h3>
             <Flex justify="center" direction="row" wrap="wrap" width="100%">
               {fields.map((param) => (
                 <CustomNumberInput
@@ -105,6 +114,9 @@ function ConfigModal({ formik }) {
             </Flex>
           </ModalBody>
           <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={onOptimize}>
+              Optimize
+            </Button>
             <Button colorScheme="blue" mr={3} onClick={onClose}>
               Close
             </Button>

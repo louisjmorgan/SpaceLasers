@@ -14,7 +14,7 @@ import shallow from 'zustand/shallow';
 import { addEffect } from '@react-three/fiber';
 import * as d3 from 'd3';
 import { TriangleUpIcon } from '@chakra-ui/icons';
-import { useFrameStore, useStore } from '../../Model/store';
+import { useFrameStore, useSimStore, useUIStore } from '../../Model/store';
 import Gauge from './Gauge';
 import './HUD.css';
 import { FRAMES } from '../../Util/constants';
@@ -63,29 +63,26 @@ const statProps = [
 
 function HUD() {
   const {
-    satellites, toggleLabel, toggleAllLabels, attachCamera,
-    detachCamera, cameraTarget, satelliteOptions, view, isFinished, isPaused,
-  } = useStore(
+    satellites, attachCamera,
+    detachCamera, cameraTarget,
+    toggleLabel, toggleAllLabels, satelliteOptions,
+  } = useSimStore(
     (state) => ({
       satellites: state.mission.satellites,
-      toggleLabel: state.toggleLabel,
-      toggleAllLabels: state.toggleAllLabels,
-      satelliteOptions: state.satelliteOptions,
       attachCamera: state.attachCamera,
       detachCamera: state.detachCamera,
       cameraTarget: state.cameraTarget,
-      view: state.view,
-      isFinished: state.isFinished,
-      isPaused: state.isPaused,
+      toggleLabel: state.toggleLabel,
+      toggleAllLabels: state.toggleAllLabels,
+      satelliteOptions: state.satelliteOptions,
     }),
     shallow,
   );
 
-  // const [selected, setSelected] = useState(satellites.customers[0]);
-  // const selected = useRef(satellites.customers[0]);
+  const view = useUIStore((state) => state.view, shallow);
+
   const [selected, setSelected] = useState(satellites.customers[0]);
   useEffect(() => {
-    // selected.current = satellites.customers[0];
     setSelected(() => satellites.customers[0]);
   }, [satellites]);
 
@@ -122,7 +119,6 @@ function HUD() {
     );
   }, []);
 
-  // const statRefs = useRef([]);
   const statRefs = useRef(new Map());
   const handleStatRefs = useCallback((node) => {
     if (!node) return;
@@ -140,9 +136,7 @@ function HUD() {
   const arrow = useRef();
   const parent = useRef();
   addEffect(() => {
-    // if (prevFrame.current === frame.current) return;
     if (frame.current > FRAMES) return;
-    // if (isPaused || isFinished) return;
     statRefs.current.forEach((stat) => {
       if (!stat.ref) return;
       parent.current = d3.select(stat.ref);
@@ -202,24 +196,6 @@ function HUD() {
             </Select>
 
           </Box>
-          {selected.name !== 'fleet'
-            ? (
-              <ButtonGroup>
-                <Button onClick={handleLabel}>
-                  {satelliteOptions.get(selected.id).showLabel ? 'Hide Label' : 'Show Label'}
-                </Button>
-                <Button
-                  // onClick={
-                  //     cameraTarget.id === selected.id
-                  //       ? () => detachCamera() : () => attachCamera(selected.id)
-                  //   }
-                  onClick={handleCamera}
-                >
-                  {cameraTarget.id === selected.id ? 'Detach Camera' : 'Attach Camera'}
-                </Button>
-              </ButtonGroup>
-            )
-            : <Button onClick={hideAllLabels}>{'Hide All Labels'}</Button>}
         </Center>
         <Box height="100%" flex={1}>
           <Center>

@@ -79,24 +79,32 @@ const MissionSchema = Yup.object().shape({
             .required('mean motion is required'),
         }),
         power: Yup.object().shape({
-          pvVoltage: Yup.number()
-            .min(0, 'Must be positive')
-            .required('pv voltage is required'),
-          currentDensity: Yup.number()
-            .min(0, 'Must be positive')
-            .required('pv current density is required'),
-          area: Yup.number()
-            .min(0, 'Must be greater than 0')
-            .required('pv area is required'),
-          batteryVoltage: Yup.number()
-            .min(0, 'Must be positive')
-            .required('battery voltage is required'),
-          capacity: Yup.number()
-            .min(0, 'Must be greater than 0')
-            .required('battery capacity is required'),
-          powerStoringConsumption: Yup.number()
-            .min(0, 'Must be greater than 0')
-            .required('Power storing consumption is required'),
+          pv: Yup.object().shape({
+            voltage: Yup.number()
+              .min(0, 'Must be positive')
+              .required('pv voltage is required'),
+            currentDensity: Yup.number()
+              .min(0, 'Must be positive')
+              .required('pv current density is required'),
+            area: Yup.number()
+              .min(0, 'Must be greater than 0')
+              .required('pv area is required'),
+            powerStoringConsumption: Yup.number()
+              .min(0, 'Must be greater than 0')
+              .required('Power storing consumption is required'),
+            preset: Yup.string()
+              .oneOf(['small', 'medium', 'large', 'custom']),
+          }),
+          battery: Yup.object().shape({
+            voltage: Yup.number()
+              .min(0, 'Must be positive')
+              .required('battery voltage is required'),
+            capacity: Yup.number()
+              .min(0, 'Must be greater than 0')
+              .required('battery capacity is required'),
+            preset: Yup.string()
+              .oneOf(['small', 'medium', 'large', 'custom']),
+          }),
         }),
         duties: Yup.array()
           .of(

@@ -5,7 +5,7 @@ import {
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import shallow from 'zustand/shallow';
-import { useStore } from '../../Model/store';
+import { useSimStore } from '../../Model/store';
 import { SIM_LENGTH } from '../../Util/constants';
 
 const days = SIM_LENGTH / (1000 * 60 * 60 * 24);
@@ -48,7 +48,7 @@ const statProps = [
 ];
 
 function Summary() {
-  const { customers, fleet } = useStore(
+  const { customers, fleet } = useSimStore(
     (state) => ({
       customers: state.mission.satellites.customers,
       fleet: state.mission.satellites.fleet,
