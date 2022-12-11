@@ -30,9 +30,10 @@ function SatelliteListItem({
 
   const {
     attachCamera, detachCamera, cameraTarget, toggleVisibility,
-    toggleLabel, toggleAllLabels, satelliteOptions,
+    toggleLabel, toggleAllLabels, satelliteOptions, isInitialized,
   } = useSimStore(
     (state) => ({
+      isInitialized: state.isInitialized,
       attachCamera: state.attachCamera,
       detachCamera: state.detachCamera,
       cameraTarget: state.cameraTarget,
@@ -61,16 +62,16 @@ function SatelliteListItem({
     openMenu({ target: { value: 'satelliteConfig' } });
   };
 
-  const handleCamera = () => {
+  const onCamera = () => {
     if (cameraTarget.id === satellite.id) detachCamera();
     else attachCamera(satellite.id);
   };
 
-  const handleLabel = () => {
+  const onLabel = () => {
     toggleLabel(satellite.id);
   };
 
-  const handleVisibility = () => {
+  const onEye = () => {
     toggleVisibility(satellite.id);
   };
 
@@ -102,20 +103,20 @@ function SatelliteListItem({
         <>
           <CustomIconButton
             icon={<FaTag />}
-            onClick={handleLabel}
+            onClick={onLabel}
             isActive={satelliteOptions.get(satellite.id).showLabel}
             label="toggle label"
           />
           <CustomIconButton
             icon={<FaEye />}
-            onClick={handleVisibility}
+            onClick={onEye}
             isActive={satelliteOptions.get(satellite.id).isVisible}
             label="toggle visibility"
           />
           <CustomIconButton
             icon={<FaCamera />}
             label="toggle camera"
-            onClick={handleCamera}
+            onClick={onCamera}
             isActive={cameraTarget.id === satellite.id}
           />
         </>

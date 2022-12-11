@@ -1,6 +1,5 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable import/no-extraneous-dependencies */
-import { Button, ButtonGroup } from '@chakra-ui/button';
 import { Center, Flex, Text } from '@chakra-ui/layout';
 import {
   Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerFooter, DrawerHeader, DrawerOverlay,
@@ -40,7 +39,6 @@ function SatelliteMenu({ formik }) {
 
   const onUpdate = () => {
     formik.handleSubmit();
-    setEditing(false);
   };
 
   return (

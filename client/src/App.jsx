@@ -6,12 +6,15 @@ import {
 import {
   useState, useEffect,
   useLayoutEffect,
+  useRef,
 } from 'react';
+
 import '@fontsource/barlow/700.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/azeret-mono';
 import shallow from 'zustand/shallow';
 import { useGLTF } from '@react-three/drei';
+import { createPortal } from 'react-dom';
 import Controls from './UI/Controls';
 import { useSimStore, useUIStore } from './Model/store';
 import { defaultValues } from './Util/defaultInputs';
@@ -23,6 +26,9 @@ import LoopDialog from './UI/LoopDialog';
 import FormWrapper from './UI/FormWrapper';
 import HUD from './UI/HUD';
 
+// const simRoot = document.getElementById('sim-root');
+// const root = document.createElement('div');
+// simRoot.appendChild(root);
 function App() {
   const {
     initializeMission, isInitialized, storeObj,
@@ -56,6 +62,7 @@ function App() {
       initializeMission(defaultValues);
     }
   }, [firstRender]);
+
   useEffect(() => {
     setFirstRender(true);
   }, []);
@@ -69,6 +76,7 @@ function App() {
         templateRows={view.templateRows}
         templateColumns={view.templateColumns}
         templateAreas={view.templateAreas}
+        position="relative"
       >
         <GridItem area={view.headerArea} display={view.name === 'simulation' ? '' : 'none'} zIndex={99}>
           <Grid

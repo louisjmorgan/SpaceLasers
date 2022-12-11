@@ -1,5 +1,6 @@
 import { useFormik } from 'formik';
 import { useEffect } from 'react';
+import shallow from 'zustand/shallow';
 import { MissionSchema } from '../Model/mission';
 import { useSimStore, useUIStore } from '../Model/store';
 import { getCorsFreeUrl, loadTLEs } from '../Util/astronomy';
@@ -29,12 +30,15 @@ const urls = {
 };
 
 function FormWrapper() {
-  const setConstellations = useUIStore((state) => state.setConstellations);
+  const { setConstellations, setEditing } = useUIStore((state) => ({
+    setConstellations: state.setConstellations,
+    setEditing: state.setEditing,
+  }), shallow);
 
   const { initializeMission, setInitialized } = useSimStore((state) => ({
     initializeMission: state.initializeMission,
     setInitialized: state.setInitialized,
-  }));
+  }), shallow);
 
   useEffect(() => {
     setConstellations((fetchTLEs(urls)));
@@ -53,18 +57,16 @@ function FormWrapper() {
           try {
             initializeMission(values);
             formik.setStatus('');
+            setEditing(false);
           } catch (error) {
-            console.log(error.message);
             formik.setStatus(error.message);
             reject();
           }
           resolve();
-        }, 500);
+        }, 100);
       });
     },
   });
-
-  console.log(formik.errors);
 
   return (
     <form onSubmit={formik.handleSubmit}>
