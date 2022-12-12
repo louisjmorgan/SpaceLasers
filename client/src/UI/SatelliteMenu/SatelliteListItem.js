@@ -54,7 +54,7 @@ function SatelliteListItem({
   const onCog = () => {
     if (!isEditing) setEditing(true);
     setSatIndex(index);
-    openMenu({ target: { value: 'satelliteConfig' } });
+    openMenu('satelliteConfig');
   };
 
   const onCamera = () => {

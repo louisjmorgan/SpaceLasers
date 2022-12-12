@@ -15,6 +15,7 @@ function SpacePowerList() {
           satellite={spacePower}
           index={index}
           isPayload={false}
+          key={spacePower.id}
         />
       ))}
     </List>

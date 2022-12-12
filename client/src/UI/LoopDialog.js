@@ -5,6 +5,7 @@ import {
 import { useEffect } from 'react';
 import shallow from 'zustand/shallow';
 import { useUIStore } from '../Model/store';
+import SPButton from './Elements/SPButton';
 import Summary from './PerformanceView/Summary';
 
 function LoopDialog() {
@@ -42,9 +43,9 @@ function LoopDialog() {
           </ModalBody>
         </Center>
         <ModalFooter>
-          <Button onClick={handleReplay}>
+          <SPButton onClick={handleReplay}>
             Restart
-          </Button>
+          </SPButton>
 
         </ModalFooter>
 

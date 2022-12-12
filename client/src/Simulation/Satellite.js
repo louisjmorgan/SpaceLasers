@@ -57,6 +57,7 @@ function Satellite({
     >
       {satelliteOptions.showLabel ? (
         <Html
+          zIndexRange={[0, 0]}
           style={{
             fontFamily: 'sans-serif',
             color: 'white',

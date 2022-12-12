@@ -1,11 +1,13 @@
 /* eslint-disable react/prop-types */
 import {
+  Box,
   Button, Flex, FormControl, FormLabel, Select, VStack,
 } from '@chakra-ui/react';
 import { useEffect } from 'react';
 import shallow from 'zustand/shallow';
 import { useUIStore } from '../../Model/store';
 import CustomNumberInput from '../Elements/CustomNumberInput';
+import SPButton from '../Elements/SPButton';
 
 const pvFields = [
   {
@@ -242,9 +244,11 @@ function PowerTab({ formik }) {
           </FormControl>
         </VStack>
       )}
-      <Button onClick={handleCopyToSiblings} m={10}>
-        Copy to all
-      </Button>
+      <Box m={10}>
+        <SPButton onClick={handleCopyToSiblings}>
+          Copy to all
+        </SPButton>
+      </Box>
     </>
   );
 }

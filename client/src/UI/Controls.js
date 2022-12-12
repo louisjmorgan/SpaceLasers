@@ -5,13 +5,14 @@
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import {
   Button, Flex, FormLabel, Menu, MenuButton, MenuDivider, MenuGroup,
-  MenuItem, MenuList, Radio, RadioGroup, Select, Slider,
+  MenuItem, MenuList, Radio, RadioGroup, Select, Show, Slider,
   SliderFilledTrack, SliderThumb, SliderTrack, Switch, Text,
 } from '@chakra-ui/react';
 import { addEffect } from '@react-three/fiber';
 import { select } from 'd3';
 import { useEffect, useRef } from 'react';
 import shallow from 'zustand/shallow';
+import { AiFillControl } from 'react-icons/ai';
 import { useFrameStore, useSimStore, useUIStore } from '../Model/store';
 
 function SimControls() {
@@ -146,16 +147,8 @@ function CameraControls({
 
 /* eslint-disable react/prop-types */
 function Controls() {
-  const frame = useRef(useFrameStore.getState().frame);
-  useEffect(() => {
-    useFrameStore.subscribe(
-      (state) => {
-        frame.current = state.frame;
-      },
-    );
-  }, []);
   const {
-    time, satellites,
+    satellites,
   } = useSimStore(
     (state) => ({
       time: state.mission.time,
@@ -165,25 +158,23 @@ function Controls() {
   );
   const view = useUIStore((state) => state.view, shallow);
 
-  const timeRef = useRef();
-  const date = useRef(new Date());
-  addEffect(() => {
-    if (!date.current) return;
-    if (!timeRef.current) return;
-    date.current.setTime(Number(time[frame.current]));
-    select(timeRef.current)
-      .text(date.current.toString().slice(0, 21));
-  });
   return (
     <Flex align="center" justify={view.name === 'simulation' ? 'center' : 'space-between'} height="100%">
-      <Text ref={timeRef} width="22ch" m={2} />
       <Menu closeOnSelect={false}>
         <MenuButton
           as={Button}
           rightIcon={<ChevronDownIcon />}
           _expanded={{ bg: 'green.500' }}
         >
-          Controls
+          <Flex
+            align="center"
+            gap={2}
+          >
+            <Show above="md">
+              Controls
+            </Show>
+            <AiFillControl />
+          </Flex>
         </MenuButton>
         <MenuList bg="background.100">
           <MenuGroup title="Animation">

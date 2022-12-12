@@ -5,7 +5,7 @@
 import {
   Flex, Select, Stat, StatLabel, StatNumber,
   Box, Center, StatGroup, GridItem, StatHelpText, ButtonGroup,
-  Button, Text,
+  Button, Text, Drawer, DrawerContent,
 } from '@chakra-ui/react';
 import {
   useCallback, useEffect, useRef, useState,
@@ -54,17 +54,16 @@ const statProps = [
     key: 'chargeState',
     label: '',
     shouldArrows: false,
-    getValue: (frame, selected) => selected.performance.chargeStateNoBeams[frame] * 100,
-    formatValue: (value) => `${(value).toPrecision(3)}%`,
-    getHelpText: () => 'w/ Space Power',
-    getHelpNumber: (frame, selected) => `${(selected.performance.chargeState[frame] * 100).toPrecision(3)}% `,
+    getValue: (frame, selected) => `${(selected.performance.chargeState[frame] * 100).toPrecision(3)}% `,
+    formatValue: (value) => value,
+    getHelpText: () => 'w/o Space Power',
+    getHelpNumber: (frame, selected) => `${(selected.performance.chargeStateNoBeams[frame] * 100).toPrecision(3)}% `,
   },
 ];
 
 function HUD() {
   const {
-    satellites, attachCamera,
-    detachCamera, cameraTarget,
+    satellites,
     toggleLabel, toggleAllLabels, satelliteOptions,
   } = useSimStore(
     (state) => ({
@@ -79,7 +78,18 @@ function HUD() {
     shallow,
   );
 
-  const view = useUIStore((state) => state.view, shallow);
+  const {
+    view, isOpen, openMenu, closeMenu,
+  } = useUIStore((state) => ({
+    view: state.view,
+    isOpen: state.isOpen.HUD,
+    openMenu: state.openMenu,
+    closeMenu: state.closeMenu,
+  }), shallow);
+
+  const onClose = () => {
+    closeMenu('HUD');
+  };
 
   const [selected, setSelected] = useState(satellites.customers[0]);
   useEffect(() => {
@@ -96,18 +106,14 @@ function HUD() {
     }
   };
 
-  const handleLabel = () => {
-    toggleLabel(selected.id);
-  };
-
-  const handleCamera = () => {
-    if (cameraTarget.id === selected.id) detachCamera();
-    else attachCamera(selected.id);
-  };
-
-  const hideAllLabels = () => {
-    toggleAllLabels(false);
-  };
+  useEffect(() => {
+    if (selected.name === 'fleet') {
+      toggleAllLabels(true);
+    } else {
+      toggleAllLabels(false);
+      toggleLabel(selected.id);
+    }
+  }, [selected]);
 
   const frame = useRef(useFrameStore.getState().frame);
   useEffect(() => {
@@ -184,70 +190,91 @@ function HUD() {
 
   if (!satellites) return;
   return (
-    <GridItem area={'3 / 1 / 4 / 3'} zIndex={99} transform={view.name === 'simulation' ? '' : 'translate(-9999px, 0)'} position={view.name === 'simulation' ? '' : 'absolute'}>
-      <Flex height="100%" justify="space-between" align-items="center">
-        <Center flex={1}>
-          <Box px={2}>
-            <Select onChange={handleSelectSatellite}>
-              {satellites.customers.map((customer) => (
-                <option key={customer.id} value={customer.id}>{customer.name}</option>
-              ))}
-              <option value="fleet">Fleet</option>
-            </Select>
+    <Drawer
+      isOpen={isOpen}
+      placement="bottom"
+      onClose={onClose}
+      closeOnEsc={false}
+      size="md"
+      variant="permanent"
+    >
+      {/* <GridItem
+      area={'3 / 1 / 4 / 3'}
+      zIndex={99} transform={view.name === 'simulation' ? '' : 'translate(-9999px, 0)'}
+      position={view.name === 'simulation' ? '' : 'absolute'}
+      > */}
+      <DrawerContent
+        width="100%"
+        backgroundColor="transparent"
+        pb="6vh"
+        pt={5}
+        boxShadow="0"
 
-          </Box>
-        </Center>
-        <Box height="100%" flex={1}>
-          <Center>
-            <Stat
-              align="center"
-              ref={handleStatRefs}
-              id={'chargeState'}
-            >
-              <StatLabel>Charge</StatLabel>
-              <Gauge
-                height={200}
-                selected={selected}
-                styles={{ position: 'absolute' }}
-              />
-              <StatNumber textStyle="number">
-                <span />
-              </StatNumber>
-              <StatHelpText width="100%">
-                <Text as={'span'} textStyle="number" className="help-number" />
-                <span className="help-text" />
-              </StatHelpText>
+      >
+        <Flex height="100%" justify="space-between" align-items="center">
+          <Center flex={1}>
+            <Box px={2}>
+              <Select onChange={handleSelectSatellite}>
+                {satellites.customers.map((customer) => (
+                  <option key={customer.id} value={customer.id}>{customer.name}</option>
+                ))}
+                <option value="fleet">Fleet</option>
+              </Select>
 
-            </Stat>
+            </Box>
           </Center>
-        </Box>
-        <Center flex={1}>
-          <Box>
-            <StatGroup>
-              {statProps.slice(0, 2).map((stat) => (
-                <Stat
-                  width="30ch"
-                  key={stat.key}
-                  id={stat.key}
-                  ref={handleStatRefs}
-                >
-                  <StatLabel>{stat.label}</StatLabel>
-                  <StatNumber textStyle="number"><span /></StatNumber>
-                  <StatHelpText>
-                    {stat.shouldArrows
-                      ? (
-                        <TriangleUpIcon className="up-arrow" m={1} ml={0} />
-                      )
-                      : '' }
-                    <span className="help-text" />
-                  </StatHelpText>
-                </Stat>
-              ))}
-            </StatGroup>
+          <Box height="100%" flex={1}>
+            <Center>
+              <Stat
+                align="center"
+                ref={handleStatRefs}
+                id={'chargeState'}
+              >
+                <StatLabel>Charge</StatLabel>
+                <Gauge
+                  height={200}
+                  selected={selected}
+                  styles={{ position: 'absolute' }}
+                />
+                <StatNumber textStyle="number" color="green.500">
+                  <span />
+                </StatNumber>
+                <StatHelpText width="100%">
+                  <Text as={'span'} textStyle="number" className="help-number" />
+                  <span className="help-text" />
+                </StatHelpText>
+              </Stat>
+            </Center>
           </Box>
-        </Center>
-      </Flex>
-    </GridItem>
+          <Center flex={1}>
+            <Box>
+              <StatGroup>
+                {statProps.slice(0, 2).map((stat) => (
+                  <Stat
+                    width="30ch"
+                    key={stat.key}
+                    id={stat.key}
+                    ref={handleStatRefs}
+                  >
+                    <StatLabel>{stat.label}</StatLabel>
+                    <StatNumber textStyle="number"><span /></StatNumber>
+                    <StatHelpText>
+                      {stat.shouldArrows
+                        ? (
+                          <TriangleUpIcon className="up-arrow" m={1} ml={0} />
+                        )
+                        : '' }
+                      <span className="help-text" />
+                    </StatHelpText>
+                  </Stat>
+                ))}
+              </StatGroup>
+            </Box>
+          </Center>
+        </Flex>
+      </DrawerContent>
+      {/* </GridItem> */}
+    </Drawer>
   );
 }
 

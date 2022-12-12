@@ -25,6 +25,7 @@ import SatelliteGLB from './Assets/Mesh/lowpolysat.glb';
 import LoopDialog from './UI/LoopDialog';
 import FormWrapper from './UI/FormWrapper';
 import HUD from './UI/HUD';
+import Time from './UI/Time';
 
 // const simRoot = document.getElementById('sim-root');
 // const root = document.createElement('div');
@@ -74,6 +75,7 @@ function App() {
           minHeight={'100vh'}
           width={'100vw'}
           maxWidth={'100vw'}
+          overflow="hidden"
           templateRows={view.templateRows}
           templateColumns={view.templateColumns}
           templateAreas={view.templateAreas}
@@ -92,8 +94,10 @@ function App() {
               <MenuButtons />
               <GridItem area={'title'}>
                 <Flex align="center" height="100%" justify="center" gap={2}>
-                  {/* <h1>Space Power Simulator</h1>
-                <span>(beta)</span> */}
+                  { isInitialized
+                    ? (
+                      <Time />
+                    ) : ''}
                 </Flex>
               </GridItem>
               <GridItem area={'controls'}>

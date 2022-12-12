@@ -7,18 +7,18 @@ function CustomIconButton({
   label, icon, onClick, value, isActive,
 }) {
   return (
-    <Tooltip
-      label={label}
-      openDelay={500}
-    >
-      <IconButton
-        variant={isActive ? 'active' : 'solid'}
-        icon={icon}
-        aria-label={label}
-        onClick={onClick}
-        value={value}
-      />
-    </Tooltip>
+  // <Tooltip
+  //   label={label}
+  //   openDelay={500}
+  // >
+    <IconButton
+      variant={isActive ? 'active' : 'solid'}
+      icon={icon}
+      aria-label={label}
+      onClick={onClick}
+      value={value}
+    />
+  // </Tooltip>
   );
 }
 

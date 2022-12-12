@@ -10,7 +10,7 @@ function SpacePowerConfig({ formik }) {
   const openMenu = useUIStore((state) => state.openMenu);
 
   const onConfig = (e) => {
-    openMenu(e);
+    openMenu(e.target.value);
   };
 
   return (

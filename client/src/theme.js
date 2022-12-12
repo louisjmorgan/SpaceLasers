@@ -1,6 +1,26 @@
 /* eslint-disable quotes */
-import { extendTheme, withDefaultColorScheme } from '@chakra-ui/react';
+import { createMultiStyleConfigHelpers, extendTheme, withDefaultColorScheme } from '@chakra-ui/react';
 import { mode } from '@chakra-ui/theme-tools';
+import { tabsAnatomy } from '@chakra-ui/anatomy';
+
+const {
+  definePartsStyle,
+  defineMultiStyleConfig,
+} = createMultiStyleConfigHelpers(tabsAnatomy.keys);
+
+const baseStyle = definePartsStyle({
+  // define the part you're going to style
+  // tab: {
+  //   maxHeight: "100%",
+  //   overflow: "auto", // change the font weight
+  // },
+  tabpanels: {
+    height: "100%",
+    overflowY: "auto",
+  },
+});
+
+export const tabsTheme = defineMultiStyleConfig({ baseStyle });
 
 const config = {
   useSystemColorMode: false,
@@ -64,8 +84,15 @@ const components = {
     sizes: {
       xl: {
         dialog: {
-          height: "auto",
+          // height: "100%",
           minWidth: "60vw",
+        },
+        // container: {
+        //   height: "80vw",
+        // },
+        body: {
+          // height: "100%",
+          overflow: "hidden",
         },
       },
     },
@@ -92,6 +119,19 @@ const components = {
       },
     },
   },
+  Drawer: {
+    variants: {
+      permanent: {
+        dialog: {
+          pointerEvents: 'auto',
+        },
+        dialogContainer: {
+          pointerEvents: 'none',
+        },
+      },
+    },
+  },
+  Tabs: tabsTheme,
 };
 
 const colors = {

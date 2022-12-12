@@ -158,6 +158,8 @@ const useUIStore = create((set) => ({
     satellites: false,
     satelliteConfig: false,
     spacePowerConfig: false,
+    mission: false,
+    HUD: true,
   },
   satIndex: 0,
   constellations: [],
@@ -172,7 +174,8 @@ const useUIStore = create((set) => ({
   openMenu: (e) => set((state) => ({
     isOpen: {
       ...state.isOpen,
-      [`${e.target.value}`]: true,
+      HUD: e === 'HUD',
+      [e]: true,
     },
   })),
   closeMenu: (e) => set((state) => ({

@@ -2,13 +2,14 @@
 /* eslint-disable react/prop-types */
 import { AddIcon } from '@chakra-ui/icons';
 import {
-  Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Button,
+  Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box, Button,
   Editable, EditableInput, EditablePreview, Flex, FormControl, FormLabel, Input, Select,
 } from '@chakra-ui/react';
 import { FieldArray, FormikProvider } from 'formik';
 import CustomNumberInput from '../Elements/CustomNumberInput';
 import { defaultDuty } from '../../Util/defaultInputs';
 import EditableControls from '../MissionPlanner/EditableControls';
+import SPButton from '../Elements/SPButton';
 
 const defaultFields = [
   {
@@ -167,9 +168,11 @@ function DutyTab({ satIndex, formik }) {
           </FieldArray>
         </FormikProvider>
       </Accordion>
-      <Button onClick={handleCopyToSiblings}>
-        Copy to all
-      </Button>
+      <Box m={10}>
+        <SPButton onClick={handleCopyToSiblings}>
+          Copy to all
+        </SPButton>
+      </Box>
     </>
   );
 }

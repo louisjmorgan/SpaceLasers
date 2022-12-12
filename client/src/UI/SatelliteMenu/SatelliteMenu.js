@@ -18,9 +18,10 @@ import SpacePowerList from './SpacePowerList';
 
 function SatelliteMenu({ formik }) {
   const {
-    isOpen, closeMenu, isEditing, setEditing,
+    isOpen, openMenu, closeMenu, isEditing, setEditing,
   } = useUIStore((state) => ({
     isOpen: state.isOpen.satellites,
+    openMenu: state.openMenu,
     closeMenu: state.closeMenu,
     isEditing: state.isEditing,
     setEditing: state.setEditing,
@@ -28,6 +29,7 @@ function SatelliteMenu({ formik }) {
 
   const onClose = () => {
     closeMenu('satellites');
+    openMenu('HUD');
   };
 
   const [previousValues, setPrevious] = useState(defaultValues);
@@ -65,8 +67,9 @@ function SatelliteMenu({ formik }) {
       placement="left"
       onClose={onClose}
       size="md"
+      variant="permanent"
     >
-      <DrawerContent bg="background.100" py={10}>
+      <DrawerContent bg={['background.300', 'background.300', 'background.100']} py={10}>
         <DrawerCloseButton />
         <DrawerHeader as="h2" textAlign="center" fontSize="2rem" textTransform="uppercase">Satellites</DrawerHeader>
         <DrawerBody>
@@ -76,8 +79,10 @@ function SatelliteMenu({ formik }) {
                 <ChevronDownIcon
                   transform={showSatellites.payload ? '' : 'rotate(-90deg)'}
                   transition="transform 0.1s ease-out"
+                  pointerEvents="none"
                 />
               )}
+              pointerEvents="all"
               id="payload"
               variant="ghost"
               textTransform="uppercase"
@@ -85,6 +90,7 @@ function SatelliteMenu({ formik }) {
               fontSize="1.25rem"
             >
               Payload
+              {` (${formik.values.satellites.length})`}
             </Button>
           </Center>
           {showSatellites.payload ? <SatelliteList formik={formik} /> : '' }
@@ -103,6 +109,7 @@ function SatelliteMenu({ formik }) {
               fontSize="1.25rem"
             >
               Space Power
+              {` (${formik.values.spacePowers})`}
             </Button>
           </Center>
           {showSatellites.spacePower

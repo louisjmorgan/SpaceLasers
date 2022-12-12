@@ -51,6 +51,7 @@ function FormWrapper() {
     validateOnBlur: true,
     onSubmit: async (values) => {
       formik.setSubmitting(true);
+      console.log('submit');
       await new Promise((resolve, reject) => {
         setInitialized(false);
         setTimeout(() => {

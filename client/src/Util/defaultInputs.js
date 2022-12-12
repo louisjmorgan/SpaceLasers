@@ -33,7 +33,7 @@ const defaultPower = {
   },
   battery: {
     voltage: 3.6,
-    capacity: 6,
+    capacity: 1.125,
     preset: 'small',
   },
 };

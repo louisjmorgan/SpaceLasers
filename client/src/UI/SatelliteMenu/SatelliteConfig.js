@@ -2,7 +2,7 @@
 /* eslint-disable react/prop-types */
 import { Button } from '@chakra-ui/button';
 import { FormControl, FormLabel } from '@chakra-ui/form-control';
-import { Center, Flex } from '@chakra-ui/layout';
+import { Box, Center, Flex } from '@chakra-ui/layout';
 import {
   Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay,
 } from '@chakra-ui/modal';
@@ -19,7 +19,7 @@ import PowerTab from './PowerTab';
 
 function SatelliteConfig({ formik }) {
   const {
-    isOpen, closeMenu, satIndex, setSatIndex, setAdvanced,
+    isOpen, closeMenu, satIndex, setSatIndex, setAdvanced, isAdvanced,
   } = useUIStore((state) => ({
     isOpen: state.isOpen.satelliteConfig,
     closeMenu: state.closeMenu,
@@ -81,41 +81,40 @@ function SatelliteConfig({ formik }) {
             <FormLabel my={0}>
               Advanced Editor
             </FormLabel>
-            <Switch onChange={onAdvanced} />
+            <Switch onChange={onAdvanced} isChecked={isAdvanced} />
           </FormControl>
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Center>
-            <Tabs
-              align="center"
-              width="100%"
-              maxWidth="60rem"
 
-            >
-              <TabList>
-                <Tab>Orbit</Tab>
-                <Tab>Power</Tab>
-                <Tab>Duty</Tab>
-              </TabList>
-              <TabPanels
-                maxHeight="60vh"
-                overflow="auto"
-              >
-                <TabPanel pt={5}>
-                  <OrbitTab
-                    formik={formik}
-                  />
-                </TabPanel>
-                <TabPanel pt={10}>
-                  <PowerTab satIndex={satIndex} formik={formik} />
-                </TabPanel>
-                <TabPanel pt={10}>
-                  <DutyTab satIndex={satIndex} formik={formik} />
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
-          </Center>
+          <Tabs
+            align="center"
+            width="100%"
+            maxWidth="60rem"
+            display="flex"
+            height="100%"
+            overflow="hidden"
+            flexDirection="column"
+          >
+            <TabList>
+              <Tab>Orbit</Tab>
+              <Tab>Power</Tab>
+              <Tab>Duty</Tab>
+            </TabList>
+            <TabPanels>
+              <TabPanel pt={5}>
+                <OrbitTab
+                  formik={formik}
+                />
+              </TabPanel>
+              <TabPanel pt={10}>
+                <PowerTab satIndex={satIndex} formik={formik} />
+              </TabPanel>
+              <TabPanel pt={10}>
+                <DutyTab satIndex={satIndex} formik={formik} />
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
         </ModalBody>
         <ModalFooter height="auto">
           <Button mr={3} onClick={onClose}>
