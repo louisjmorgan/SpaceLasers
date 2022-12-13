@@ -6,6 +6,7 @@ import { useSimStore, useUIStore } from '../Model/store';
 import { getCorsFreeUrl, loadTLEs } from '../Util/astronomy';
 import { defaultValues } from '../Util/defaultInputs';
 import SatelliteMenu from './SatelliteMenu';
+import ConstellationConfig from './SatelliteMenu/ConstellationConfig';
 import SatelliteConfig from './SatelliteMenu/SatelliteConfig';
 
 function fetchTLEs(urls) {
@@ -30,9 +31,10 @@ const urls = {
 };
 
 function FormWrapper() {
-  const { setConstellations, setEditing } = useUIStore((state) => ({
-    setConstellations: state.setConstellations,
+  const { setOrbitLists, setEditing, isOpen } = useUIStore((state) => ({
+    setOrbitLists: state.setOrbitLists,
     setEditing: state.setEditing,
+    isOpen: state.isOpen,
   }), shallow);
 
   const { initializeMission, setInitialized } = useSimStore((state) => ({
@@ -41,7 +43,7 @@ function FormWrapper() {
   }), shallow);
 
   useEffect(() => {
-    setConstellations((fetchTLEs(urls)));
+    setOrbitLists((fetchTLEs(urls)));
   }, []);
 
   const formik = useFormik({
@@ -51,7 +53,6 @@ function FormWrapper() {
     validateOnBlur: true,
     onSubmit: async (values) => {
       formik.setSubmitting(true);
-      console.log('submit');
       await new Promise((resolve, reject) => {
         setInitialized(false);
         setTimeout(() => {
@@ -72,7 +73,8 @@ function FormWrapper() {
   return (
     <form onSubmit={formik.handleSubmit}>
       <SatelliteMenu formik={formik} />
-      <SatelliteConfig formik={formik} />
+      {isOpen.satelliteConfig ? <SatelliteConfig formik={formik} /> : ''}
+      {isOpen.constellationConfig ? <ConstellationConfig formik={formik} /> : '' }
     </form>
   );
 }

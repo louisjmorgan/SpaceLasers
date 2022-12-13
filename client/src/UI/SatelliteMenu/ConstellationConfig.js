@@ -1,43 +1,44 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable react/prop-types */
-import { Button } from '@chakra-ui/button';
 import { FormControl, FormLabel } from '@chakra-ui/form-control';
-import { Box, Center, Flex } from '@chakra-ui/layout';
+import { Center, Flex, Text } from '@chakra-ui/layout';
 import {
   Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay,
 } from '@chakra-ui/modal';
+import { Button, Switch } from '@chakra-ui/react';
 import { Select } from '@chakra-ui/select';
-import { Switch } from '@chakra-ui/switch';
 import {
   Tab, TabList, TabPanel, TabPanels, Tabs,
 } from '@chakra-ui/tabs';
 import shallow from 'zustand/shallow';
+import { v4 as uuidv4 } from 'uuid';
+import { useState } from 'react';
 import { useUIStore } from '../../Model/store';
+import { defaultSatellite } from '../../Util/defaultInputs';
+import SPButton from '../Elements/SPButton';
+import ConstellationOrbitTab from './ConstellationOrbitTab';
 import DutyTab from './DutyTab';
-import OrbitTab from './OrbitTab';
 import PowerTab from './PowerTab';
+import { twoline2satrec } from '../../Util/astronomy';
 
-function SatelliteConfig({ formik }) {
+function ConstellationConfig({ formik }) {
   const {
-    isOpen, closeMenu, satIndex, setSatIndex, constellationIndex,
-    setConstellationIndex, setAdvanced, isAdvanced,
+    isOpen, closeMenu, setSatIndex, constellationIndex,
+    setConstellationIndex, setAdvanced, isAdvanced, orbitLists,
   } = useUIStore((state) => ({
-    isOpen: state.isOpen.satelliteConfig,
+    isOpen: state.isOpen.constellationConfig,
     closeMenu: state.closeMenu,
     satIndex: state.satIndex,
     constellationIndex: state.constellationIndex,
     setConstellationIndex: state.setConstellationIndex,
     setSatIndex: state.setSatIndex,
+    orbitLists: state.orbitLists,
     isAdvanced: state.isAdvanced,
     setAdvanced: state.setAdvanced,
   }), shallow);
 
   const onClose = () => {
-    closeMenu('satelliteConfig');
-  };
-
-  const onSelectSatellite = (e) => {
-    setSatIndex(e.target.value);
+    closeMenu('constellationConfig');
   };
 
   const onSelectConstellation = (e) => {
@@ -48,6 +49,59 @@ function SatelliteConfig({ formik }) {
   const onAdvanced = (e) => {
     setAdvanced(e.target.checked);
   };
+
+  const [error, setError] = useState('');
+
+  const extractTle = (tles, index) => {
+    console.log(tles);
+    let satRec;
+    try {
+      satRec = twoline2satrec(tles.tle1, tles.tle2);
+    } catch {
+      setError('Error extracting TLE.  Please enter a valid TLE.');
+      return;
+    }
+    const newOrbit = {
+      epoch: satRec.epochdatetimelocal,
+      meanMotionDot: satRec.ndottle,
+      bstar: satRec.bstar || satRec.bstar.toFixed(5),
+      inclination: satRec.inclotle,
+      rightAscension: satRec.nodeotle,
+      eccentricity: satRec.ecco,
+      perigee: satRec.argpotle,
+      meanAnomaly: satRec.motle,
+      meanMotion: satRec.notle,
+    };
+    Object.entries(newOrbit).forEach(
+      (entry) => {
+        if (!entry[1]) {
+          setError(`Error setting ${entry[0]}. Please enter a valid TLE and try again`);
+          return;
+        }
+        formik.setFieldValue(`constellations[${constellationIndex}].satellites[${index}].orbit.[${entry[0]}]`, entry[1]);
+      },
+    );
+    setError('');
+  };
+
+  const onGenerate = () => {
+    const tles = orbitLists.find(
+      (v) => v.name === formik.values.constellations[constellationIndex].list,
+    ).tles.slice(0, formik.values.constellations[constellationIndex].satelliteCount);
+    const constellation = formik.values.constellations[constellationIndex];
+    constellation.satellites = [];
+    tles.forEach((tle, index) => {
+      constellation.satellites.push({
+        ...defaultSatellite,
+        ...constellation.payload,
+        name: `Satellite ${index + 1}`,
+        id: uuidv4(),
+      });
+      extractTle(tle.tles, index);
+    });
+    // onClose();
+  };
+  console.log(formik.values.constellations[constellationIndex].satellites);
 
   return (
     <Modal
@@ -86,18 +140,6 @@ function SatelliteConfig({ formik }) {
                 ),
               )}
             </Select>
-            <Select variant="filled" value={satIndex} onChange={onSelectSatellite} width="20ch">
-              {formik.values.constellations[constellationIndex].satellites.map(
-                (satellite, index) => (
-                  <option
-                    key={satellite.id}
-                    value={index}
-                  >
-                    {satellite.name}
-                  </option>
-                ),
-              )}
-            </Select>
           </FormControl>
           <FormControl as={Flex} align="center" width="20ch">
             <FormLabel my={0}>
@@ -113,7 +155,7 @@ function SatelliteConfig({ formik }) {
             width="100%"
             maxWidth="60rem"
             display="flex"
-            height="100%"
+            height="90%"
             overflow="hidden"
             flexDirection="column"
           >
@@ -124,21 +166,27 @@ function SatelliteConfig({ formik }) {
             </TabList>
             <TabPanels>
               <TabPanel pt={5}>
-                <OrbitTab
+                <ConstellationOrbitTab
                   formik={formik}
                 />
               </TabPanel>
               <TabPanel pt={10}>
-                <PowerTab address={`constellations[${constellationIndex}].satellites[${satIndex}]`} formik={formik} />
+                <PowerTab address={`constellations[${constellationIndex}].payload`} formik={formik} />
               </TabPanel>
               <TabPanel pt={10}>
-                <DutyTab address={`constellations[${constellationIndex}].satellites[${satIndex}]`} formik={formik} />
+                <DutyTab address={`constellations[${constellationIndex}].payload`} formik={formik} />
               </TabPanel>
             </TabPanels>
           </Tabs>
+          <Center>
+            <Text color="red">{error}</Text>
+            <SPButton onClick={onGenerate}>
+              Generate Constellation
+            </SPButton>
+          </Center>
         </ModalBody>
         <ModalFooter height="auto">
-          <Button mr={3} onClick={onClose}>
+          <Button onClick={onClose}>
             Close
           </Button>
         </ModalFooter>
@@ -147,4 +195,4 @@ function SatelliteConfig({ formik }) {
   );
 }
 
-export default SatelliteConfig;
+export default ConstellationConfig;

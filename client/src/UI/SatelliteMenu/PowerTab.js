@@ -5,6 +5,7 @@ import {
 } from '@chakra-ui/react';
 import { useEffect } from 'react';
 import shallow from 'zustand/shallow';
+import { getIn } from 'formik';
 import { useUIStore } from '../../Model/store';
 import CustomNumberInput from '../Elements/CustomNumberInput';
 import SPButton from '../Elements/SPButton';
@@ -48,6 +49,7 @@ const pvFields = [
     min: 0,
     units: 'W',
   },
+  { id: 'preset' },
 ];
 
 const batteryFields = [
@@ -65,6 +67,7 @@ const batteryFields = [
     min: 0,
     units: 'Ah',
   },
+  { id: 'preset' },
 ];
 
 const batteryPresets = [{
@@ -119,29 +122,30 @@ const pvPresets = [{
 },
 ];
 
-function PowerTab({ formik }) {
-  const { satIndex, isAdvanced } = useUIStore((state) => ({
+function PowerTab({ formik, address }) {
+  const { isAdvanced, constellationIndex, satIndex } = useUIStore((state) => ({
     satIndex: state.satIndex,
-    constellations: state.constellations,
+    constellationIndex: state.constellationIndex,
     isAdvanced: state.isAdvanced,
   }), shallow);
 
   const handleCopyToSiblings = () => {
     pvFields.forEach((param) => {
-      formik.values.satellites.forEach((satellite, index) => {
+      formik.values.constellations[constellationIndex].satellites.forEach((satellite, index) => {
+        console.log(getIn(formik.values, `${address}.power.pv[${param.id}`));
         if (index === satIndex) return;
         formik.setFieldValue(
-          `satellites[${index}].power[${param.id}]`,
-          formik.values.satellites[satIndex].power[param.id],
+          `constellations[${constellationIndex}]satellites[${index}].power.pv[${param.id}]`,
+          getIn(formik.values, `${address}.power.pv[${param.id}`),
         );
       });
     });
     batteryFields.forEach((param) => {
-      formik.values.satellites.forEach((satellite, index) => {
+      formik.values.constellations[constellationIndex].satellites.forEach((satellite, index) => {
         if (index === satIndex) return;
         formik.setFieldValue(
-          `satellites[${index}].power[${param.id}]`,
-          formik.values.satellites[satIndex].power[param.id],
+          `constellations[${constellationIndex}]satellites[${index}].power.battery[${param.id}]`,
+          getIn(formik.values, `${address}.power.battery[${param.id}`),
         );
       });
     });
@@ -149,31 +153,31 @@ function PowerTab({ formik }) {
 
   const onChooseBattery = (e) => {
     if (e.target.value === 'Custom (Advanced)') return;
-    formik.setFieldValue(`satellites[${satIndex}].power.battery.preset`, e.target.value);
+    formik.setFieldValue(`${address}.power.battery.preset`, e.target.value);
     const { values } = batteryPresets.find((v) => v.name === e.target.value);
 
     batteryFields.forEach((param) => {
-      formik.setFieldValue(`satellites[${satIndex}].power.battery[${param.id}]`, values[param.id]);
+      formik.setFieldValue(`${address}.power.battery[${param.id}]`, values[param.id]);
     });
   };
 
   const onChoosePv = (e) => {
-    formik.setFieldValue(`satellites[${satIndex}].power.pv.preset`, e.target.value);
+    formik.setFieldValue(`${address}.power.pv.preset`, e.target.value);
     if (e.target.value === 'Custom (Advanced)') return;
     const { values } = pvPresets.find((v) => v.name === e.target.value);
     pvFields.forEach((param) => {
-      formik.setFieldValue(`satellites[${satIndex}].power.pv[${param.id}]`, values[param.id]);
+      formik.setFieldValue(`${address}.power.pv[${param.id}]`, values[param.id]);
     });
   };
 
   useEffect(() => {
     if (!formik.touched.satellites) return;
-    if (!formik.touched.satellites[satIndex].power) return;
-    if (formik.touched.satellites[satIndex].power.battery) {
-      formik.setFieldValue(`satellites[${satIndex}].power.battery.preset`, 'Custom (Advanced)');
+    if (!getIn(formik.touched, `${address}.power`)) return;
+    if (!getIn(formik.touched, `${address}.power.battery`)) {
+      formik.setFieldValue(`constellations[${constellationIndex}].${address}.power.battery.preset`, 'Custom (Advanced)');
     }
-    if (formik.touched.satellites[satIndex].power.pv) {
-      formik.setFieldValue(`satellites[${satIndex}].power.pv.preset`, 'Custom (Advanced)');
+    if (!getIn(formik.touched, `${address}.power.pv`)) {
+      formik.setFieldValue(`constellations[${constellationIndex}].${address}.power.pv.preset`, 'Custom (Advanced)');
     }
   }, [formik.touched]);
 
@@ -185,10 +189,9 @@ function PowerTab({ formik }) {
           <Flex wrap="wrap" justify="space-around" mb={5}>
             {pvFields.map((param) => (
               <CustomNumberInput
-                value={formik.values.satellites[satIndex].power.pv[param.id]}
                 step={param.step}
                 key={param.id}
-                name={`satellites[${satIndex}].power.pv[${param.id}]`}
+                name={`${address}.power.pv[${param.id}]`}
                 units={param.units}
                 formik={formik}
                 label={param.label}
@@ -201,10 +204,9 @@ function PowerTab({ formik }) {
           <Flex wrap="wrap" justify="space-around">
             {batteryFields.map((param) => (
               <CustomNumberInput
-                value={formik.values.satellites[satIndex].power.battery[param.id]}
                 step={param.step}
                 key={param.id}
-                name={`satellites[${satIndex}].power.battery[${param.id}]`}
+                name={`${address}.power.battery[${param.id}]`}
                 units={param.units}
                 formik={formik}
                 label={param.label}
@@ -221,7 +223,7 @@ function PowerTab({ formik }) {
             <FormLabel>Choose battery:</FormLabel>
             <Select
               onChange={onChooseBattery}
-              value={formik.values.satellites[satIndex].power.battery.preset}
+              value={getIn(formik.values, `${address}.power.battery.preset`)}
             >
               {batteryPresets.map((preset) => (
                 <option value={preset.name} key={preset.name}>{preset.name}</option>
@@ -234,7 +236,7 @@ function PowerTab({ formik }) {
             <FormLabel>Choose photovoltaic:</FormLabel>
             <Select
               onChange={onChoosePv}
-              value={formik.values.satellites[satIndex].power.pv.preset}
+              value={getIn(formik.values, `${address}.power.pv.preset`)}
             >
               {pvPresets.map((preset) => (
                 <option value={preset.name} key={preset.name}>{preset.name}</option>
@@ -246,7 +248,7 @@ function PowerTab({ formik }) {
       )}
       <Box m={10}>
         <SPButton onClick={handleCopyToSiblings}>
-          Copy to all
+          Copy to constellation
         </SPButton>
       </Box>
     </>

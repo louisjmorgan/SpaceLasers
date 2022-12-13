@@ -97,9 +97,12 @@ const fields = [
 export default function OrbitTab({ formik }) {
   const [error, setError] = useState();
 
-  const { satIndex, constellations, isAdvanced } = useUIStore((state) => ({
+  const {
+    satIndex, constellationIndex, orbitLists, isAdvanced,
+  } = useUIStore((state) => ({
     satIndex: state.satIndex,
-    constellations: state.constellations,
+    constellationIndex: state.constellationIndex,
+    orbitLists: state.orbitLists,
     isAdvanced: state.isAdvanced,
   }), shallow);
 
@@ -129,23 +132,22 @@ export default function OrbitTab({ formik }) {
           setError(`Error setting ${entry[0]}. Please enter a valid TLE and try again`);
           return;
         }
-        formik.setFieldValue(`satellites[${satIndex}].orbit.[${entry[0]}]`, entry[1]);
+        formik.setFieldValue(`constellations[${constellationIndex}].satellites[${satIndex}].orbit.[${entry[0]}]`, entry[1]);
       },
     );
     setError('');
   };
 
   const handleChooseTle = (e) => {
-    formik.setFieldValue(`satellites[${satIndex}].orbit.tle`, e.target.value).then(() => extractTle(e.target.value));
+    formik.setFieldValue(`constellations[${constellationIndex}].satellites[${satIndex}].orbit.tle`, e.target.value).then(() => extractTle(e.target.value));
   };
 
-  const handleChooseConstellation = (e) => {
-    formik.setFieldValue(`satellites[${satIndex}].orbit.constellation`, e.target.value)
+  const handleChooseOrbitList = (e) => {
+    formik.setFieldValue(`constellations[${constellationIndex}].satellites[${satIndex}].orbit.list`, e.target.value)
       .then(() => {
-        const { name, tles } = constellations.find(
+        const { name, tles } = orbitLists.find(
           (v) => v.name === e.target.value,
         ).tles[0];
-        console.log(name, tles);
         handleChooseTle({ target: { value: `${name}\n${tles.tle1}\n${tles.tle2}` } });
       });
   };
@@ -163,14 +165,14 @@ export default function OrbitTab({ formik }) {
             <Flex justify="space-around" wrap="wrap">
               <Box width="100%">
                 <FormControl display="block" width="50%">
-                  <FormLabel htmlFor={`satellites[${satIndex}].orbit.epoch`}>Epoch</FormLabel>
+                  <FormLabel htmlFor={`constellations[${constellationIndex}].satellites[${satIndex}].orbit.epoch`}>Epoch</FormLabel>
                   <Input
                     id="epoch"
-                    name={`satellites[${satIndex}].orbit.epoch`}
+                    name={`constellations[${constellationIndex}].satellites[${satIndex}].orbit.epoch`}
                     type="datetime-local"
                     variant="filled"
                     onChange={formik.handleChange}
-                    value={formik.values.satellites[satIndex].orbit.epoch}
+                    value={formik.values.constellations[constellationIndex].satellites[satIndex].orbit.epoch}
                   />
                   {!formik.errors.epoch ? (
                     <FormHelperText />
@@ -182,10 +184,10 @@ export default function OrbitTab({ formik }) {
               </Box>
               {fields.map((param) => (
                 <CustomNumberInput
-                  value={formik.values.satellites[satIndex].orbit[param.id]}
+                  value={formik.values.constellations[constellationIndex].satellites[satIndex].orbit[param.id]}
                   key={param.id}
                   step={param.step}
-                  name={`satellites[${satIndex}].orbit[${param.id}]`}
+                  name={`constellations[${constellationIndex}].satellites[${satIndex}].orbit[${param.id}]`}
                   units={param.units}
                   formik={formik}
                   label={param.label}
@@ -197,18 +199,18 @@ export default function OrbitTab({ formik }) {
           </TabPanel>
           <TabPanel pt={10}>
             <FormControl width="90%">
-              <FormLabel htmlFor={`satellites[${satIndex}].orbit.tle`}>TLE Input</FormLabel>
+              <FormLabel htmlFor={`constellations[${constellationIndex}].satellites[${satIndex}].orbit.tle`}>TLE Input</FormLabel>
               <Textarea
                 id="tle"
-                name={`satellites[${satIndex}].orbit.tle`}
+                name={`constellations[${constellationIndex}].satellites[${satIndex}].orbit.tle`}
                 onChange={formik.handleChange}
-                value={formik.values.satellites[satIndex].orbit.tle}
+                value={formik.values.constellations[constellationIndex].satellites[satIndex].orbit.tle}
                 placeholder="Enter TLE here"
               />
               <FormErrorMessage>{formik.errors.tle}</FormErrorMessage>
             </FormControl>
             <Button
-              onClick={() => extractTle(formik.values.satellites[satIndex].orbit.tle)}
+              onClick={() => extractTle(formik.values.constellations[constellationIndex].satellites[satIndex].orbit.tle)}
               m={3}
             >
               Extract
@@ -220,29 +222,29 @@ export default function OrbitTab({ formik }) {
     ) : (
       <VStack gap={10} p={5}>
         <FormControl width="60%">
-          <FormLabel htmlFor={`satellites[${satIndex}].orbit.constellation`}>Constellation</FormLabel>
+          <FormLabel htmlFor={`constellations[${constellationIndex}].satellites[${satIndex}].orbit.list`}>List</FormLabel>
           <Select
-            name={`satellites[${satIndex}].orbit.constellation`}
-            value={formik.values.satellites[satIndex].orbit.constellation}
-            onChange={handleChooseConstellation}
+            name={`constellations[${constellationIndex}].satellites[${satIndex}].orbit.list`}
+            value={formik.values.constellations[constellationIndex].satellites[satIndex].orbit.list}
+            onChange={handleChooseOrbitList}
           >
-            {constellations.map((c) => (
+            {orbitLists.map((c) => (
               <option value={c.name} key={c.name}>
                 {c.name}
               </option>
             ))}
           </Select>
         </FormControl>
-        {constellations && (
+        {orbitLists && (
         <FormControl width="60%">
-          <FormLabel htmlFor={`satellites[${satIndex}].orbit.tle`}>Satellite</FormLabel>
+          <FormLabel htmlFor={`constellations[${constellationIndex}].satellites[${satIndex}].orbit.tle`}>Satellite</FormLabel>
           <Select
-            name={`satellites[${satIndex}].orbit.tle`}
-            value={formik.values.satellites[satIndex].orbit.tle}
+            name={`constellations[${constellationIndex}].satellites[${satIndex}].orbit.tle`}
+            value={formik.values.constellations[constellationIndex].satellites[satIndex].orbit.tle}
             onChange={handleChooseTle}
           >
-            {constellations.find(
-              (v) => v.name === formik.values.satellites[satIndex].orbit.constellation,
+            {orbitLists.find(
+              (v) => v.name === formik.values.constellations[constellationIndex].satellites[satIndex].orbit.list,
             ).tles
               .map((tle, i) => (
                 <option

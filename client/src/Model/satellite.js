@@ -81,7 +81,7 @@ function getDutyIntervals(duty, period, time) {
   });
 }
 
-function createSatellite(satellite, isCustomer = true) {
+function createSatellite(satellite, constellation, isCustomer = true) {
   const tles = generateTLE({
     ...satellite.orbit,
     epoch: new Date(satellite.orbit.epoch),
@@ -126,6 +126,7 @@ function createSatellite(satellite, isCustomer = true) {
   const powerProfiles = generatePowerProfiles(pv, duties, battery);
   return {
     name: satellite.name,
+    constellation: constellation.name,
     id: satellite.id,
     params: {
       orbit,
@@ -152,7 +153,7 @@ function createPowerSatellite(name, orbit, offsets) {
     id: uuidv4(),
     orbit: newOrbit,
   };
-  return createSatellite(request, false);
+  return createSatellite(request, 'Space Power', false);
 }
 
 function getOffsets(spacePowers, customers, offsets) {

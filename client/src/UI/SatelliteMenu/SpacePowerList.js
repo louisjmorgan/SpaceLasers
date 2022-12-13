@@ -9,7 +9,7 @@ function SpacePowerList() {
     spacePowers: state.mission.satellites.spacePowers,
   }), shallow);
   return (
-    <List width="80%" maxHeight="60vh" overflowY="auto" margin="auto">
+    <List width="100%" maxHeight="60vh" overflowY="auto" margin="auto">
       {spacePowers.map((spacePower, index) => (
         <SatelliteListItem
           satellite={spacePower}

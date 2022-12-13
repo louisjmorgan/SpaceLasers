@@ -157,12 +157,14 @@ const useUIStore = create((set) => ({
   isOpen: {
     satellites: false,
     satelliteConfig: false,
+    constellationConfig: false,
     spacePowerConfig: false,
     mission: false,
     HUD: true,
   },
   satIndex: 0,
-  constellations: [],
+  constellationIndex: 0,
+  orbitLists: [],
   isEditing: false,
   isAdvanced: false,
   view: views.simulation,
@@ -181,13 +183,15 @@ const useUIStore = create((set) => ({
   closeMenu: (e) => set((state) => ({
     isOpen: {
       ...state.isOpen,
-      [`${e}`]: false,
+      [e]: false,
     },
   })),
   setEditing: (e) => set(() => ({ isEditing: e })),
   setAdvanced: (e) => set(() => ({ isAdvanced: e })),
-  setConstellations: (e) => set(() => ({ constellations: e })),
+  setOrbitLists: (e) => set(() => ({ orbitLists: e })),
   setSatIndex: (e) => set(() => ({ satIndex: e })),
+  setConstellationIndex: (e) => set(() => ({ constellationIndex: e })),
+
 }));
 
 export { useSimStore, useFrameStore, useUIStore };

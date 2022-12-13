@@ -2,16 +2,22 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable import/no-extraneous-dependencies */
 import { ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons';
-import { Center, Flex, Text } from '@chakra-ui/layout';
+import {
+  Center, Flex, List, Text,
+} from '@chakra-ui/layout';
 import {
   Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerFooter, DrawerHeader,
 } from '@chakra-ui/modal';
-import { Button } from '@chakra-ui/react';
+import {
+  Button, Tab, TabList, TabPanel, TabPanels, Tabs,
+} from '@chakra-ui/react';
 import { useState } from 'react';
 import shallow from 'zustand/shallow';
 import { useUIStore } from '../../Model/store';
 import { defaultValues } from '../../Util/defaultInputs';
 import SPButton from '../Elements/SPButton';
+import ConstellationList from './ConstellationList';
+import ConstellationListItem from './ConstellationListItem';
 import SatelliteList from './SatelliteList';
 import SpacePowerConfig from './SpacePowerConfig';
 import SpacePowerList from './SpacePowerList';
@@ -48,19 +54,6 @@ function SatelliteMenu({ formik }) {
     formik.handleSubmit();
   };
 
-  const [showSatellites, setShowSatellites] = useState({
-    payload: true,
-    spacePower: true,
-  });
-
-  const onShowSatellites = (e) => {
-    console.log(e);
-    setShowSatellites((prev) => ({
-      ...prev,
-      [`${e.target.id}`]: !prev[e.target.id],
-    }));
-  };
-
   return (
     <Drawer
       isOpen={isOpen}
@@ -73,48 +66,22 @@ function SatelliteMenu({ formik }) {
         <DrawerCloseButton />
         <DrawerHeader as="h2" textAlign="center" fontSize="2rem" textTransform="uppercase">Satellites</DrawerHeader>
         <DrawerBody>
-          <Center m={3}>
-            <Button
-              rightIcon={(
-                <ChevronDownIcon
-                  transform={showSatellites.payload ? '' : 'rotate(-90deg)'}
-                  transition="transform 0.1s ease-out"
-                  pointerEvents="none"
-                />
-              )}
-              pointerEvents="all"
-              id="payload"
-              variant="ghost"
-              textTransform="uppercase"
-              onClick={onShowSatellites}
-              fontSize="1.25rem"
-            >
-              Payload
-              {` (${formik.values.satellites.length})`}
-            </Button>
-          </Center>
-          {showSatellites.payload ? <SatelliteList formik={formik} /> : '' }
-          <Center m={3} mt={10}>
-            <Button
-              rightIcon={(
-                <ChevronDownIcon
-                  transform={showSatellites.spacePower ? '' : 'rotate(-90deg)'}
-                  transition="transform 0.1s ease-out"
-                />
-              )}
-              id="spacePower"
-              variant="ghost"
-              onClick={onShowSatellites}
-              textTransform="uppercase"
-              fontSize="1.25rem"
-            >
-              Space Power
-              {` (${formik.values.spacePowers})`}
-            </Button>
-          </Center>
-          {showSatellites.spacePower
-            ? (isEditing ? <SpacePowerConfig formik={formik} /> : <SpacePowerList />)
-            : ''}
+          <Tabs align="center">
+            <TabList>
+              <Tab>Payload</Tab>
+              <Tab>Space Power</Tab>
+            </TabList>
+            <TabPanels>
+              <TabPanel>
+                <ConstellationList formik={formik} />
+              </TabPanel>
+              <TabPanel>
+                <Flex direction="column" align="center" m={3}>
+                  {isEditing ? <SpacePowerConfig formik={formik} /> : <SpacePowerList />}
+                </Flex>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
           <Center mt={10}>
             {
           isEditing ? (
@@ -134,7 +101,6 @@ function SatelliteMenu({ formik }) {
             <Text color="red" width="50%" align="center">{formik.status}</Text>
           </Center>
         </DrawerBody>
-        <DrawerFooter />
       </DrawerContent>
     </Drawer>
   );

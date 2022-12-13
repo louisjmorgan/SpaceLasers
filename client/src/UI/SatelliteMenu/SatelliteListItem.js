@@ -1,6 +1,6 @@
 import { Flex, ListItem } from '@chakra-ui/layout';
 import {
-  FaCamera, FaCog, FaEye, FaEyeSlash, FaTag, FaTrash,
+  FaCamera, FaCog, FaEyeSlash, FaTag, FaTrash,
 } from 'react-icons/fa';
 import shallow from 'zustand/shallow';
 import { useSimStore, useUIStore } from '../../Model/store';
@@ -9,13 +9,14 @@ import CustomIconButton from '../Elements/CustomIconButton';
 
 /* eslint-disable react/prop-types */
 function SatelliteListItem({
-  satellite, index, isPayload = true, form, remove,
+  satellite, index, constellation, isPayload = true, form, remove,
 }) {
   const {
-    satIndex, setSatIndex, openMenu, isOpen, setEditing, isEditing,
+    satIndex, setSatIndex, setConstellationIndex, openMenu, isOpen, setEditing, isEditing,
   } = useUIStore((state) => ({
     satIndex: state.satIndex,
     setSatIndex: state.setSatIndex,
+    setConstellationIndex: state.setConstellationIndex,
     openMenu: state.openMenu,
     isOpen: state.isOpen,
     isEditing: state.isEditing,
@@ -54,6 +55,7 @@ function SatelliteListItem({
   const onCog = () => {
     if (!isEditing) setEditing(true);
     setSatIndex(index);
+    setConstellationIndex(constellation);
     openMenu('satelliteConfig');
   };
 
@@ -93,12 +95,20 @@ function SatelliteListItem({
         onSubmit={onSubmitName}
       />
       {isEditing ? (isPayload && (
-      <CustomIconButton
-        className="secondary"
-        onClick={onRemove}
-        icon={<FaTrash />}
-        label="remove"
-      />
+        <>
+          <CustomIconButton
+            className="secondary"
+            onClick={onRemove}
+            icon={<FaTrash />}
+            label="remove"
+          />
+          <CustomIconButton
+            icon={<FaCog />}
+            onClick={onCog}
+            isActive={(index === satIndex) && isOpen.satelliteConfig}
+            value="satelliteConfig"
+          />
+        </>
       )) : (
         <>
           <CustomIconButton
@@ -121,14 +131,7 @@ function SatelliteListItem({
           />
         </>
       )}
-      {isPayload && (
-      <CustomIconButton
-        icon={<FaCog />}
-        onClick={onCog}
-        isActive={(index === satIndex) && isOpen.satelliteConfig}
-        value="satelliteConfig"
-      />
-      )}
+
     </ListItem>
   );
 }

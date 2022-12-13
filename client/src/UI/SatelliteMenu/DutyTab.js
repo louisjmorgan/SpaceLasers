@@ -5,11 +5,12 @@ import {
   Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box, Button,
   Editable, EditableInput, EditablePreview, Flex, FormControl, FormLabel, Input, Select,
 } from '@chakra-ui/react';
-import { FieldArray, FormikProvider } from 'formik';
+import { FieldArray, FormikProvider, getIn } from 'formik';
 import CustomNumberInput from '../Elements/CustomNumberInput';
 import { defaultDuty } from '../../Util/defaultInputs';
 import EditableControls from '../MissionPlanner/EditableControls';
 import SPButton from '../Elements/SPButton';
+import { useUIStore } from '../../Model/store';
 
 const defaultFields = [
   {
@@ -43,33 +44,37 @@ const cyclicalFields = [
   },
 ];
 
-function DutyTab({ satIndex, formik }) {
+function DutyTab({ address, formik }) {
+  const { constellationIndex, satIndex } = useUIStore((state) => ({
+    constellationIndex: state.constellationIndex,
+    satIndex: state.satIndex,
+  }));
+
   const handleCopyToSiblings = () => {
-    formik.values.satellites.forEach((satellite, index) => {
-      console.log(formik.values);
+    formik.values.constellations[constellationIndex].satellites.forEach((satellite, index) => {
+      console.log(getIn(formik.values, `${address}.duties`));
       if (index === satIndex) return;
       formik.setFieldValue(
-        `satellites[${index}].duties`,
-        formik.values.satellites[satIndex].duties,
+        `constellations[${constellationIndex}]satellites[${index}].duties`,
+        getIn(formik.values, `${address}.duties`),
       );
     });
   };
-
   return (
     <>
       <Accordion
         maxHeight="75vh"
         overflowY="auto"
         width="100%"
+        allowToggle
       >
         <FormikProvider value={formik}>
-          <FieldArray name={`satellites[${satIndex}].duties`}>
+          <FieldArray name={`${address}.duties`}>
             {(fieldArrayProps) => {
               const {
                 push, remove, form,
               } = fieldArrayProps;
-              const { values } = form;
-              const satellite = values.satellites[satIndex];
+              const satellite = getIn(formik.values, `${address}`);
               const allFields = satellite.duties.map((duty, index) => {
                 const fields = [...defaultFields];
                 if (duty.type === 'cyclical') {
@@ -89,7 +94,7 @@ function DutyTab({ satIndex, formik }) {
                           cursor="pointer"
                           onChange={(v) => {
                             form.setFieldValue(
-                              `satellites[${satIndex}].duties[${index}].name`,
+                              `${address}.duties[${index}].name`,
                               v,
                             );
                           }}
@@ -99,7 +104,7 @@ function DutyTab({ satIndex, formik }) {
                           <Input
                             as={EditableInput}
                             id="name"
-                            name={`satellites[${satIndex}].duties[${index}].name`}
+                            name={`${address}.duties[${index}].name`}
                             type="text"
                             variant="filled"
                             maxWidth="80%"
@@ -112,9 +117,9 @@ function DutyTab({ satIndex, formik }) {
                     <AccordionPanel>
                       <Flex wrap="wrap" justify="space-around">
                         <FormControl width="65%">
-                          <FormLabel htmlFor={`satellites[${satIndex}].duties[${index}].type`}>Type</FormLabel>
+                          <FormLabel htmlFor={`${address}.duties[${index}].type`}>Type</FormLabel>
                           <Select
-                            name={`satellites[${satIndex}].duties[${index}].type`}
+                            name={`${address}.duties[${index}].type`}
                             onChange={form.handleChange}
                             value={duty.type}
                           >
@@ -123,10 +128,9 @@ function DutyTab({ satIndex, formik }) {
                         </FormControl>
                         {fields.map((param) => (
                           <CustomNumberInput
-                            value={duty[param.id]}
                             step={param.step}
                             key={param.id}
-                            name={`satellites[${satIndex}].duties[${index}][${param.id}]`}
+                            name={`${address}.duties[${index}][${param.id}]`}
                             units={param.units}
                             formik={form}
                             label={param.label}

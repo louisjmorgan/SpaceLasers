@@ -9,9 +9,10 @@ import {
   NumberInput, NumberInputField, NumberInputStepper, Text,
 } from '@chakra-ui/react';
 import { getIn } from 'formik';
+import { useEffect } from 'react';
 
 function CustomNumberInput({
-  value, min, max, label, name, units, step, formik, sideEffect = () => null,
+  min, max, label, name, units, step, formik, sideEffect = () => null,
 }) {
   const errors = getIn(formik.errors, name);
 
@@ -44,7 +45,7 @@ function CustomNumberInput({
             formik.setFieldTouched(`${name}`, true);
             sideEffect();
           }}
-          value={value}
+          value={getIn(formik.values, name)}
           step={step}
           min={min}
           max={max}
