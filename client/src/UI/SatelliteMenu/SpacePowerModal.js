@@ -1,9 +1,10 @@
 /* eslint-disable react/prop-types */
 import {
   Button, Center, Flex, Modal, ModalBody, ModalCloseButton, ModalContent,
-  ModalFooter, ModalHeader, ModalOverlay, Text,
+  ModalFooter, ModalHeader, ModalOverlay, Spinner, Text,
 } from '@chakra-ui/react';
 import shallow from 'zustand/shallow';
+import { useEffect, useState } from 'react';
 import CustomNumberInput from '../Elements/CustomNumberInput';
 import optimizeSpacePower from '../../Model/optimizer';
 import { useUIStore } from '../../Model/store';
@@ -71,12 +72,22 @@ function SpacePowerModal({ formik }) {
     closeMenu: state.closeMenu,
   }), shallow);
 
-  const onOptimize = async () => {
-    const result = await optimizeSpacePower(formik.values);
-    Object.entries(result).forEach(([key, value]) => {
-      formik.setFieldValue(`offsets[${key}]`, value);
-    });
+  const [isSubmitting, setSubmitting] = useState(false);
+  const onOptimize = () => {
+    setSubmitting(true);
   };
+
+  useEffect(() => {
+    if (isSubmitting) {
+      optimizeSpacePower(formik.values).then((result) => {
+        Object.entries(result).forEach(([key, value]) => {
+          formik.setFieldValue(`offsets[${key}]`, value);
+        });
+      });
+
+      setSubmitting(false);
+    }
+  }, [isSubmitting]);
 
   const onClose = () => {
     closeMenu('spacePowerConfig');
@@ -116,14 +127,19 @@ function SpacePowerModal({ formik }) {
 
           </Flex>
           <Center m={10}>
-            <SPButton onClick={onOptimize}>
-              Optimize
+            <SPButton onClick={onOptimize} isDisabled={isSubmitting}>
+              {isSubmitting
+                ? (
+                  <Flex justify="center" align="center" gap={5}>
+                    Optimizing
+                    <Spinner />
+                  </Flex>
+                ) : 'Optimize'}
             </SPButton>
           </Center>
         </ModalBody>
         <ModalFooter>
-
-          <Button colorScheme="blue" mr={3} onClick={onClose}>
+          <Button mr={3} onClick={onClose}>
             Close
           </Button>
         </ModalFooter>

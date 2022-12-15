@@ -27,9 +27,16 @@ import FormWrapper from './UI/FormWrapper';
 import HUD from './UI/HUD';
 import Time from './UI/Time';
 
-// const simRoot = document.getElementById('sim-root');
-// const root = document.createElement('div');
-// simRoot.appendChild(root);
+const view = {
+  name: 'simulation',
+  templateRows: '0.375fr 2.125fr 0.125fr',
+  templateColumns: '1fr',
+  templateAreas: '',
+  simulationArea: ' 1 / 1 / 4 / 2',
+  headerArea: ' 1 / 1 / 2 / 4',
+  footerArea: '3 / 1 / 4 / 2',
+};
+
 function App() {
   const {
     initializeMission, isInitialized, storeObj,
@@ -42,14 +49,6 @@ function App() {
     shallow,
   );
 
-  const {
-    view,
-  } = useUIStore(
-    (state) => ({
-      view: state.view,
-    }),
-    shallow,
-  );
   const obj = useGLTF(SatelliteGLB);
 
   useLayoutEffect(() => {
@@ -69,7 +68,10 @@ function App() {
   }, []);
 
   return (
-    <ChakraProvider theme={theme}>
+    <ChakraProvider
+      theme={theme}
+      portalZIndex={3}
+    >
       <DarkMode>
         <Grid
           minHeight={'100vh'}
@@ -81,7 +83,7 @@ function App() {
           templateAreas={view.templateAreas}
           position="relative"
         >
-          <GridItem area={view.headerArea} display={view.name === 'simulation' ? '' : 'none'} zIndex={99}>
+          <GridItem area={view.headerArea} display={view.name === 'simulation' ? '' : 'none'} zIndex={1}>
             <Grid
               h={'100%'}
               templateColumns={'1fr 1fr 1fr'}

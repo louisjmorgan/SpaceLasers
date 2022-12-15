@@ -9,7 +9,6 @@ import {
 } from 'react';
 import { addEffect } from '@react-three/fiber';
 import * as d3 from 'd3';
-import { timerFlush } from 'd3-timer';
 import { useFrameStore } from '../../Model/store';
 
 const color = d3.scaleOrdinal(['white', '#28D759', 'rgba(255,255,255,0.2)']);
@@ -32,30 +31,48 @@ export default function Gauge({ height, selected }) {
 
   const data = useRef();
   const updateData = () => {
-    data.current = [
-      {
-        id: 2,
-        value: selected.performance.chargeStateNoBeams[frame.current] * 100,
-        color: (selected.performance.chargeStateNoBeams[frame.current] > 0.33) ? 'white' : 'red',
-      },
-      {
-        id: 1,
-        value: (selected.performance.chargeState[frame.current]
-            - selected.performance.chargeStateNoBeams[frame.current]) * 100,
-      },
-      {
-        id: 3,
-        value: 100 - (selected.performance.chargeState[frame.current] * 100),
-      },
-    ];
+    data.current = [];
+    if (selected.isCustomer) {
+      data.current.push(
+        {
+          id: 1,
+          value: selected.performance.chargeStateNoBeams[frame.current] * 100,
+        },
+        {
+          id: 2,
+          value: (selected.performance.chargeState[frame.current]
+              - selected.performance.chargeStateNoBeams[frame.current]) * 100,
+        },
+        {
+          id: 3,
+          value: 100 - (selected.performance.chargeState[frame.current] * 100),
+        },
+      );
+    } else {
+      data.current.push(
+        {
+          id: 1,
+          value: 0,
+        },
+        {
+          id: 2,
+          value: (selected.performance.chargeState[frame.current] * 100),
+        },
+        {
+          id: 3,
+          value: 100 - (selected.performance.chargeState[frame.current] * 100),
+        },
+      );
+    }
+    data.current.push();
   };
   const arc = useRef(d3.arc().innerRadius(height / 2 - 20)
     .outerRadius(height / 3 - 10));
   const pieRef = useRef();
 
   const group = useRef();
-  const groupWithData = useRef();
-  const groupWithUpdate = useRef();
+  // const groupWithData = useRef();
+  // const groupWithUpdate = useRef();
   const path = useRef();
 
   const createPie = () => {

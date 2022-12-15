@@ -25,6 +25,9 @@ const SatelliteSchema = Yup.object().shape({
     .min(2, 'Too Short!')
     .max(50, 'Too Long!')
     .trim(),
+  color: Yup.string()
+    .trim()
+    .matches(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i),
   orbit: Yup.object().shape({
     tle: Yup.string(),
     list: Yup.string(),
@@ -184,6 +187,13 @@ const simulateBaseData = (baseSatellite, length, frames) => {
   return [time, sun, earth];
 };
 
+const initializeConstellations = (constellations) => constellations.map((constellation) => ({
+  name: constellation.name,
+  id: constellation.id,
+  color: constellation.color,
+  satellites: constellation.satellites.map((satellite) => satellite.id),
+}));
+
 const initializeCustomers = (constellations, time, sun) => {
   const customers = [];
   constellations.forEach((constellation) => {
@@ -260,6 +270,7 @@ const simulateBatteries = (customers, time, beams) => {
 
 const simulateFleet = (time, customers) => ({
   name: 'fleet',
+  isCustomer: 'true',
   performance: {
     chargeState: time.map((t, index) => customers.reduce((prev, current) => prev + current.performance.chargeState[index], 0) / customers.length),
     chargeStateNoBeams: time.map((t, index) => customers.reduce((prev, current) => prev + current.performance.chargeStateNoBeams[index], 0) / customers.length),
@@ -281,6 +292,7 @@ const simulateFleet = (time, customers) => ({
 
 const handleMissionRequest = (req, length = SIM_LENGTH, frames = FRAMES) => {
   const [time, sun, earth] = simulateBaseData(req.constellations[0].satellites[0], length, frames);
+  const constellations = initializeConstellations(req.constellations);
   const customers = initializeCustomers(req.constellations, time, sun);
   const [spacePowers, beams] = simulateSpacePowers(time, sun, req.constellations, customers, req.offsets, req.spacePowers);
   simulateBatteries(customers, time, beams);
@@ -294,6 +306,7 @@ const handleMissionRequest = (req, length = SIM_LENGTH, frames = FRAMES) => {
       spacePowers,
       fleet,
     },
+    constellations,
     beams,
     sun,
     earth,

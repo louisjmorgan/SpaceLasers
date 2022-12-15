@@ -35,7 +35,7 @@ const POWER_SAT_REQUEST = {
       powerStoringConsumption: 1.2,
     },
     battery: {
-      batteryVoltage: 3.6,
+      voltage: 3.6,
       capacity: 1.125,
     },
   },
@@ -86,11 +86,12 @@ function createSatellite(satellite, constellation, isCustomer = true) {
     ...satellite.orbit,
     epoch: new Date(satellite.orbit.epoch),
   });
+
   const orbit = twoline2satrec(tles.tle1, tles.tle2);
   try {
     getOrbitAtTime({ orbit }, new Date());
   } catch (err) {
-    const error = `Unable to propagate orbital parameters for ${satellite.name}. ${
+    const error = `Unable to propagate orbital parameters for ${satellite.orbit.tle}. ${
       isCustomer ? '\nPlease try different values or choose a TLE.' : '\nPlease try different offsets in the power configuration menu.'}`;
     throw new Error(error);
   }
@@ -126,6 +127,7 @@ function createSatellite(satellite, constellation, isCustomer = true) {
   const powerProfiles = generatePowerProfiles(pv, duties, battery);
   return {
     name: satellite.name,
+    color: satellite.color,
     constellation: constellation.name,
     id: satellite.id,
     params: {
@@ -150,6 +152,7 @@ function createPowerSatellite(name, orbit, offsets) {
   const request = {
     ...POWER_SAT_REQUEST,
     name,
+    color: '#28d659',
     id: uuidv4(),
     orbit: newOrbit,
   };

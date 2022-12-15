@@ -2,10 +2,10 @@
 import {
   Editable, EditableInput, EditablePreview, Flex, FormControl, Input,
 } from '@chakra-ui/react';
-import EditableControls from '../MissionPlanner/EditableControls';
+// import EditableControls from '../MissionPlanner/EditableControls';
 
 function CustomEditableInput({
-  value, name, form, onSubmit, isDisabled = false,
+  value, name, formik, onSubmit, isDisabled = false,
 }) {
   return (
     <FormControl>
@@ -20,14 +20,14 @@ function CustomEditableInput({
         p={3}
         px={5}
         onSubmit={(v) => {
-          form.setFieldValue(
+          formik.setFieldValue(
             `${name}`,
             v,
           );
           onSubmit(v);
         }}
         onCancel={(v) => {
-          form.setFieldValue(
+          formik.setFieldValue(
             `${name}`,
             v,
           );

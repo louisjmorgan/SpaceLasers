@@ -144,7 +144,7 @@ function generateTLE(orbitElements) {
   // if (meanAnomalyString < 100) { meanAnomalyString = ` ${meanAnomalyString}`; }
 
   const meanMotionString = String(Number(meanMotion).toPrecision(9));
-  const tle2 = `2 00000 ${inclinationString.padStart(8)} ${rightAscensionString.padStart(8)} ${eccentricityString} ${perigeeString.padStart(8)} ${meanAnomalyString} ${meanMotionString.padStart(11)}    00`;
+  const tle2 = `2 00000 ${inclinationString.padStart(8)} ${rightAscensionString.padStart(8)} ${eccentricityString} ${perigeeString.padStart(8)} ${meanAnomalyString} ${meanMotionString.padStart(13)}    00`;
 
   return {
     tle1,

@@ -1,7 +1,6 @@
 /* eslint-disable react/prop-types */
 import {
-  Box,
-  Button, Flex, FormControl, FormLabel, Select, VStack,
+  Box, Flex, FormControl, FormLabel, Select, VStack,
 } from '@chakra-ui/react';
 import { useEffect } from 'react';
 import shallow from 'zustand/shallow';

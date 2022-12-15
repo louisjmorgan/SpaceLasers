@@ -12,20 +12,13 @@ import CustomEditableInput from '../Elements/CustomEditableInput';
 import CustomIconButton from '../Elements/CustomIconButton';
 
 /* eslint-disable react/prop-types */
-function SatelliteListItem({
+function SpacePowerListItem({
   satellite, index, constellation, isPayload = true, formik, remove,
 }) {
   const {
-    satIndex, setSatIndex, setConstellationIndex,
-    openMenu, isOpen, setEditing, isEditing,
+    isEditing,
   } = useUIStore((state) => ({
-    satIndex: state.satIndex,
-    setSatIndex: state.setSatIndex,
-    setConstellationIndex: state.setConstellationIndex,
-    openMenu: state.openMenu,
-    isOpen: state.isOpen,
     isEditing: state.isEditing,
-    setEditing: state.setEditing,
   }), shallow);
 
   const {
@@ -46,25 +39,6 @@ function SatelliteListItem({
     shallow,
   );
 
-  const onRemove = () => {
-    if (!isPayload) return;
-    if (index === satIndex) {
-      setSatIndex(
-        () => (index > 0 ? index - 1 : 0),
-      );
-    } else if (index < satIndex) {
-      setSatIndex((prev) => prev - 1);
-    }
-    remove(index);
-  };
-
-  const onCog = () => {
-    if (!isEditing) setEditing(true);
-    setSatIndex(index);
-    setConstellationIndex(constellation);
-    openMenu('satelliteConfig');
-  };
-
   const onCamera = () => {
     if (cameraTarget.id === satellite.id) detachCamera();
     else attachCamera(satellite.id);
@@ -84,8 +58,7 @@ function SatelliteListItem({
 
   const onChangeColor = useDebouncyFn(
     (c) => {
-      formik.setFieldValue(`constellations[${constellation}].satellites[${index}].color`, c);
-      if (satelliteOptions) changeColor(satellite.id, c);
+      if (!isEditing) changeColor(satellite.id, c);
     },
     400, // number of milliseconds to delay
   );
@@ -109,29 +82,14 @@ function SatelliteListItem({
         isDisabled={!isPayload}
         onSubmit={onSubmitName}
       />
-      <ColorPicker
-        id={satellite.id}
-        onChange={onChangeColor}
-        color={formik.values.constellations[constellation].satellites[index].color}
-      />
 
-      {isEditing ? (isPayload && (
+      {isEditing ? '' : (
         <>
-          <CustomIconButton
-            className="secondary"
-            onClick={onRemove}
-            icon={<FaTrash />}
-            label="remove"
+          <ColorPicker
+            id={satellite.id}
+            onChange={onChangeColor}
+            color={satelliteOptions.color}
           />
-          <CustomIconButton
-            icon={<FaCog />}
-            onClick={onCog}
-            isActive={(index === satIndex) && isOpen.satelliteConfig}
-            value="satelliteConfig"
-          />
-        </>
-      )) : (
-        <>
           <CustomIconButton
             icon={<FaTag />}
             onClick={onLabel}
@@ -156,4 +114,4 @@ function SatelliteListItem({
     </ListItem>
   );
 }
-export default SatelliteListItem;
+export default SpacePowerListItem;

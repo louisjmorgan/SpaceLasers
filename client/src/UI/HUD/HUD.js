@@ -4,8 +4,8 @@
 /* eslint-disable react/prop-types */
 import {
   Flex, Select, Stat, StatLabel, StatNumber,
-  Box, Center, StatGroup, GridItem, StatHelpText, ButtonGroup,
-  Button, Text, Drawer, DrawerContent,
+  Box, Center, StatGroup, StatHelpText, Text,
+  Drawer, DrawerContent,
 } from '@chakra-ui/react';
 import {
   useCallback, useEffect, useRef, useState,
@@ -56,34 +56,26 @@ const statProps = [
     shouldArrows: false,
     getValue: (frame, selected) => `${(selected.performance.chargeState[frame] * 100).toPrecision(3)}% `,
     formatValue: (value) => value,
-    getHelpText: () => 'w/o Space Power',
-    getHelpNumber: (frame, selected) => `${(selected.performance.chargeStateNoBeams[frame] * 100).toPrecision(3)}% `,
+    getHelpText: (frame, selected) => (selected.isCustomer ? 'w/o Space Power' : ''),
+    getHelpNumber: (frame, selected) => (selected.isCustomer ? `${(selected.performance.chargeStateNoBeams[frame] * 100).toPrecision(3)}% ` : ''),
   },
 ];
 
 function HUD() {
   const {
-    satellites,
-    toggleLabel, toggleAllLabels, satelliteOptions,
-  } = useSimStore(
-    (state) => ({
-      satellites: state.mission.satellites,
-      attachCamera: state.attachCamera,
-      detachCamera: state.detachCamera,
-      cameraTarget: state.cameraTarget,
-      toggleLabel: state.toggleLabel,
-      toggleAllLabels: state.toggleAllLabels,
-      satelliteOptions: state.satelliteOptions,
-    }),
-    shallow,
-  );
+    satellites, toggleLabel, toggleAllLabels, satelliteOptions,
+  } = useSimStore((state) => ({
+    satellites: state.mission.satellites,
+    toggleLabel: state.toggleLabel,
+    toggleAllLabels: state.toggleAllLabels,
+    satelliteOptions: state.satelliteOptions,
+  }), shallow);
 
   const {
-    view, isOpen, openMenu, closeMenu,
+    isOpen, closeMenu,
   } = useUIStore((state) => ({
     view: state.view,
     isOpen: state.isOpen.HUD,
-    openMenu: state.openMenu,
     closeMenu: state.closeMenu,
   }), shallow);
 
@@ -101,8 +93,9 @@ function HUD() {
     if (selection === 'fleet') {
       setSelected(() => satellites.fleet);
     } else {
-      setSelected(() => satellites.customers.find((customer) => (
-        customer.id === selection)));
+      setSelected(() => (satelliteOptions.get(selection).isCustomer
+        ? satellites.customers.find((customer) => (customer.id === selection))
+        : satellites.spacePowers.find((spacePower) => (spacePower.id === selection))));
     }
   };
 
@@ -215,8 +208,8 @@ function HUD() {
           <Center flex={1}>
             <Box px={2}>
               <Select onChange={handleSelectSatellite}>
-                {satellites.customers.map((customer) => (
-                  <option key={customer.id} value={customer.id}>{customer.name}</option>
+                {[...satelliteOptions.entries()].map(([id, satellite]) => (
+                  <option key={id} value={id}>{satellite.name}</option>
                 ))}
                 <option value="fleet">Fleet</option>
               </Select>

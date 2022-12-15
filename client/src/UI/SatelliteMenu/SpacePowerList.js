@@ -3,6 +3,7 @@ import { List } from '@chakra-ui/layout';
 import shallow from 'zustand/shallow';
 import { useSimStore } from '../../Model/store';
 import SatelliteListItem from './SatelliteListItem';
+import SpacePowerListItem from './SpacePowerListItem';
 
 function SpacePowerList() {
   const { spacePowers } = useSimStore((state) => ({
@@ -11,7 +12,7 @@ function SpacePowerList() {
   return (
     <List width="100%" maxHeight="60vh" overflowY="auto" margin="auto">
       {spacePowers.map((spacePower, index) => (
-        <SatelliteListItem
+        <SpacePowerListItem
           satellite={spacePower}
           index={index}
           isPayload={false}

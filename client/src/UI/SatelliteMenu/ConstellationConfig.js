@@ -52,11 +52,11 @@ function ConstellationConfig({ formik }) {
 
   const [error, setError] = useState('');
 
-  const extractTle = (tles, index) => {
-    console.log(tles);
+  const extractTle = (tle, index) => {
     let satRec;
     try {
-      satRec = twoline2satrec(tles.tle1, tles.tle2);
+      const { tle1, tle2 } = tle.tles;
+      satRec = twoline2satrec(tle1, tle2);
     } catch {
       setError('Error extracting TLE.  Please enter a valid TLE.');
       return;
@@ -71,6 +71,8 @@ function ConstellationConfig({ formik }) {
       perigee: satRec.argpotle,
       meanAnomaly: satRec.motle,
       meanMotion: satRec.notle,
+      tle: `${tle.name}\n${tle.tles.tle1}\n${tle.tles.tle2}`,
+
     };
     Object.entries(newOrbit).forEach(
       (entry) => {
@@ -97,11 +99,10 @@ function ConstellationConfig({ formik }) {
         name: `Satellite ${index + 1}`,
         id: uuidv4(),
       });
-      extractTle(tle.tles, index);
+      extractTle(tle, index);
     });
     // onClose();
   };
-  console.log(formik.values.constellations[constellationIndex].satellites);
 
   return (
     <Modal

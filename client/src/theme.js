@@ -85,7 +85,7 @@ const components = {
       xl: {
         dialog: {
           // height: "100%",
-          minWidth: "60vw",
+          // minWidth: "60vw",
         },
         // container: {
         //   height: "80vw",
@@ -132,6 +132,14 @@ const components = {
     },
   },
   Tabs: tabsTheme,
+  Popover: {
+    baseStyle: {
+      popper: {
+        width: 'fit-content',
+        maxWidth: 'fit-content',
+      },
+    },
+  },
 };
 
 const colors = {

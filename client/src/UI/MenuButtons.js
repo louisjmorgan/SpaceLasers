@@ -1,8 +1,11 @@
 /* eslint-disable react/prop-types */
 import {
-  Button, ButtonGroup, Flex, GridItem, Show,
+  Button, Flex, GridItem, Show,
 } from '@chakra-ui/react';
-import { FaRocket, FaSatellite } from 'react-icons/fa';
+import {
+  // FaRocket,
+  FaSatellite,
+} from 'react-icons/fa';
 import { useUIStore } from '../Model/store';
 
 function MenuButtons() {
@@ -15,9 +18,9 @@ function MenuButtons() {
     openMenu('satellites');
   };
 
-  const onMission = () => {
-    openMenu('mission');
-  };
+  // const onMission = () => {
+  //   openMenu('mission');
+  // };
 
   return (
     <GridItem
@@ -38,7 +41,7 @@ function MenuButtons() {
             <FaSatellite />
           </Flex>
         </Button>
-        <Button
+        {/* <Button
           id="mission"
           onClick={onMission}
         >
@@ -48,7 +51,7 @@ function MenuButtons() {
             </Show>
             <FaRocket />
           </Flex>
-        </Button>
+        </Button> */}
       </Flex>
       )}
     </GridItem>

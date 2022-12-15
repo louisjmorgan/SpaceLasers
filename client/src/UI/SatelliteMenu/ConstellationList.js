@@ -9,7 +9,7 @@ import shallow from 'zustand/shallow';
 import { Accordion } from '@chakra-ui/react';
 import { useUIStore } from '../../Model/store';
 import ConstellationListItem from './ConstellationListItem';
-import { defaultConstellation, defaultSatellite } from '../../Util/defaultInputs';
+import { defaultConstellation } from '../../Util/defaultInputs';
 
 function ConstellationList({
   formik,
@@ -42,10 +42,11 @@ function ConstellationList({
                 {values.constellations.length > 0
                   && values.constellations.map((constellation, i) => (
                     <ConstellationListItem
+                      constellation={constellation}
                       index={i}
                       formik={form}
                       remove={remove}
-                      key={constellation.name}
+                      key={constellation.id}
                     />
                   ))}
               </Accordion>

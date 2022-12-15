@@ -1,5 +1,6 @@
 import create from 'zustand';
 import createVanilla from 'zustand/vanilla';
+import { defaultConstellation } from '../Util/defaultInputs';
 import { handleMissionRequest } from './mission';
 
 const defaultOptions = {
@@ -59,10 +60,29 @@ const useSimStore = create((set) => ({
   isInitialized: false,
   satelliteObj: null,
   satelliteOptions: new Map(),
+  constellationOptions: new Map(),
   storeObj: (obj) => set(() => ({ satelliteObj: obj })),
   setInitialized: (isInitialized) => set(() => ({ isInitialized })),
   setPaused: (isPaused) => set(() => ({ isPaused })),
   setSpeed: (speed) => set(() => ({ speed })),
+  updateName: (id, name) => set((state) => {
+    const prev = state.satelliteOptions.get(id);
+    return ({
+      satelliteOptions: new Map(state.satelliteOptions).set(id, {
+        ...prev,
+        name,
+      }),
+    });
+  }),
+  changeColor: (id, color) => set((state) => {
+    const prev = state.satelliteOptions.get(id);
+    return ({
+      satelliteOptions: new Map(state.satelliteOptions).set(id, {
+        ...prev,
+        color,
+      }),
+    });
+  }),
   toggleVisibility: (id) => set((state) => {
     const prev = state.satelliteOptions.get(id);
     return ({
@@ -96,6 +116,60 @@ const useSimStore = create((set) => ({
       satelliteOptions: newOptions,
     });
   }),
+  toggleConstellationLabels: (id) => set((state) => {
+    const prev = state.constellationOptions.get(id);
+    const newSatelliteOptions = new Map(state.satelliteOptions);
+    prev.satellites.forEach((satellite) => {
+      const prevSat = state.satelliteOptions.get(satellite);
+      newSatelliteOptions.set(satellite, {
+        ...prevSat,
+        showLabel: !prev.showLabel,
+      });
+    });
+    return ({
+      constellationOptions: new Map(state.constellationOptions).set(id, {
+        ...prev,
+        showLabel: !prev.showLabel,
+      }),
+      satelliteOptions: newSatelliteOptions,
+    });
+  }),
+  changeConstellationColor: (id, color) => set((state) => {
+    const prev = state.constellationOptions.get(id);
+    const newSatelliteOptions = new Map(state.satelliteOptions);
+    prev.satellites.forEach((satellite) => {
+      const prevSat = state.satelliteOptions.get(satellite);
+      newSatelliteOptions.set(satellite, {
+        ...prevSat,
+        color,
+      });
+    });
+    return ({
+      constellationOptions: new Map(state.constellationOptions).set(id, {
+        ...prev,
+        color,
+      }),
+      satelliteOptions: newSatelliteOptions,
+    });
+  }),
+  toggleConstellationVisibility: (id) => set((state) => {
+    const prev = state.constellationOptions.get(id);
+    const newSatelliteOptions = new Map(state.satelliteOptions);
+    prev.satellites.forEach((satellite) => {
+      const prevSat = state.satelliteOptions.get(satellite);
+      newSatelliteOptions.set(satellite, {
+        ...prevSat,
+        isVisible: !prev.isVisible,
+      });
+    });
+    return ({
+      constellationOptions: new Map(state.constellationOptions).set(id, {
+        ...prev,
+        isVisible: !prev.isVisible,
+      }),
+      satelliteOptions: newSatelliteOptions,
+    });
+  }),
   attachCamera: (id) => set((state) => ({
     cameraTarget: {
       ...state.cameraTarget,
@@ -118,30 +192,29 @@ const useSimStore = create((set) => ({
       lock,
     },
   })),
-  updateName: (id, name) => (set((state) => {
-    const prev = state.satelliteOptions.get(id);
-    return ({
-      satelliteOptions: new Map(state.satelliteOptions).set(id, {
-        ...prev,
-        name,
-      }),
-    });
-  })),
   storeRef: (id, ref) => set((state) => ({ refs: new Map(state.refs).set(id, ref) })),
   initializeMission: (values) => set(() => {
     const mission = handleMissionRequest(values);
     const satellites = [...mission.satellites.customers, ...mission.satellites.spacePowers];
-    const newOptions = new Map();
+    const newSatelliteOptions = new Map();
     satellites.forEach((satellite) => {
-      newOptions.set(satellite.id, {
+      newSatelliteOptions.set(satellite.id, {
         ...defaultOptions,
         name: satellite.name,
-        color: satellite.isCustomer ? 'indianred' : '#28d659',
+        color: satellite.color,
+        isCustomer: satellite.isCustomer,
       });
     });
+    const newConstellationOptions = new Map(
+      mission.constellations.map((constellation) => [constellation.id, {
+        ...constellation,
+        ...defaultOptions,
+      }]),
+    );
     return ({
       mission,
-      satelliteOptions: newOptions,
+      satelliteOptions: newSatelliteOptions,
+      constellationOptions: newConstellationOptions,
       isInitialized: true,
       cameraTarget: {
         name: 'earth',
@@ -167,12 +240,10 @@ const useUIStore = create((set) => ({
   orbitLists: [],
   isEditing: false,
   isAdvanced: false,
-  view: views.simulation,
   shouldLoop: false,
   isFinished: false,
   setLoop: (shouldLoop) => set(() => ({ shouldLoop })),
   setFinished: (isFinished) => set(() => ({ isFinished })),
-  setView: (e) => set(() => ({ view: views[`${e.target.value}`] })),
   openMenu: (e) => set((state) => ({
     isOpen: {
       ...state.isOpen,

@@ -6,14 +6,11 @@ import { ChevronDownIcon } from '@chakra-ui/icons';
 import {
   Button, Flex, FormLabel, Menu, MenuButton, MenuDivider, MenuGroup,
   MenuItem, MenuList, Radio, RadioGroup, Select, Show, Slider,
-  SliderFilledTrack, SliderThumb, SliderTrack, Switch, Text,
+  SliderFilledTrack, SliderThumb, SliderTrack, Switch,
 } from '@chakra-ui/react';
-import { addEffect } from '@react-three/fiber';
-import { select } from 'd3';
-import { useEffect, useRef } from 'react';
 import shallow from 'zustand/shallow';
 import { AiFillControl } from 'react-icons/ai';
-import { useFrameStore, useSimStore, useUIStore } from '../Model/store';
+import { useSimStore, useUIStore } from '../Model/store';
 
 function SimControls() {
   const {
@@ -94,19 +91,20 @@ function SimControls() {
 }
 
 function CameraControls({
-  satellites,
 }) {
   const {
-    cameraTarget, attachCamera, detachCamera, setLockCamera,
+    cameraTarget, attachCamera, detachCamera, setLockCamera, satelliteOptions,
   } = useSimStore(
     (state) => ({
       cameraTarget: state.cameraTarget,
       attachCamera: state.attachCamera,
       detachCamera: state.detachCamera,
       setLockCamera: state.setLockCamera,
+      satelliteOptions: state.satelliteOptions,
     }),
     shallow,
   );
+
   return (
     <Flex
       direction="column"
@@ -114,7 +112,6 @@ function CameraControls({
       gap={5}
       p="2ch"
     >
-
       <Select
         onChange={(e) => {
           if (e.target.value === 'earth') detachCamera();
@@ -123,8 +120,8 @@ function CameraControls({
         width="20ch"
       >
         <option value="earth">Earth</option>
-        {satellites.customers.map((customer) => (
-          <option key={customer.id} value={customer.id}>{customer.name}</option>
+        {[...satelliteOptions.entries()].map(([id, satellite]) => (
+          <option key={id} value={id}>{satellite.name}</option>
         ))}
       </Select>
 
@@ -147,19 +144,8 @@ function CameraControls({
 
 /* eslint-disable react/prop-types */
 function Controls() {
-  const {
-    satellites,
-  } = useSimStore(
-    (state) => ({
-      time: state.mission.time,
-      satellites: state.mission.satellites,
-    }),
-    shallow,
-  );
-  const view = useUIStore((state) => state.view, shallow);
-
   return (
-    <Flex align="center" justify={view.name === 'simulation' ? 'center' : 'space-between'} height="100%">
+    <Flex align="center" justify="center" height="100%">
       <Menu closeOnSelect={false}>
         <MenuButton
           as={Button}
@@ -182,9 +168,7 @@ function Controls() {
           </MenuGroup>
           <MenuDivider />
           <MenuGroup title="Camera">
-            <CameraControls
-              satellites={satellites}
-            />
+            <CameraControls />
           </MenuGroup>
         </MenuList>
       </Menu>

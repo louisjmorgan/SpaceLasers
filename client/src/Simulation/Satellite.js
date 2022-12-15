@@ -52,7 +52,7 @@ function Satellite({
       ref={ref}
       scale={0.01}
       // onClick={() => toggleLabel(satellite.id)}
-      color={satelliteOptions.color || 'red'}
+      color={satelliteOptions.color || 'indianred'}
       up={[0, 0, 1]}
     >
       {satelliteOptions.showLabel ? (

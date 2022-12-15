@@ -1,15 +1,15 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable react/prop-types */
 /* eslint-disable import/no-extraneous-dependencies */
-import { ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons';
 import {
-  Center, Flex, List, Text,
+  Center, Flex, Text,
 } from '@chakra-ui/layout';
 import {
-  Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerFooter, DrawerHeader,
+  Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader,
 } from '@chakra-ui/modal';
 import {
-  Button, Tab, TabList, TabPanel, TabPanels, Tabs,
+  Spinner,
+  Tab, TabList, TabPanel, TabPanels, Tabs,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import shallow from 'zustand/shallow';
@@ -17,8 +17,6 @@ import { useUIStore } from '../../Model/store';
 import { defaultValues } from '../../Util/defaultInputs';
 import SPButton from '../Elements/SPButton';
 import ConstellationList from './ConstellationList';
-import ConstellationListItem from './ConstellationListItem';
-import SatelliteList from './SatelliteList';
 import SpacePowerConfig from './SpacePowerConfig';
 import SpacePowerList from './SpacePowerList';
 
@@ -63,7 +61,7 @@ function SatelliteMenu({ formik }) {
       variant="permanent"
     >
       <DrawerContent bg={['background.300', 'background.300', 'background.100']} py={10}>
-        <DrawerCloseButton />
+        <DrawerCloseButton zIndex={3} />
         <DrawerHeader as="h2" textAlign="center" fontSize="2rem" textTransform="uppercase">Satellites</DrawerHeader>
         <DrawerBody>
           <Tabs align="center">
@@ -84,17 +82,30 @@ function SatelliteMenu({ formik }) {
           </Tabs>
           <Center mt={10}>
             {
-          isEditing ? (
-            <Flex align="center" direction="column" gap={5}>
-              <SPButton onClick={onUpdate}>Save and Update</SPButton>
-              <SPButton onClick={onDiscard}>Discard Changes</SPButton>
-            </Flex>
-          )
-            : (
-              <SPButton onClick={onEdit}>
-                Edit
-              </SPButton>
-            )
+              isEditing ? (
+                <Flex align="center" direction="column" gap={5}>
+                  <SPButton
+                    onClick={onUpdate}
+                    disabled={formik.isSubmitting}
+                  >
+                    {formik.isSubmitting ? (
+                      <Flex justify="center" align="center" gap={5}>
+                        Updating
+                        <Spinner />
+                      </Flex>
+                    ) : 'Save and Update'}
+
+                  </SPButton>
+                  {formik.isSubmitting
+                    ? ''
+                    : <SPButton onClick={onDiscard}>Discard Changes</SPButton>}
+                </Flex>
+              )
+                : (
+                  <SPButton onClick={onEdit}>
+                    Edit
+                  </SPButton>
+                )
           }
           </Center>
           <Center>

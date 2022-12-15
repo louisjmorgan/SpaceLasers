@@ -40,7 +40,7 @@ function SatelliteList({
                       index={i}
                       satIndex={satIndex}
                       setSatIndex={setSatIndex}
-                      form={form}
+                      formik={form}
                       remove={remove}
                       key={satellite.id}
                     />
