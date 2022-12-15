@@ -16,9 +16,10 @@ import shallow from 'zustand/shallow';
 import { useUIStore } from '../../Model/store';
 import { defaultValues } from '../../Util/defaultInputs';
 import SPButton from '../Elements/SPButton';
-import ConstellationList from './ConstellationList';
-import SpacePowerConfig from './SpacePowerConfig';
-import SpacePowerList from './SpacePowerList';
+import ConstellationList from './Payload/ConstellationList';
+import SpacePowerConfig from './SpacePower/SpacePowerConfig';
+import SpacePowerConstellations from './SpacePower/SpacePowerConstellations';
+import SpacePowerList from './SpacePower/SpacePowerList';
 
 function SatelliteMenu({ formik }) {
   const {
@@ -49,6 +50,7 @@ function SatelliteMenu({ formik }) {
   };
 
   const onUpdate = () => {
+    console.log(formik.errors);
     formik.handleSubmit();
   };
 
@@ -75,7 +77,7 @@ function SatelliteMenu({ formik }) {
               </TabPanel>
               <TabPanel>
                 <Flex direction="column" align="center" m={3}>
-                  {isEditing ? <SpacePowerConfig formik={formik} /> : <SpacePowerList />}
+                  <SpacePowerConstellations formik={formik} />
                 </Flex>
               </TabPanel>
             </TabPanels>

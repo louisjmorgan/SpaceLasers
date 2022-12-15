@@ -14,6 +14,10 @@ const baseStyle = definePartsStyle({
   //   maxHeight: "100%",
   //   overflow: "auto", // change the font weight
   // },
+  root: {
+    margin: 0,
+    width: "100%",
+  },
   tabpanels: {
     height: "100%",
     overflowY: "auto",
@@ -85,7 +89,7 @@ const components = {
       xl: {
         dialog: {
           // height: "100%",
-          // minWidth: "60vw",
+          minWidth: "60vw",
         },
         // container: {
         //   height: "80vw",

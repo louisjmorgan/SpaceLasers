@@ -5,9 +5,9 @@ import {
 import { useEffect } from 'react';
 import shallow from 'zustand/shallow';
 import { getIn } from 'formik';
-import { useUIStore } from '../../Model/store';
-import CustomNumberInput from '../Elements/CustomNumberInput';
-import SPButton from '../Elements/SPButton';
+import { useUIStore } from '../../../Model/store';
+import CustomNumberInput from '../../Elements/CustomNumberInput';
+import SPButton from '../../Elements/SPButton';
 
 const pvFields = [
   {
@@ -121,7 +121,7 @@ const pvPresets = [{
 },
 ];
 
-function PowerTab({ formik, address }) {
+function PowerTab({ formik, address, isConstellation = false }) {
   const { isAdvanced, constellationIndex, satIndex } = useUIStore((state) => ({
     satIndex: state.satIndex,
     constellationIndex: state.constellationIndex,
@@ -185,7 +185,7 @@ function PowerTab({ formik, address }) {
       {isAdvanced ? (
         <>
           <h3>Photovoltaic</h3>
-          <Flex wrap="wrap" justify="space-around" mb={5}>
+          <Flex wrap="wrap" justify="start" mb={5}>
             {pvFields.map((param) => (
               <CustomNumberInput
                 step={param.step}
@@ -200,7 +200,7 @@ function PowerTab({ formik, address }) {
             ))}
           </Flex>
           <h3>Battery</h3>
-          <Flex wrap="wrap" justify="space-around">
+          <Flex wrap="wrap" justify="start">
             {batteryFields.map((param) => (
               <CustomNumberInput
                 step={param.step}
@@ -245,11 +245,13 @@ function PowerTab({ formik, address }) {
           </FormControl>
         </VStack>
       )}
+      {isConstellation || (
       <Box m={10}>
         <SPButton onClick={handleCopyToSiblings}>
           Copy to constellation
         </SPButton>
       </Box>
+      )}
     </>
   );
 }

@@ -7,20 +7,21 @@ import { FieldArray, FormikProvider } from 'formik';
 import { v4 as uuidv4 } from 'uuid';
 import shallow from 'zustand/shallow';
 import { Accordion } from '@chakra-ui/react';
-import { useUIStore } from '../../Model/store';
+import { useUIStore } from '../../../Model/store';
 import ConstellationListItem from './ConstellationListItem';
-import { defaultConstellation } from '../../Util/defaultInputs';
+import { defaultConstellation } from '../../../Util/defaultInputs';
 
 function ConstellationList({
   formik,
 }) {
   const {
-    isEditing, setConstellationIndex, openMenu,
+    isEditing, constellationIndex, setConstellationIndex, openMenu,
   } = useUIStore((state) => ({
     isEditing: state.isEditing,
     satIndex: state.satIndex,
     setSatIndex: state.setSatIndex,
     setConstellationIndex: state.setConstellationIndex,
+    constellationIndex: state.constellationIndex,
     openMenu: state.openMenu,
   }), shallow);
   return (
@@ -38,6 +39,8 @@ function ConstellationList({
                 margin="auto"
                 defaultIndex={0}
                 allowToggle
+                index={constellationIndex}
+                onChange={setConstellationIndex}
               >
                 {values.constellations.length > 0
                   && values.constellations.map((constellation, i) => (

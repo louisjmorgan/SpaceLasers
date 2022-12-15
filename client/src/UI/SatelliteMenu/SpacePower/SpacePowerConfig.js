@@ -2,15 +2,14 @@
 import { Flex } from '@chakra-ui/layout';
 import { Button } from '@chakra-ui/react';
 import { FaCog } from 'react-icons/fa';
-import { useUIStore } from '../../Model/store';
-import CustomNumberInput from '../Elements/CustomNumberInput';
-import SpacePowerModal from './SpacePowerModal';
+import { useUIStore } from '../../../Model/store';
+import CustomNumberInput from '../../Elements/CustomNumberInput';
 
-function SpacePowerConfig({ formik }) {
+function SpacePowerConfig({ formik, index }) {
   const openMenu = useUIStore((state) => state.openMenu);
 
-  const onConfig = (e) => {
-    openMenu(e.target.value);
+  const onConfig = () => {
+    openMenu('spacePowerConfig');
   };
 
   return (
@@ -20,17 +19,16 @@ function SpacePowerConfig({ formik }) {
       mb={5}
     >
       <CustomNumberInput
-        value={formik.values.spacePowers}
-        name="spacePowers"
+        value={formik.values.constellations[index].spacePowers}
+        name={`constellations[${index}].spacePowersCount`}
         formik={formik}
         label="Number of power satellites"
         min={0}
         max={10}
       />
-      <Button m={3} leftIcon={<FaCog />} onClick={onConfig} value="spacePowerConfig">
+      <Button m={3} leftIcon={<FaCog />} onClick={onConfig}>
         Configure
       </Button>
-      <SpacePowerModal formik={formik} />
     </Flex>
   );
 }

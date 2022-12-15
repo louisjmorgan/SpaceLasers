@@ -8,9 +8,9 @@ import {
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import shallow from 'zustand/shallow';
-import { parseTLEs, twoline2satrec } from '../../Util/astronomy';
-import { useUIStore } from '../../Model/store';
-import CustomNumberInput from '../Elements/CustomNumberInput';
+import { parseTLEs, twoline2satrec } from '../../../Util/astronomy';
+import { useUIStore } from '../../../Model/store';
+import CustomNumberInput from '../../Elements/CustomNumberInput';
 
 const fields = [
   {

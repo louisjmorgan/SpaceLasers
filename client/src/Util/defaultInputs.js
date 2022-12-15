@@ -42,6 +42,7 @@ const defaultSatellite = {
   orbit: defaultOrbit,
   color: '#CD5C5C',
   power: defaultPower,
+  satelliteCount: 0,
   duties: [
     defaultDuty,
   ],
@@ -49,17 +50,25 @@ const defaultSatellite = {
 
 const defaultConstellation = {
   list: 'OneWeb',
-  satelliteCount: 1,
   color: '#CD5C5C',
   payload: defaultSatellite,
   satellites: [],
+  satelliteCount: 3,
+  spacePowersCount: 3,
+  offsets: {
+    inclination: 6,
+    rightAscension: 0,
+    eccentricity: 0,
+    perigee: 0,
+    meanAnomaly: 0,
+    meanMotion: 0,
+  },
 };
 
 const defaultValues = {
   constellations: [{
     ...defaultConstellation,
     name: 'Constellation 1',
-    satelliteCount: 3,
     id: uuidv4(),
     satellites: [
       {
@@ -118,15 +127,6 @@ const defaultValues = {
       },
     ],
   }],
-  spacePowers: 3,
-  offsets: {
-    inclination: 6,
-    rightAscension: 0,
-    eccentricity: 0,
-    perigee: 0,
-    meanAnomaly: 0,
-    meanMotion: 0,
-  },
 };
 
 export {

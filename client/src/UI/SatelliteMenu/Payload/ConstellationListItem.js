@@ -10,9 +10,9 @@ import {
 } from 'react-icons/fa';
 import { useDebouncyFn } from 'use-debouncy';
 import shallow from 'zustand/shallow';
-import { useSimStore, useUIStore } from '../../Model/store';
-import ColorPicker from '../Elements/ColorPicker';
-import CustomIconButton from '../Elements/CustomIconButton';
+import { useSimStore, useUIStore } from '../../../Model/store';
+import ColorPicker from '../../Elements/ColorPicker';
+import CustomIconButton from '../../Elements/CustomIconButton';
 import SatelliteList from './SatelliteList';
 
 function ConstellationListItem({
@@ -104,7 +104,6 @@ function ConstellationListItem({
           </Flex>
         </AccordionButton>
         <Flex flexBasis="auto">
-
           <ColorPicker
             id={constellation.id}
             onChange={onChangeColor}
@@ -112,6 +111,7 @@ function ConstellationListItem({
           />
           {isEditing ? (
             <>
+
               <CustomIconButton
                 className="secondary"
                 onClick={onRemove}
@@ -126,6 +126,7 @@ function ConstellationListItem({
             </>
           ) : (
             <>
+
               <CustomIconButton
                 icon={<FaTag />}
                 onClick={onLabel}
@@ -140,6 +141,7 @@ function ConstellationListItem({
               />
             </>
           )}
+
         </Flex>
       </Flex>
       <AccordionPanel p={0}>

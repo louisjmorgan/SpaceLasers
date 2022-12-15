@@ -128,7 +128,7 @@ function createSatellite(satellite, constellation, isCustomer = true) {
   return {
     name: satellite.name,
     color: satellite.color,
-    constellation: constellation.name,
+    constellation,
     id: satellite.id,
     params: {
       orbit,
@@ -143,7 +143,7 @@ function createSatellite(satellite, constellation, isCustomer = true) {
   };
 }
 
-function createPowerSatellite(name, orbit, offsets) {
+function createPowerSatellite(name, orbit, offsets, constellation) {
   const newOrbit = { ...orbit };
   Object.entries(offsets).forEach((offset) => {
     newOrbit[offset[0]] = orbit[offset[0]] + Number(offset[1]);
@@ -156,7 +156,7 @@ function createPowerSatellite(name, orbit, offsets) {
     id: uuidv4(),
     orbit: newOrbit,
   };
-  return createSatellite(request, 'Space Power', false);
+  return createSatellite(request, constellation, false);
 }
 
 function getOffsets(spacePowers, customers, offsets) {

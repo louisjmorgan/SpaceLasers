@@ -5,8 +5,8 @@ import { AddIcon } from '@chakra-ui/icons';
 import { Flex, List } from '@chakra-ui/layout';
 import { FieldArray, FormikProvider } from 'formik';
 import { v4 as uuidv4 } from 'uuid';
-import { defaultSatellite } from '../../Util/defaultInputs';
-import { useUIStore } from '../../Model/store';
+import { defaultSatellite } from '../../../Util/defaultInputs';
+import { useUIStore } from '../../../Model/store';
 import SatelliteListItem from './SatelliteListItem';
 
 function SatelliteList({

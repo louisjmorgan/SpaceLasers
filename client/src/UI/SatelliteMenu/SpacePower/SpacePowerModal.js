@@ -5,10 +5,10 @@ import {
 } from '@chakra-ui/react';
 import shallow from 'zustand/shallow';
 import { useEffect, useState } from 'react';
-import CustomNumberInput from '../Elements/CustomNumberInput';
-import optimizeSpacePower from '../../Model/optimizer';
-import { useUIStore } from '../../Model/store';
-import SPButton from '../Elements/SPButton';
+import CustomNumberInput from '../../Elements/CustomNumberInput';
+import optimizeSpacePower from '../../../Model/optimizer';
+import { useUIStore } from '../../../Model/store';
+import SPButton from '../../Elements/SPButton';
 
 const fields = [
   {
@@ -67,9 +67,10 @@ const fields = [
 ];
 
 function SpacePowerModal({ formik }) {
-  const { isOpen, closeMenu } = useUIStore((state) => ({
+  const { isOpen, closeMenu, constellationIndex } = useUIStore((state) => ({
     isOpen: state.isOpen.spacePowerConfig,
     closeMenu: state.closeMenu,
+    constellationIndex: state.constellationIndex,
   }), shallow);
 
   const [isSubmitting, setSubmitting] = useState(false);
@@ -81,7 +82,7 @@ function SpacePowerModal({ formik }) {
     if (isSubmitting) {
       optimizeSpacePower(formik.values).then((result) => {
         Object.entries(result).forEach(([key, value]) => {
-          formik.setFieldValue(`offsets[${key}]`, value);
+          formik.setFieldValue(`constellations[${constellationIndex}].offsets[${key}]`, value);
         });
       });
 
@@ -101,8 +102,8 @@ function SpacePowerModal({ formik }) {
         <ModalBody width="100%">
           <Center>
             <CustomNumberInput
-              value={formik.values.spacePowers}
-              name="spacePowers"
+              value={formik.values.constellations[constellationIndex].spacePowersCount}
+              name={`constellations[${constellationIndex}].spacePowersCount`}
               formik={formik}
               label="Number of power satellites"
               min={0}
@@ -113,10 +114,10 @@ function SpacePowerModal({ formik }) {
           <Flex justify="center" direction="row" wrap="wrap" width="100%">
             {fields.map((param) => (
               <CustomNumberInput
-                value={formik.values.offsets[`${param.id}`]}
+                value={formik.values.constellations[constellationIndex].offsets[`${param.id}`]}
                 key={param.id}
                 step={param.step}
-                name={`offsets[${param.id}]`}
+                name={`constellations[${constellationIndex}].offsets[${param.id}]`}
                 units={param.units}
                 formik={formik}
                 label={param.label}

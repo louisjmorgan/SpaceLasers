@@ -4,8 +4,8 @@ import { VStack } from '@chakra-ui/layout';
 import { FormControl, FormLabel, Select } from '@chakra-ui/react';
 import { useState } from 'react';
 import shallow from 'zustand/shallow';
-import { useUIStore } from '../../Model/store';
-import CustomNumberInput from '../Elements/CustomNumberInput';
+import { useUIStore } from '../../../Model/store';
+import CustomNumberInput from '../../Elements/CustomNumberInput';
 
 function ConstellationOrbitTab({ formik }) {
   const {

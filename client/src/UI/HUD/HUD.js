@@ -63,12 +63,15 @@ const statProps = [
 
 function HUD() {
   const {
-    satellites, toggleLabel, toggleAllLabels, satelliteOptions,
+    satellites, constellations, toggleLabel, toggleAllLabels,
+    satelliteOptions, constellationOptions,
   } = useSimStore((state) => ({
     satellites: state.mission.satellites,
+    constellations: state.mission.constellations,
     toggleLabel: state.toggleLabel,
     toggleAllLabels: state.toggleAllLabels,
     satelliteOptions: state.satelliteOptions,
+    constellationOptions: state.constellationOptions,
   }), shallow);
 
   const {
@@ -83,28 +86,51 @@ function HUD() {
     closeMenu('HUD');
   };
 
-  const [selected, setSelected] = useState(satellites.customers[0]);
+  const [selected, setSelected] = useState({
+    constellation: constellations[0],
+    satellite: satellites.customers[0],
+  });
+
   useEffect(() => {
-    setSelected(() => satellites.customers[0]);
-  }, [satellites]);
+    setSelected(() => ({
+      constellation: constellations[0],
+      satellite: satellites.customers[0],
+    }));
+  }, [satellites, constellations]);
 
   const handleSelectSatellite = (e) => {
     const selection = e.target.value;
-    if (selection === 'fleet') {
-      setSelected(() => satellites.fleet);
+    if (selection === selected.constellation.id) {
+      setSelected(() => ({
+        ...selected,
+        satellite: selected.constellation,
+      }));
     } else {
-      setSelected(() => (satelliteOptions.get(selection).isCustomer
-        ? satellites.customers.find((customer) => (customer.id === selection))
-        : satellites.spacePowers.find((spacePower) => (spacePower.id === selection))));
+      setSelected(() => ({
+        ...selected,
+        satellite: satelliteOptions.get(selection).isCustomer
+          ? satellites.customers.find((customer) => (customer.id === selection))
+          : satellites.spacePowers.find((spacePower) => (spacePower.id === selection)),
+      }));
     }
   };
 
+  const handleSelectConstellation = (e) => {
+    const selection = e.target.value;
+    setSelected(() => ({
+      constellation: constellationOptions.get(selection),
+      satellite: satellites.customers.find((customer) => (
+        customer.id === constellationOptions.get(selection).satellites[0]
+      )),
+    }));
+  };
+
   useEffect(() => {
-    if (selected.name === 'fleet') {
+    if (selected.satellite.id === selected.constellation.id) {
       toggleAllLabels(true);
     } else {
       toggleAllLabels(false);
-      toggleLabel(selected.id);
+      toggleLabel(selected.satellite.id);
     }
   }, [selected]);
 
@@ -140,14 +166,14 @@ function HUD() {
       if (!stat.ref) return;
       parent.current = d3.select(stat.ref);
 
-      if (selected.name === 'fleet' && stat.key !== 'chargeState') {
+      if (selected.satellite.id === selected.constellation.id && stat.key !== 'chargeState') {
         if (!parent.current.classed('hide')) d3.select(stat.ref).classed('hide', true);
         return;
       }
       if (parent.current.classed('hide')) d3.select(stat.ref).classed('hide', false);
       let value;
       try {
-        value = stat.getValue(frame.current, selected);
+        value = stat.getValue(frame.current, selected.satellite);
       } catch {
         return;
       }
@@ -158,12 +184,12 @@ function HUD() {
 
       parent.current.selectAll('.chakra-stat__help-text')
         .select('.help-text')
-        .text(stat.getHelpText(frame.current, selected));
+        .text(stat.getHelpText(frame.current, selected.satellite));
 
       if (stat.getHelpNumber) {
         parent.current.selectAll('.chakra-stat__help-text')
           .select('.help-number')
-          .text(stat.getHelpNumber(frame.current, selected));
+          .text(stat.getHelpNumber(frame.current, selected.satellite));
       }
 
       if (stat.shouldArrows) {
@@ -206,15 +232,24 @@ function HUD() {
       >
         <Flex height="100%" justify="space-between" align-items="center">
           <Center flex={1}>
-            <Box px={2}>
-              <Select onChange={handleSelectSatellite}>
-                {[...satelliteOptions.entries()].map(([id, satellite]) => (
-                  <option key={id} value={id}>{satellite.name}</option>
+            <Flex gap={5} direction="column">
+              <Select value={selected.constellation.id} onChange={handleSelectConstellation}>
+                {[...constellationOptions.entries()].map(([id, constellation]) => (
+                  <option
+                    key={id}
+                    value={id}
+                  >
+                    {constellation.name}
+                  </option>
                 ))}
-                <option value="fleet">Fleet</option>
               </Select>
-
-            </Box>
+              <Select value={selected.satellite.id} onChange={handleSelectSatellite}>
+                {constellationOptions.get(selected.constellation.id).satellites.map((id) => (
+                  <option key={id} value={id}>{satelliteOptions.get(id).name}</option>
+                ))}
+                <option value={selected.constellation.id}>All</option>
+              </Select>
+            </Flex>
           </Center>
           <Box height="100%" flex={1}>
             <Center>
@@ -226,7 +261,7 @@ function HUD() {
                 <StatLabel>Charge</StatLabel>
                 <Gauge
                   height={200}
-                  selected={selected}
+                  selected={selected.satellite}
                   styles={{ position: 'absolute' }}
                 />
                 <StatNumber textStyle="number" color="green.500">

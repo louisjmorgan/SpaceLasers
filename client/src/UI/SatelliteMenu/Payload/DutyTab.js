@@ -6,11 +6,10 @@ import {
   Editable, EditableInput, EditablePreview, Flex, FormControl, FormLabel, Input, Select,
 } from '@chakra-ui/react';
 import { FieldArray, FormikProvider, getIn } from 'formik';
-import CustomNumberInput from '../Elements/CustomNumberInput';
-import { defaultDuty } from '../../Util/defaultInputs';
-import EditableControls from '../MissionPlanner/EditableControls';
-import SPButton from '../Elements/SPButton';
-import { useUIStore } from '../../Model/store';
+import CustomNumberInput from '../../Elements/CustomNumberInput';
+import { defaultDuty } from '../../../Util/defaultInputs';
+import SPButton from '../../Elements/SPButton';
+import { useUIStore } from '../../../Model/store';
 
 const defaultFields = [
   {
@@ -44,7 +43,7 @@ const cyclicalFields = [
   },
 ];
 
-function DutyTab({ address, formik }) {
+function DutyTab({ address, formik, isConstellation = false }) {
   const { constellationIndex, satIndex } = useUIStore((state) => ({
     constellationIndex: state.constellationIndex,
     satIndex: state.satIndex,
@@ -109,7 +108,6 @@ function DutyTab({ address, formik }) {
                             variant="filled"
                             maxWidth="80%"
                           />
-                          <EditableControls />
                         </Editable>
                         <AccordionIcon />
                       </FormControl>
@@ -172,11 +170,13 @@ function DutyTab({ address, formik }) {
           </FieldArray>
         </FormikProvider>
       </Accordion>
+      {isConstellation || (
       <Box m={10}>
         <SPButton onClick={handleCopyToSiblings}>
-          Copy to all
+          Copy to constellation
         </SPButton>
       </Box>
+      )}
     </>
   );
 }

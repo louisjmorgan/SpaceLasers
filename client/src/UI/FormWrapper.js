@@ -6,8 +6,9 @@ import { useSimStore, useUIStore } from '../Model/store';
 import { getCorsFreeUrl, loadTLEs } from '../Util/astronomy';
 import { defaultValues } from '../Util/defaultInputs';
 import SatelliteMenu from './SatelliteMenu';
-import ConstellationConfig from './SatelliteMenu/ConstellationConfig';
-import SatelliteConfig from './SatelliteMenu/SatelliteConfig';
+import ConstellationConfig from './SatelliteMenu/Payload/ConstellationConfig';
+import SatelliteConfig from './SatelliteMenu/Payload/SatelliteConfig';
+import SpacePowerModal from './SatelliteMenu/SpacePower/SpacePowerModal';
 
 function fetchTLEs(urls) {
   const tles = [];
@@ -52,20 +53,20 @@ function FormWrapper() {
     validateOnChange: false,
     validateOnBlur: true,
     onSubmit: async (values) => {
+      console.log(values.constellations);
       formik.setSubmitting(true);
       await new Promise((resolve, reject) => {
         setInitialized(false);
-        setTimeout(() => {
-          try {
-            initializeMission(values);
-            formik.setStatus('');
-            setEditing(false);
-          } catch (error) {
-            formik.setStatus(error.message);
-            reject();
-          }
-          resolve();
-        }, 100);
+        try {
+          initializeMission(values);
+          formik.setStatus('');
+          setEditing(false);
+        } catch (error) {
+          console.error(error);
+          formik.setStatus(error.message);
+          reject();
+        }
+        resolve();
       });
     },
   });
@@ -75,6 +76,7 @@ function FormWrapper() {
       <SatelliteMenu formik={formik} />
       {isOpen.satelliteConfig ? <SatelliteConfig formik={formik} /> : ''}
       {isOpen.constellationConfig ? <ConstellationConfig formik={formik} /> : '' }
+      {isOpen.spacePowerConfig ? <SpacePowerModal formik={formik} /> : '' }
     </form>
   );
 }

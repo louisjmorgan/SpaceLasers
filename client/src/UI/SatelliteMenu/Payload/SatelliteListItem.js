@@ -1,15 +1,13 @@
 import { Flex, ListItem } from '@chakra-ui/layout';
-import { useState } from 'react';
 import {
   FaCamera, FaCog, FaEyeSlash, FaTag, FaTrash,
 } from 'react-icons/fa';
-import { IoIosColorPalette } from 'react-icons/io';
 import { useDebouncyFn } from 'use-debouncy';
 import shallow from 'zustand/shallow';
-import { useSimStore, useUIStore } from '../../Model/store';
-import ColorPicker from '../Elements/ColorPicker';
-import CustomEditableInput from '../Elements/CustomEditableInput';
-import CustomIconButton from '../Elements/CustomIconButton';
+import { useSimStore, useUIStore } from '../../../Model/store';
+import ColorPicker from '../../Elements/ColorPicker';
+import CustomEditableInput from '../../Elements/CustomEditableInput';
+import CustomIconButton from '../../Elements/CustomIconButton';
 
 /* eslint-disable react/prop-types */
 function SatelliteListItem({
@@ -114,9 +112,9 @@ function SatelliteListItem({
         onChange={onChangeColor}
         color={formik.values.constellations[constellation].satellites[index].color}
       />
-
       {isEditing ? (isPayload && (
         <>
+
           <CustomIconButton
             className="secondary"
             onClick={onRemove}

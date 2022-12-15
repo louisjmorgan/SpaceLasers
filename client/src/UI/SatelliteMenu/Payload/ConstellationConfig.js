@@ -13,13 +13,13 @@ import {
 import shallow from 'zustand/shallow';
 import { v4 as uuidv4 } from 'uuid';
 import { useState } from 'react';
-import { useUIStore } from '../../Model/store';
-import { defaultSatellite } from '../../Util/defaultInputs';
-import SPButton from '../Elements/SPButton';
+import { useUIStore } from '../../../Model/store';
+import { defaultSatellite } from '../../../Util/defaultInputs';
+import SPButton from '../../Elements/SPButton';
 import ConstellationOrbitTab from './ConstellationOrbitTab';
 import DutyTab from './DutyTab';
 import PowerTab from './PowerTab';
-import { twoline2satrec } from '../../Util/astronomy';
+import { twoline2satrec } from '../../../Util/astronomy';
 
 function ConstellationConfig({ formik }) {
   const {
@@ -120,7 +120,7 @@ function ConstellationConfig({ formik }) {
         <ModalHeader
           textAlign="center"
           as={Flex}
-          justify="center"
+          justify="space-around"
           align="center"
           gap={3}
           p={10}
@@ -133,7 +133,7 @@ function ConstellationConfig({ formik }) {
               {formik.values.constellations.map(
                 (constellation, index) => (
                   <option
-                    key={constellation.name}
+                    key={constellation.id}
                     value={index}
                   >
                     {constellation.name}
@@ -154,7 +154,6 @@ function ConstellationConfig({ formik }) {
           <Tabs
             align="center"
             width="100%"
-            maxWidth="60rem"
             display="flex"
             height="90%"
             overflow="hidden"
@@ -172,10 +171,10 @@ function ConstellationConfig({ formik }) {
                 />
               </TabPanel>
               <TabPanel pt={10}>
-                <PowerTab address={`constellations[${constellationIndex}].payload`} formik={formik} />
+                <PowerTab address={`constellations[${constellationIndex}].payload`} formik={formik} isConstellation />
               </TabPanel>
               <TabPanel pt={10}>
-                <DutyTab address={`constellations[${constellationIndex}].payload`} formik={formik} />
+                <DutyTab address={`constellations[${constellationIndex}].payload`} formik={formik} isConstellation />
               </TabPanel>
             </TabPanels>
           </Tabs>

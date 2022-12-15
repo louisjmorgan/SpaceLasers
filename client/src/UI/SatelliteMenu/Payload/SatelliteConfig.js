@@ -2,7 +2,7 @@
 /* eslint-disable react/prop-types */
 import { Button } from '@chakra-ui/button';
 import { FormControl, FormLabel } from '@chakra-ui/form-control';
-import { Box, Center, Flex } from '@chakra-ui/layout';
+import { Flex } from '@chakra-ui/layout';
 import {
   Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay,
 } from '@chakra-ui/modal';
@@ -12,7 +12,7 @@ import {
   Tab, TabList, TabPanel, TabPanels, Tabs,
 } from '@chakra-ui/tabs';
 import shallow from 'zustand/shallow';
-import { useUIStore } from '../../Model/store';
+import { useUIStore } from '../../../Model/store';
 import DutyTab from './DutyTab';
 import OrbitTab from './OrbitTab';
 import PowerTab from './PowerTab';
@@ -65,12 +65,12 @@ function SatelliteConfig({ formik }) {
         <ModalHeader
           textAlign="center"
           as={Flex}
-          justify="center"
+          justify="space-around"
           align="center"
           gap={3}
           p={10}
         >
-          <FormControl as={Flex} align="center" width="30ch">
+          <FormControl as={Flex} align="center" width="60ch" gap={3}>
             <FormLabel my={0}>
               Edit
             </FormLabel>
@@ -78,7 +78,7 @@ function SatelliteConfig({ formik }) {
               {formik.values.constellations.map(
                 (constellation, index) => (
                   <option
-                    key={constellation.name}
+                    key={constellation.id}
                     value={index}
                   >
                     {constellation.name}
@@ -111,11 +111,11 @@ function SatelliteConfig({ formik }) {
           <Tabs
             align="center"
             width="100%"
-            maxWidth="60rem"
             display="flex"
             height="100%"
             overflow="hidden"
             flexDirection="column"
+            m={0}
           >
             <TabList>
               <Tab>Orbit</Tab>
