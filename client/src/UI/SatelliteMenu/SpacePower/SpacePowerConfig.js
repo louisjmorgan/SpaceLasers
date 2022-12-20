@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import { Flex } from '@chakra-ui/layout';
 import { Button } from '@chakra-ui/react';
+import { useWatch } from 'react-hook-form';
 import { FaCog } from 'react-icons/fa';
 import { useUIStore } from '../../../Model/store';
 import CustomNumberInput from '../../Elements/CustomNumberInput';
@@ -12,6 +13,7 @@ function SpacePowerConfig({ index }) {
     openMenu('spacePowerConfig');
   };
 
+  useWatch(`constellations.${index}`);
   return (
     <Flex
       direction="column"
@@ -19,7 +21,7 @@ function SpacePowerConfig({ index }) {
       mb={5}
     >
       <CustomNumberInput
-        name={`constellations[${index}].spacePowersCount`}
+        name={`constellations.${index}.spacePowersCount`}
         label="Number of power satellites"
         min={0}
         max={10}

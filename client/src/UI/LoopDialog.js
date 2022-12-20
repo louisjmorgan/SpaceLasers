@@ -1,5 +1,5 @@
 import {
-  Button, Center, Modal, ModalBody, ModalContent,
+  Button, Center, Flex, Modal, ModalBody, ModalContent,
   ModalFooter, ModalHeader, ModalOverlay, useDisclosure,
 } from '@chakra-ui/react';
 import { useEffect } from 'react';
@@ -42,11 +42,12 @@ function LoopDialog() {
             <Summary />
           </ModalBody>
         </Center>
-        <ModalFooter>
-          <SPButton onClick={handleReplay}>
-            Restart
-          </SPButton>
-
+        <ModalFooter as={Flex} justify="center" width="100%" mb={5}>
+          <Center width="100%">
+            <SPButton onClick={handleReplay}>
+              Restart
+            </SPButton>
+          </Center>
         </ModalFooter>
 
       </ModalContent>

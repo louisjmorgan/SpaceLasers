@@ -2,7 +2,7 @@
 /* eslint-disable react/prop-types */
 import shallow from 'zustand/shallow';
 import { Accordion } from '@chakra-ui/react';
-import { useWatch } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 import { useSimStore, useUIStore } from '../../../Model/store';
 import SpacePowerList from './SpacePowerList';
 
@@ -21,7 +21,8 @@ function SpacePowerConstellations() {
   const { constellations } = useSimStore((state) => ({
     constellations: state.mission.constellations,
   }), shallow);
-  const constellationsForm = useWatch({ name: 'constellations' });
+  // const constellationsForm = useWatch({ name: 'constellations' });
+  const { getValues } = useFormContext();
   return (
     <Accordion
       width="100%"
@@ -32,11 +33,11 @@ function SpacePowerConstellations() {
       onChange={setConstellationIndex}
       mt={3}
     >
-      {constellationsForm.map((constellation, i) => (
+      {getValues('constellations').map((constellation, i) => (
         <SpacePowerList
           constellation={constellations.find((c) => c.id === constellation.id)}
           index={i}
-          key={constellation.id}
+          key={`spacepower-${constellation.id}`}
         />
       ))}
     </Accordion>

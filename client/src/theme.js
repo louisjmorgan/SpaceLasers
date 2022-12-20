@@ -89,7 +89,9 @@ const components = {
       xl: {
         dialog: {
           // height: "100%",
-          minWidth: "60vw",
+          width: "200ch",
+          maxWidth: ["90vw", "80vw", "80vw", "80vw", "60vw"],
+
         },
         // container: {
         //   height: "80vw",
@@ -151,6 +153,9 @@ const colors = {
     100: 'rgba(22,22,22,0.5)',
     200: 'rgba(22,22,22,0.9)',
     300: 'rgba(22,22,22,1)',
+  },
+  complement: {
+    red: '#d73328',
   },
   green: {
     main: "#28D759",

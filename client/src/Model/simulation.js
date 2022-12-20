@@ -83,7 +83,11 @@ function getCurrentDuties(duties, timeArray) {
     duties.forEach((duty, index) => {
       if (duty.type === 'power storing') return;
       duty.intervals.forEach((cycle) => {
-        if ((time >= cycle.start) && (time <= cycle.end)) currentDuty = index;
+        if ((time >= cycle.start) && (time <= cycle.end)) {
+          if (currentDuty === 0 || (duty.priority < duties[currentDuty].priority)) {
+            currentDuty = index;
+          }
+        }
       });
     });
     return currentDuty;

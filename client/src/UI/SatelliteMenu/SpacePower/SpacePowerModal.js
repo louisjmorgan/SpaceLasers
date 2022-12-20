@@ -1,6 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/prop-types */
 import {
+  Box,
   Button, Center, Flex, Modal, ModalBody, ModalCloseButton, ModalContent,
   ModalFooter, ModalHeader, ModalOverlay, Spinner, Text, useToast,
 } from '@chakra-ui/react';
@@ -126,35 +127,60 @@ function SpacePowerModal() {
       toast.closeAll();
     }
   }, [isOpen, isOptimizing]);
-  return (
+  return isOpen && (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <ModalOverlay backdropFilter="blur(10px)" />
-      <ModalContent bg="background.200" width="80vw">
-        <ModalHeader align="center" fontSize="1.5rem">Configure Space Power</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody width="100%">
-          <Center>
-            <CustomNumberInput
-              name={`constellations.${constellationIndex}.spacePowersCount`}
-              label="Number of power satellites"
-              min={0}
-              max={10}
-            />
-          </Center>
-          <Text as="h3" textAlign="center" fontSize="1.25rem">Offsets</Text>
-          <Flex justify="center" direction="row" wrap="wrap" width="100%">
-            {fields.map((param) => (
-              <CustomNumberInput
-                key={param.id}
-                step={param.step}
-                name={`constellations.${constellationIndex}.offsets.${param.id}`}
-                units={param.units}
-                label={param.label}
-                min={param.min}
-                max={param.max}
-              />
-            ))}
+      <ModalContent
+        bg="background.200"
+        as={Flex}
+        direction="column"
+        my="5vh"
+        align="center"
+        height="90vh"
+      >
+        <ModalHeader
+          align="center"
+          fontSize="1.5rem"
+          mt={10}
+        >
+          Configure Space Power
 
+        </ModalHeader>
+        <ModalCloseButton />
+        <ModalBody
+          width="100%"
+          as={Flex}
+          align="center"
+          direction="column"
+          maxWidth="80ch"
+          overflowY="auto"
+          height="100%"
+        >
+
+          <Flex direction="column" width={['50%', '50%', '90%', '90%']} maxWidth="60ch" align="center">
+            <Box width="100%">
+              <CustomNumberInput
+                name={`constellations.${constellationIndex}.spacePowersCount`}
+                label="Number of power satellites"
+                min={0}
+                max={10}
+              />
+            </Box>
+            <Text as="h3" textAlign="left" fontSize="1.25rem" width="100%" p={5}>Offsets</Text>
+            <Flex justify="space-between" direction="row" align="start" wrap="wrap">
+              {fields.map((param) => (
+                <CustomNumberInput
+                  key={param.id}
+                  step={param.step}
+                  name={`constellations.${constellationIndex}.offsets.${param.id}`}
+                  units={param.units}
+                  label={param.label}
+                  min={param.min}
+                  max={param.max}
+                />
+              ))}
+
+            </Flex>
           </Flex>
           <Center m={10}>
             <SPButton onClick={onOptimize} type="button" disabled={isOptimizing} pointerEvents={isOptimizing && 'none'}>

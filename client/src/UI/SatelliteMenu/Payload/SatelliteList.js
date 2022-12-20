@@ -35,7 +35,7 @@ function SatelliteList({
   return (
 
     <Flex direction="column" align="center">
-      <List width="100%" maxHeight="40vh" overflow="auto" margin="auto">
+      <List width="100%" maxHeight="30vh" overflow="auto" margin="auto">
         {fields.map((field, i) => (
           <SatelliteListItem
             satellite={field}

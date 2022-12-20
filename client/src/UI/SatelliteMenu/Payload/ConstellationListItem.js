@@ -47,7 +47,7 @@ function ConstellationListItem({
       setConstellationIndex(
         () => (index > 0 ? index - 1 : 0),
       );
-    } else if (index < satIndex) {
+    } else if (index < constellationIndex) {
       setConstellationIndex((prev) => prev - 1);
     }
     remove(index);
@@ -73,7 +73,7 @@ function ConstellationListItem({
   const onChangeColor = useDebouncyFn(
     (c) => {
       setValue(`constellations.${index}.color`, c);
-      getValues.constellations[index].satellites.forEach((satellite, i) => {
+      getValues(`constellations.${index}.satellites`).forEach((satellite, i) => {
         setValue(`constellations.${index}..satellites.${i}.color`, c);
       });
       if (constellationOptions) changeConstellationColor(constellation.id, c);

@@ -109,7 +109,7 @@ function ConstellationConfig() {
     onClose();
   };
 
-  return (
+  return isOpen && (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
@@ -127,18 +127,29 @@ function ConstellationConfig() {
           as={Flex}
           justify="space-around"
           align="center"
+          flexWrap="wrap"
+          maxWidth="100%"
           gap={3}
-          p={10}
+          p={5}
+          pt={0}
+          mt={10}
         >
-          <FormControl as={Flex} align="center" width="30ch">
+          <FormControl
+            as={Flex}
+            align="center"
+            justify="center"
+            maxWidth="25ch"
+            flexWrap="wrap"
+            gap={3}
+          >
             <FormLabel my={0}>
               Edit
             </FormLabel>
             <Select variant="filled" value={constellationIndex} onChange={onSelectConstellation} width="20ch">
-              {getValues().constellations.map(
+              {getValues('constellations').map(
                 (constellation, index) => (
                   <option
-                    key={constellation.id}
+                    key={`option-${constellation.id}`}
                     value={index}
                   >
                     {constellation.name}
@@ -147,7 +158,7 @@ function ConstellationConfig() {
               )}
             </Select>
           </FormControl>
-          <FormControl as={Flex} align="center" width="20ch">
+          <FormControl as={Flex} align="center" width="20ch" p={3}>
             <FormLabel my={0}>
               Advanced Editor
             </FormLabel>

@@ -3,9 +3,10 @@
 import { Box, chakra } from '@chakra-ui/react';
 import { forwardRef } from 'react';
 
-const SPButton = forwardRef(({ onClick, children, ...props }, ref) => (
+const SPButton = forwardRef(({
+  onClick, children, effectColor, ...props
+}, ref) => (
   <chakra.button
-    {...props}
     px="10"
     py="2"
     ref={ref}
@@ -15,7 +16,7 @@ const SPButton = forwardRef(({ onClick, children, ...props }, ref) => (
     clipPath="polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)"
     border="2px solid"
     cursor="pointer"
-    borderColor="green.500"
+    borderColor={effectColor || 'green.500'}
     textTransform="uppercase"
     textAlign="center"
     fontWeight="bold"
@@ -25,11 +26,13 @@ const SPButton = forwardRef(({ onClick, children, ...props }, ref) => (
         transform: 'scaleX(1)',
       },
     }}
+    {...props}
+
   >
     <Box
       position="absolute"
       inset={0}
-      backgroundColor="green.500"
+      backgroundColor={effectColor || 'green.500'}
       zIndex={-1}
       transform="scaleX(0)"
       transition="transform 0.3s ease-in-out"

@@ -57,8 +57,8 @@ function ConstellationList() {
           onClick={() => {
             const { length } = getValues('constellations');
             append({
-              name: `Constellation ${length + 1}`,
               ...defaultConstellation,
+              name: `Constellation ${length + 1}`,
               id: uuidv4(),
             });
             setConstellationIndex(length);

@@ -70,7 +70,7 @@ function SatelliteMenu() {
     };
   };
 
-  return (
+  return isOpen && (
     <Drawer
       isOpen={isOpen}
       placement="left"
@@ -141,6 +141,7 @@ function SatelliteMenu() {
                       type="reset"
                       onClick={onDiscard}
                       width="30ch"
+                      effectColor="complement.red"
                     >
                       Discard Changes
                     </SPButton>
@@ -161,7 +162,7 @@ function SatelliteMenu() {
                   href={`data:text/json;charset=utf-8,${encodeURIComponent(
                     JSON.stringify(getValues()),
                   )}`}
-                  download="filename.json"
+                  download={`space_power_sim_export_${new Date().toJSON().slice(0, 16)}.json`}
                   width="30ch"
                 >
                   Export

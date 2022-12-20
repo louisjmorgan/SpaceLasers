@@ -4,14 +4,17 @@
 import { AddIcon } from '@chakra-ui/icons';
 import {
   Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box, Button,
+  Divider,
   Flex, FormControl, FormLabel, Select,
 } from '@chakra-ui/react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
+import { FaTrash } from 'react-icons/fa';
 import CustomNumberInput from '../../Elements/CustomNumberInput';
 import { defaultDuty } from '../../../Util/defaultInputs';
 import SPButton from '../../Elements/SPButton';
 import { useUIStore } from '../../../Model/store';
 import CustomEditableInput from '../../Elements/CustomEditableInput';
+import CustomIconButton from '../../Elements/CustomIconButton';
 
 const defaultFields = [
   {
@@ -26,19 +29,20 @@ const defaultFields = [
     step: 1,
     min: 1,
     label: 'Priority',
+    units: '',
   }];
 
 const cyclicalFields = [
   {
     id: 'cycles',
-    steps: 0.1,
+    step: 0.1,
     label: 'Cycles per orbit',
     min: 0,
     units: 'cycles',
   },
   {
     id: 'duration',
-    steps: 1,
+    step: 1,
     label: 'Cycle duration',
     min: 0,
     units: 's',
@@ -69,29 +73,47 @@ function DutyTab({ address, isConstellation = false }) {
       );
     });
   };
+
+  const onRemove = (e) => {
+    e.stopPropagation();
+    remove(e.target.id);
+  };
   return (
     <>
       <Accordion
-        maxHeight="75vh"
-        overflowY="auto"
         width="100%"
         allowToggle
       >
         {fields.map((field, index) => (
           <AccordionItem key={field.id}>
-            <AccordionButton>
-              <Flex align="center" justify="space-between" width="100%" px={5}>
+            <AccordionButton
+              as={Flex}
+              align="center"
+              justify="space-between"
+              width="100%"
+              px={5}
+              cursor="pointer"
+            >
+              <Flex align="center" gap={10}>
                 <CustomEditableInput
                   value={getValues(`${address}.duties.${index}.name`)}
                   name={`${address}.duties.${index}.name`}
-                  // onSubmit={onSubmitName}
                 />
-                <AccordionIcon />
+                <CustomIconButton
+                  className="secondary"
+                  onClick={onRemove}
+                  id={index}
+                  icon={<FaTrash />}
+                  label="remove"
+                />
               </Flex>
+              <AccordionIcon />
             </AccordionButton>
+            <Divider />
+
             <AccordionPanel>
-              <Flex wrap="wrap" justify="space-around">
-                <FormControl width="65%">
+              <Flex wrap="wrap" justify="start" maxWidth="60ch">
+                <FormControl width="40ch" p={5}>
                   <FormLabel htmlFor={`${address}.duties.${index}.type`}>Type</FormLabel>
                   <Select
                     {...register(`${address}.duties${index}.type`)}
@@ -121,14 +143,7 @@ function DutyTab({ address, isConstellation = false }) {
                     ))) : ''}
                 </>
               </Flex>
-              <Button
-                m={5}
-                onClick={() => {
-                  remove(index);
-                }}
-              >
-                Remove
-              </Button>
+
             </AccordionPanel>
           </AccordionItem>
         ))}

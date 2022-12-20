@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import {
-  Box, Flex, FormControl, FormLabel, Select, VStack,
+  Box, Flex, FormControl, FormLabel, Select, Text, VStack,
 } from '@chakra-ui/react';
 import shallow from 'zustand/shallow';
 import { useFormContext, useWatch } from 'react-hook-form';
@@ -186,9 +186,9 @@ function PowerTab({ address, isConstellation = false }) {
   return (
     <>
       {isAdvanced ? (
-        <>
-          <h3>Battery</h3>
-          <Flex wrap="wrap" justify="start">
+        <Flex direction="column" align="center" width={['35ch', '35ch', '100%']}>
+          <Flex wrap="wrap" justify="space-between" mb={5} maxWidth="70ch">
+            <Text as="h3" textAlign="left" width="100%">Battery</Text>
             {batteryFields.map((param) => (
               <CustomNumberInput
                 step={param.step}
@@ -204,8 +204,8 @@ function PowerTab({ address, isConstellation = false }) {
               />
             ))}
           </Flex>
-          <h3>Photovoltaic</h3>
-          <Flex wrap="wrap" justify="start" mb={5}>
+          <Flex wrap="wrap" justify="space-between" mb={5} maxWidth="70ch">
+            <Text as="h3" textAlign="left" width="100%">Photovoltaic</Text>
             {pvFields.map((param) => (
               <CustomNumberInput
                 step={param.step}
@@ -220,7 +220,7 @@ function PowerTab({ address, isConstellation = false }) {
             ))}
           </Flex>
 
-        </>
+        </Flex>
       ) : (
         <VStack maxWidth="60ch" gap={10} p={5}>
           <FormControl>

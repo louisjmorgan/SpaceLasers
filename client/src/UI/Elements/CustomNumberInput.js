@@ -49,7 +49,7 @@ function CustomNumberInput({
               flex={3}
               ref={ref}
               onChange={(v) => {
-                onChange(parseFloat(v));
+                onChange(parseFloat(v) || '');
                 sideEffect(v);
               }}
               onBlur={onBlur}
@@ -61,7 +61,7 @@ function CustomNumberInput({
                 <NumberDecrementStepper />
               </NumberInputStepper>
             </NumberInput>
-            {units ? <Text flex={1} align="left">{units}</Text> : ''}
+            {units || typeof units === 'string' ? <Text flex={1} align="left">{units}</Text> : ''}
           </Flex>
           <ErrorMessage
             errors={errors}

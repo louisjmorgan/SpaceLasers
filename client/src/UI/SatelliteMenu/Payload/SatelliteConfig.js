@@ -6,6 +6,7 @@ import { Flex } from '@chakra-ui/layout';
 import {
   Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay,
 } from '@chakra-ui/modal';
+import { Show } from '@chakra-ui/react';
 import { Select } from '@chakra-ui/select';
 import { Switch } from '@chakra-ui/switch';
 import {
@@ -51,7 +52,7 @@ function SatelliteConfig() {
   };
   const { getValues } = useFormContext();
 
-  return (
+  return isOpen && (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
@@ -69,13 +70,27 @@ function SatelliteConfig() {
           as={Flex}
           justify="space-around"
           align="center"
+          flexWrap="wrap"
+          maxWidth="100%"
           gap={3}
-          p={10}
+          p={5}
+          pt={0}
+          mt={10}
+
         >
-          <FormControl as={Flex} align="center" width="60ch" gap={3}>
-            <FormLabel my={0}>
-              Edit
-            </FormLabel>
+          <FormControl
+            as={Flex}
+            align="center"
+            justify="center"
+            maxWidth="50ch"
+            flexWrap="wrap"
+            gap={3}
+          >
+            <Show above="lg">
+              <FormLabel my={0}>
+                Edit
+              </FormLabel>
+            </Show>
             <Select variant="filled" value={constellationIndex} onChange={onSelectConstellation} width="20ch">
               {getValues('constellations').map(
                 (constellation, index) => (
@@ -101,7 +116,7 @@ function SatelliteConfig() {
               )}
             </Select>
           </FormControl>
-          <FormControl as={Flex} align="center" width="20ch">
+          <FormControl as={Flex} align="center" width="20ch" p={3}>
             <FormLabel my={0}>
               Advanced Editor
             </FormLabel>
@@ -109,10 +124,10 @@ function SatelliteConfig() {
           </FormControl>
         </ModalHeader>
         <ModalCloseButton />
-        <ModalBody>
+        <ModalBody as={Flex} justify="center">
           <Tabs
             align="center"
-            width="100%"
+            maxWidth="80ch"
             display="flex"
             height="100%"
             overflow="hidden"
@@ -125,13 +140,13 @@ function SatelliteConfig() {
               <Tab>Duty</Tab>
             </TabList>
             <TabPanels>
-              <TabPanel pt={5}>
+              <TabPanel pt={5} maxWidth="80ch">
                 <OrbitTab address={`constellations.${constellationIndex}.satellites.${satIndex}`} />
               </TabPanel>
-              <TabPanel pt={10}>
+              <TabPanel pt={10} maxWidth="80ch">
                 <PowerTab address={`constellations.${constellationIndex}.satellites.${satIndex}`} />
               </TabPanel>
-              <TabPanel pt={10}>
+              <TabPanel pt={10} maxWidth="80ch">
                 <DutyTab address={`constellations.${constellationIndex}.satellites.${satIndex}`} />
               </TabPanel>
             </TabPanels>

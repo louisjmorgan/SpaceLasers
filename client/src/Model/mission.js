@@ -246,7 +246,7 @@ const simulateSpacePowers = (time, sun, constellations, customers) => {
   const beams = [];
   spacePowers.forEach((spacePower) => {
     spacePower.positions = getSatellitePositions(spacePower.params, time);
-    const satBeams = getBeams(spacePower, customers, time);
+    const satBeams = getBeams(spacePower, customers.filter((c) => c.constellation === spacePower.constellation), time);
     spacePower.performance = {
       currentDuties: getBeamDuties(satBeams, time),
       isEclipsed: getEclipsedArray(spacePower, sun, time),

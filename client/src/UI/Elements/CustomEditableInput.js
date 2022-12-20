@@ -11,7 +11,7 @@ function CustomEditableInput({
 }) {
   const { setValue, register } = useFormContext();
   return (
-    <FormControl>
+    <FormControl maxWidth="20ch">
       <Editable
         submitOnBlur
         defaultValue={value}
@@ -26,6 +26,7 @@ function CustomEditableInput({
         onCancel={(v) => {
           setValue(name, v);
         }}
+        onClick={(e) => { e.stopPropagation(); }}
       >
         <EditablePreview />
         <Input

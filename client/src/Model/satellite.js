@@ -114,6 +114,7 @@ function createSatellite(satellite, constellation, isCustomer = true) {
   const duties = satellite.duties.map((duty) => ({
     name: duty.name,
     type: duty.type,
+    priority: duty.priority,
     consumption: Number(duty.consumption),
     duration: (Number(duty.duration) * 1000) || null,
     cycles: Number(duty.cycles) || null,

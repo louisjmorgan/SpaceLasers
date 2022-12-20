@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 /* eslint-disable react/prop-types */
-import { VStack } from '@chakra-ui/layout';
+import { Flex } from '@chakra-ui/layout';
 import { FormControl, FormLabel, Select } from '@chakra-ui/react';
 import { useState } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
@@ -8,7 +8,7 @@ import shallow from 'zustand/shallow';
 import { useUIStore } from '../../../Model/store';
 import CustomNumberInput from '../../Elements/CustomNumberInput';
 
-function ConstellationOrbitTab({ formik }) {
+function ConstellationOrbitTab() {
   const {
     constellationIndex, orbitLists,
   } = useUIStore((state) => ({
@@ -30,11 +30,10 @@ function ConstellationOrbitTab({ formik }) {
   const constellationValues = useWatch(`constellations.${constellationIndex}`);
 
   return (
-    <VStack gap={10} p={5}>
+    <Flex direction="column" maxWidth="60ch" align="center" gap={10} p={5}>
       <CustomNumberInput
         step={1}
         name={`constellations.${constellationIndex}.satelliteCount`}
-        formik={formik}
         label="Number of Satellites"
         min={1}
         max={maxSatellites}
@@ -56,7 +55,7 @@ function ConstellationOrbitTab({ formik }) {
           ))}
         </Select>
       </FormControl>
-    </VStack>
+    </Flex>
   );
 }
 

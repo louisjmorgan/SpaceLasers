@@ -166,7 +166,7 @@ export default function OrbitTab({ address }) {
           <Tab>Paste TLE</Tab>
         </TabList>
         <TabPanels>
-          <TabPanel pt={5}>
+          <TabPanel pt={5} maxWidth="80ch">
             <Flex justify="space-around" wrap="wrap">
               <Box width="100%">
                 <FormControl display="block" width="50%">

@@ -1,4 +1,4 @@
-import { Flex, ListItem } from '@chakra-ui/layout';
+import { Box, Flex, ListItem } from '@chakra-ui/layout';
 import { useFormContext } from 'react-hook-form';
 import {
   FaCamera, FaCog, FaEyeSlash, FaTag, FaTrash,
@@ -100,12 +100,14 @@ function SatelliteListItem({
       key={satellite.id}
       position="relative"
     >
-      <CustomEditableInput
-        value={satellite.name}
-        name={`constellations.${constellation}.satellites.${index}.name`}
-        isDisabled={!isPayload}
-        onSubmit={onSubmitName}
-      />
+      <Box width="100%" textAlign="left">
+        <CustomEditableInput
+          value={satellite.name}
+          name={`constellations.${constellation}.satellites.${index}.name`}
+          isDisabled={!isPayload}
+          onSubmit={onSubmitName}
+        />
+      </Box>
       <ColorPicker
         id={satellite.id}
         onChange={onChangeColor}
