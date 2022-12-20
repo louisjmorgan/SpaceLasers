@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable react/prop-types */
 import { FormControl, FormLabel } from '@chakra-ui/form-control';
@@ -13,6 +14,7 @@ import {
 import shallow from 'zustand/shallow';
 import { v4 as uuidv4 } from 'uuid';
 import { useState } from 'react';
+import { useFormContext } from 'react-hook-form';
 import { useUIStore } from '../../../Model/store';
 import { defaultSatellite } from '../../../Util/defaultInputs';
 import SPButton from '../../Elements/SPButton';
@@ -21,7 +23,7 @@ import DutyTab from './DutyTab';
 import PowerTab from './PowerTab';
 import { twoline2satrec } from '../../../Util/astronomy';
 
-function ConstellationConfig({ formik }) {
+function ConstellationConfig() {
   const {
     isOpen, closeMenu, setSatIndex, constellationIndex,
     setConstellationIndex, setAdvanced, isAdvanced, orbitLists,
@@ -51,17 +53,17 @@ function ConstellationConfig({ formik }) {
   };
 
   const [error, setError] = useState('');
-
-  const extractTle = (tle, index) => {
+  const [failed, setFailed] = useState(0);
+  const { setValue, getValues } = useFormContext();
+  const extractTle = (tle) => {
     let satRec;
     try {
       const { tle1, tle2 } = tle.tles;
       satRec = twoline2satrec(tle1, tle2);
     } catch {
-      setError('Error extracting TLE.  Please enter a valid TLE.');
-      return;
+      throw new Error('Error extracting TLE');
     }
-    const newOrbit = {
+    return {
       epoch: satRec.epochdatetimelocal,
       meanMotionDot: satRec.ndottle,
       bstar: satRec.bstar || satRec.bstar.toFixed(5),
@@ -72,36 +74,39 @@ function ConstellationConfig({ formik }) {
       meanAnomaly: satRec.motle,
       meanMotion: satRec.notle,
       tle: `${tle.name}\n${tle.tles.tle1}\n${tle.tles.tle2}`,
-
+      list: getValues(`constellations.${constellationIndex}.list`),
     };
-    Object.entries(newOrbit).forEach(
-      (entry) => {
-        if (!entry[1]) {
-          setError(`Error setting ${entry[0]}. Please enter a valid TLE and try again`);
-          return;
-        }
-        formik.setFieldValue(`constellations[${constellationIndex}].satellites[${index}].orbit.[${entry[0]}]`, entry[1]);
-      },
-    );
-    setError('');
   };
 
   const onGenerate = () => {
     const tles = orbitLists.find(
-      (v) => v.name === formik.values.constellations[constellationIndex].list,
-    ).tles.slice(0, formik.values.constellations[constellationIndex].satelliteCount);
-    const constellation = formik.values.constellations[constellationIndex];
-    constellation.satellites = [];
+      (v) => v.name === getValues(`constellations.${constellationIndex}.list`),
+    ).tles.slice(0, getValues(`constellations.${constellationIndex}.satelliteCount`));
+    const constellation = getValues(`constellations.${constellationIndex}`);
+    const newSats = [];
     tles.forEach((tle, index) => {
-      constellation.satellites.push({
-        ...defaultSatellite,
-        ...constellation.payload,
-        name: `Satellite ${index + 1}`,
-        id: uuidv4(),
-      });
-      extractTle(tle, index);
+      try {
+        const newOrbit = extractTle(tle, index);
+        newSats.push({
+          ...defaultSatellite,
+          ...constellation.payload,
+          name: `Satellite ${index + 1}`,
+          id: uuidv4(),
+          orbit: newOrbit,
+        });
+        return;
+      } catch (e) {
+        setFailed((prev) => prev + 1);
+        return null;
+      }
     });
-    // onClose();
+    setValue(`constellations.${constellationIndex}.satellites`, newSats);
+    if (failed > 0) {
+      setError(`${failed} failed.`);
+      return;
+    }
+    setError('');
+    onClose();
   };
 
   return (
@@ -130,7 +135,7 @@ function ConstellationConfig({ formik }) {
               Edit
             </FormLabel>
             <Select variant="filled" value={constellationIndex} onChange={onSelectConstellation} width="20ch">
-              {formik.values.constellations.map(
+              {getValues().constellations.map(
                 (constellation, index) => (
                   <option
                     key={constellation.id}
@@ -166,15 +171,13 @@ function ConstellationConfig({ formik }) {
             </TabList>
             <TabPanels>
               <TabPanel pt={5}>
-                <ConstellationOrbitTab
-                  formik={formik}
-                />
+                <ConstellationOrbitTab />
               </TabPanel>
               <TabPanel pt={10}>
-                <PowerTab address={`constellations[${constellationIndex}].payload`} formik={formik} isConstellation />
+                <PowerTab address={`constellations.${constellationIndex}.payload`} isConstellation />
               </TabPanel>
               <TabPanel pt={10}>
-                <DutyTab address={`constellations[${constellationIndex}].payload`} formik={formik} isConstellation />
+                <DutyTab address={`constellations.${constellationIndex}.payload`} isConstellation />
               </TabPanel>
             </TabPanels>
           </Tabs>

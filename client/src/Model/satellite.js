@@ -1,3 +1,4 @@
+/* eslint-disable array-callback-return */
 /* eslint-disable consistent-return */
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -159,40 +160,60 @@ function createPowerSatellite(name, orbit, offsets, constellation) {
   return createSatellite(request, constellation, false);
 }
 
-function getOffsets(spacePowers, customers, offsets) {
-  if (spacePowers === 0) return [];
-  if (spacePowers === customers) return Array.from({ length: customers }, () => [offsets]);
-  if (spacePowers < customers) {
-    const spacing = Math.floor(customers / spacePowers);
-    let total = 0;
-    return Array.from({ length: customers }, (value, index) => {
-      if (index % spacing) return null;
-      total += 1;
-      if (total > spacePowers) return null;
-      return [offsets];
-    });
-  }
-  if (spacePowers > customers) {
-    let ratio = Math.ceil(spacePowers / customers);
-    let total = 0;
-    return Array.from(
-      { length: customers },
-      () => {
-        let multiplier = 0;
-        if ((total + ratio) > spacePowers) ratio = spacePowers - total;
-        return Array.from({ length: ratio }, (value, index) => {
-          if (index % 2 === 0) multiplier += 1;
-          const newOffsets = {};
-          Object.entries(offsets).forEach((offset) => {
-            newOffsets[offset[0]] = offset[1] * multiplier * ((0 - 1) ** index);
-          });
-          total += 1;
-
-          return newOffsets;
-        });
-      },
-    );
-  }
+function generateIndices(spacePowersCount, customersCount) {
+  const ratio = customersCount / spacePowersCount;
+  return Array.from({ length: spacePowersCount }, (v, i) => Math.floor(ratio * i));
 }
 
-export { createSatellite, createPowerSatellite, getOffsets };
+function getIndexCounts(customersCount, indices) {
+  return Array.from(
+    { length: customersCount },
+    (v, i) => indices.filter((index) => index === i).length,
+  );
+  // if (spacePowers === 0) return [];
+  // if (spacePowers === customers) return Array.from({ length: customers }, (v, i) => 1);
+  // if (spacePowers < customers) {
+  //   const spacing = Math.floor(customers / spacePowers);
+  //   let total = 0;
+  //   return Array.from({ length: customers }, (value, index) => {
+  //     if (index % spacing) return null;
+  //     total += 1;
+  //     if (total > spacePowers) return null;
+  //     return 1;
+  //   });
+  // }
+  // if (spacePowers > customers) {
+  //   let ratio = Math.ceil(spacePowers / customers);
+  //   let total = 0;
+  //   return Array.from(
+  //     { length: customers },
+  //     () => {
+  //       if ((total + ratio) > spacePowers) ratio = spacePowers - total;
+  //       total += 1;
+  //       return ratio;
+  //     },
+  //   );
+  // }
+}
+
+function getOffsets(offsets, counts) {
+  return counts.map((count) => {
+    if (count === 0) return null;
+    if (count === 1) return [offsets];
+    if (count > 1) {
+      let multiplier = 0;
+      return Array.from({ length: count }, (v, index) => {
+        if (index % 2 === 0) multiplier += 1;
+        const newOffsets = {};
+        Object.entries(offsets).forEach((offset) => {
+          newOffsets[offset[0]] = offset[1] * multiplier * ((0 - 1) ** index);
+        });
+        return newOffsets;
+      });
+    }
+  });
+}
+
+export {
+  createSatellite, createPowerSatellite, getOffsets, generateIndices, getIndexCounts,
+};

@@ -2,25 +2,26 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { Flex, List, Text } from '@chakra-ui/layout';
 import { AccordionButton, AccordionItem, AccordionPanel } from '@chakra-ui/react';
+import { useFormContext } from 'react-hook-form';
 import shallow from 'zustand/shallow';
-import { useSimStore, useUIStore } from '../../../Model/store';
-import ColorPicker from '../../Elements/ColorPicker';
-import CustomIconButton from '../../Elements/CustomIconButton';
+import { useUIStore } from '../../../Model/store';
 import SpacePowerConfig from './SpacePowerConfig';
 import SpacePowerListItem from './SpacePowerListItem';
 
 function SpacePowerList({ formik, index, constellation }) {
   const { isEditing } = useUIStore((state) => ({
     isEditing: state.isEditing,
-  }));
+  }), shallow);
+  const { getValues } = useFormContext();
   return (
-    <AccordionItem position="relative">
+    <AccordionItem position="relative" m={0}>
       <Flex
         justify="space-between"
         width="100%"
         gap={5}
         align="center"
         p={1}
+        m={0}
       >
         <AccordionButton
           variant="ghost"
@@ -31,31 +32,30 @@ function SpacePowerList({ formik, index, constellation }) {
         >
           <Flex justify="space-between" align="space-between" width="100%">
             <Text mr={5}>
-              {formik.values.constellations[index].name}
+              {getValues(`constellations.${index}.name`)}
             </Text>
             <Text>
-              {`(${formik.values.constellations[index].spacePowersCount})`}
+              {getValues(`constellations.${index}.spacePowersCount`)}
             </Text>
           </Flex>
         </AccordionButton>
-        <Flex flexBasis="auto">
-          {/* <ColorPicker
+        {/* <Flex flexBasis="auto"> */}
+        {/* <ColorPicker
             id={constellation.id}
             onChange={onChangeColor}
             color={formik.values.constellations[index].color}
           /> */}
-          {isEditing ? (
-            ''
-          ) : (''
-          // <CustomIconButton
-          //   icon={<FaTag />}
-          //   onClick={onLabel}
-          //   isActive={constellationOptions.showLabel}
-          //   label="toggle label"
-          // />
-          )}
-
-        </Flex>
+        {isEditing ? (
+          ''
+        ) : (''
+        // <CustomIconButton
+        //   icon={<FaTag />}
+        //   onClick={onLabel}
+        //   isActive={constellationOptions.showLabel}
+        //   label="toggle label"
+        // />
+        )}
+        {/* </Flex> */}
       </Flex>
       <AccordionPanel p={0}>
         {isEditing ? <SpacePowerConfig formik={formik} index={index} />

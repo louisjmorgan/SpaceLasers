@@ -2,9 +2,8 @@
 import {
   Box, Flex, FormControl, FormLabel, Select, VStack,
 } from '@chakra-ui/react';
-import { useEffect } from 'react';
 import shallow from 'zustand/shallow';
-import { getIn } from 'formik';
+import { useFormContext, useWatch } from 'react-hook-form';
 import { useUIStore } from '../../../Model/store';
 import CustomNumberInput from '../../Elements/CustomNumberInput';
 import SPButton from '../../Elements/SPButton';
@@ -48,7 +47,6 @@ const pvFields = [
     min: 0,
     units: 'W',
   },
-  { id: 'preset' },
 ];
 
 const batteryFields = [
@@ -66,11 +64,11 @@ const batteryFields = [
     min: 0,
     units: 'Ah',
   },
-  { id: 'preset' },
 ];
 
 const batteryPresets = [{
   name: 'Small (6Ah)',
+  id: 'small',
   values: {
     voltage: 3.6,
     capacity: 6,
@@ -78,6 +76,7 @@ const batteryPresets = [{
 },
 {
   name: 'Medium (30Ah)',
+  id: 'medium',
   values: {
     voltage: 3.6,
     capacity: 30,
@@ -85,15 +84,21 @@ const batteryPresets = [{
 },
 {
   name: 'Large (60Ah)',
+  id: 'large',
   values: {
     voltage: 3.6,
     capacity: 60,
   },
 },
+{
+  name: 'Custom (Advanced)',
+  id: 'custom',
+},
 ];
 
 const pvPresets = [{
   name: 'Small (5W)',
+  id: 'small',
   values: {
     voltage: 4.7,
     currentDensity: 170.5,
@@ -103,6 +108,7 @@ const pvPresets = [{
 },
 {
   name: 'Medium (10W)',
+  id: 'medium',
   values: {
     currentDensity: 170.5,
     area: 0.0128,
@@ -112,6 +118,7 @@ const pvPresets = [{
 },
 {
   name: 'Large (20W)',
+  id: 'large',
   values: {
     currentDensity: 170.5,
     area: 0.0256,
@@ -119,95 +126,93 @@ const pvPresets = [{
     voltage: 4.7,
   },
 },
+{
+  name: 'Custom (Advanced)',
+  id: 'custom',
+},
 ];
 
-function PowerTab({ formik, address, isConstellation = false }) {
+function PowerTab({ address, isConstellation = false }) {
   const { isAdvanced, constellationIndex, satIndex } = useUIStore((state) => ({
     satIndex: state.satIndex,
     constellationIndex: state.constellationIndex,
     isAdvanced: state.isAdvanced,
   }), shallow);
 
+  const { getValues, setValue } = useFormContext();
+
+  const powerValues = useWatch({ name: `${address}.power` });
+
   const handleCopyToSiblings = () => {
-    pvFields.forEach((param) => {
-      formik.values.constellations[constellationIndex].satellites.forEach((satellite, index) => {
-        console.log(getIn(formik.values, `${address}.power.pv[${param.id}`));
+    const sats = getValues(`constellations.${constellationIndex}.satellites`);
+    [...pvFields, { id: 'preset' }].forEach((param) => {
+      sats.forEach((satellite, index) => {
         if (index === satIndex) return;
-        formik.setFieldValue(
-          `constellations[${constellationIndex}]satellites[${index}].power.pv[${param.id}]`,
-          getIn(formik.values, `${address}.power.pv[${param.id}`),
+        setValue(
+          `constellations.${constellationIndex}.satellites.${index}.power.pv.${param.id}.`,
+          getValues(`${address}.power.pv.${param.id}`),
         );
       });
     });
-    batteryFields.forEach((param) => {
-      formik.values.constellations[constellationIndex].satellites.forEach((satellite, index) => {
+    [...batteryFields, { id: 'preset' }].forEach((param) => {
+      sats.forEach((satellite, index) => {
         if (index === satIndex) return;
-        formik.setFieldValue(
-          `constellations[${constellationIndex}]satellites[${index}].power.battery[${param.id}]`,
-          getIn(formik.values, `${address}.power.battery[${param.id}`),
+        setValue(
+          `constellations.${constellationIndex}.satellites.${index}.power.battery.${param.id}.`,
+          getValues(`${address}.power.battery.${param.id}`),
         );
       });
     });
   };
 
   const onChooseBattery = (e) => {
-    if (e.target.value === 'Custom (Advanced)') return;
-    formik.setFieldValue(`${address}.power.battery.preset`, e.target.value);
-    const { values } = batteryPresets.find((v) => v.name === e.target.value);
-
+    setValue(`${address}.power.battery.preset`, e.target.value);
+    if (e.target.value === 'custom') return;
+    const { values } = batteryPresets.find((v) => v.id === e.target.value);
     batteryFields.forEach((param) => {
-      formik.setFieldValue(`${address}.power.battery[${param.id}]`, values[param.id]);
+      setValue(`${address}.power.battery.${param.id}`, values[param.id]);
     });
   };
 
   const onChoosePv = (e) => {
-    formik.setFieldValue(`${address}.power.pv.preset`, e.target.value);
-    if (e.target.value === 'Custom (Advanced)') return;
-    const { values } = pvPresets.find((v) => v.name === e.target.value);
+    setValue(`${address}.power.pv.preset`, e.target.value);
+    if (e.target.value === 'custom') return;
+    const { values } = pvPresets.find((v) => v.id === e.target.value);
     pvFields.forEach((param) => {
-      formik.setFieldValue(`${address}.power.pv[${param.id}]`, values[param.id]);
+      setValue(`${address}.power.pv.${param.id}.`, values[param.id]);
     });
   };
-
-  useEffect(() => {
-    if (!formik.touched.satellites) return;
-    if (!getIn(formik.touched, `${address}.power`)) return;
-    if (!getIn(formik.touched, `${address}.power.battery`)) {
-      formik.setFieldValue(`constellations[${constellationIndex}].${address}.power.battery.preset`, 'Custom (Advanced)');
-    }
-    if (!getIn(formik.touched, `${address}.power.pv`)) {
-      formik.setFieldValue(`constellations[${constellationIndex}].${address}.power.pv.preset`, 'Custom (Advanced)');
-    }
-  }, [formik.touched]);
 
   return (
     <>
       {isAdvanced ? (
         <>
-          <h3>Photovoltaic</h3>
-          <Flex wrap="wrap" justify="start" mb={5}>
-            {pvFields.map((param) => (
-              <CustomNumberInput
-                step={param.step}
-                key={param.id}
-                name={`${address}.power.pv[${param.id}]`}
-                units={param.units}
-                formik={formik}
-                label={param.label}
-                min={param.min}
-                max={param.max}
-              />
-            ))}
-          </Flex>
           <h3>Battery</h3>
           <Flex wrap="wrap" justify="start">
             {batteryFields.map((param) => (
               <CustomNumberInput
                 step={param.step}
                 key={param.id}
-                name={`${address}.power.battery[${param.id}]`}
+                name={`${address}.power.battery.${param.id}`}
                 units={param.units}
-                formik={formik}
+                sideEffect={() => {
+                  if (getValues(`${address}.power.battery.preset`) !== 'custom') setValue(`${address}.power.battery.preset`, 'custom');
+                }}
+                label={param.label}
+                min={param.min}
+                max={param.max}
+              />
+            ))}
+          </Flex>
+          <h3>Photovoltaic</h3>
+          <Flex wrap="wrap" justify="start" mb={5}>
+            {pvFields.map((param) => (
+              <CustomNumberInput
+                step={param.step}
+                key={param.id}
+                name={`${address}.power.pv.${param.id}`}
+                sideEffect={() => setValue(`${address}.power.pv.preset`, 'custom')}
+                units={param.units}
                 label={param.label}
                 min={param.min}
                 max={param.max}
@@ -222,25 +227,22 @@ function PowerTab({ formik, address, isConstellation = false }) {
             <FormLabel>Choose battery:</FormLabel>
             <Select
               onChange={onChooseBattery}
-              value={getIn(formik.values, `${address}.power.battery.preset`)}
+              value={powerValues.battery.preset}
             >
               {batteryPresets.map((preset) => (
-                <option value={preset.name} key={preset.name}>{preset.name}</option>
+                <option value={preset.id} key={preset.id}>{preset.name}</option>
               ))}
-              <option value="Custom (Advanced)" key="custom">Custom (Advanced)</option>
-
             </Select>
           </FormControl>
           <FormControl>
             <FormLabel>Choose photovoltaic:</FormLabel>
             <Select
               onChange={onChoosePv}
-              value={getIn(formik.values, `${address}.power.pv.preset`)}
+              value={powerValues.pv.preset}
             >
               {pvPresets.map((preset) => (
-                <option value={preset.name} key={preset.name}>{preset.name}</option>
+                <option value={preset.id} key={preset.id}>{preset.name}</option>
               ))}
-              <option value="Custom (Advanced)" key="custom">Custom (Advanced)</option>
             </Select>
           </FormControl>
         </VStack>

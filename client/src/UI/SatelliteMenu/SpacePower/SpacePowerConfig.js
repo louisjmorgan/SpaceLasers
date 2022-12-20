@@ -5,7 +5,7 @@ import { FaCog } from 'react-icons/fa';
 import { useUIStore } from '../../../Model/store';
 import CustomNumberInput from '../../Elements/CustomNumberInput';
 
-function SpacePowerConfig({ formik, index }) {
+function SpacePowerConfig({ index }) {
   const openMenu = useUIStore((state) => state.openMenu);
 
   const onConfig = () => {
@@ -19,9 +19,7 @@ function SpacePowerConfig({ formik, index }) {
       mb={5}
     >
       <CustomNumberInput
-        value={formik.values.constellations[index].spacePowers}
         name={`constellations[${index}].spacePowersCount`}
-        formik={formik}
         label="Number of power satellites"
         min={0}
         max={10}

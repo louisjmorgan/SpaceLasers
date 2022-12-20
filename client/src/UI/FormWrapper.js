@@ -1,5 +1,7 @@
-import { useFormik } from 'formik';
+/* eslint-disable react/jsx-props-no-spreading */
 import { useEffect } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 import shallow from 'zustand/shallow';
 import { MissionSchema } from '../Model/mission';
 import { useSimStore, useUIStore } from '../Model/store';
@@ -32,52 +34,55 @@ const urls = {
 };
 
 function FormWrapper() {
-  const { setOrbitLists, setEditing, isOpen } = useUIStore((state) => ({
+  const { setOrbitLists, setEditing } = useUIStore((state) => ({
     setOrbitLists: state.setOrbitLists,
     setEditing: state.setEditing,
-    isOpen: state.isOpen,
   }), shallow);
 
-  const { initializeMission, setInitialized } = useSimStore((state) => ({
+  const { initializeMission, setInitialized, updateStatus } = useSimStore((state) => ({
     initializeMission: state.initializeMission,
     setInitialized: state.setInitialized,
+    updateStatus: state.updateStatus,
   }), shallow);
 
   useEffect(() => {
     setOrbitLists((fetchTLEs(urls)));
   }, []);
 
-  const formik = useFormik({
-    initialValues: defaultValues,
-    validationSchema: MissionSchema,
-    validateOnChange: false,
-    validateOnBlur: true,
-    onSubmit: async (values) => {
-      console.log(values.constellations);
-      formik.setSubmitting(true);
-      await new Promise((resolve, reject) => {
-        setInitialized(false);
-        try {
-          initializeMission(values);
-          formik.setStatus('');
-          setEditing(false);
-        } catch (error) {
-          console.error(error);
-          formik.setStatus(error.message);
-          reject();
-        }
-        resolve();
-      });
-    },
+  const methods = useForm({
+    defaultValues,
+    resolver: yupResolver(MissionSchema),
   });
 
+  const onSubmit = async (values) => {
+    setInitialized(false);
+    const worker = new Worker(new URL('../Model/workers/missionWorker.js', import.meta.url), { type: module });
+    worker.postMessage({ messageType: 'Request', req: values });
+    worker.onmessage = (e) => {
+      if (e.data.done === true) {
+        const { mission } = e.data;
+        initializeMission(mission);
+        setEditing(false);
+        worker.terminate();
+      } else {
+        updateStatus(e.data.message);
+      }
+      // initializeMission(values);
+      // formik.setStatus('');
+    };
+  };
+
+  // const onError = (errors, e) => console.log(errors, e);
+
   return (
-    <form onSubmit={formik.handleSubmit}>
-      <SatelliteMenu formik={formik} />
-      {isOpen.satelliteConfig ? <SatelliteConfig formik={formik} /> : ''}
-      {isOpen.constellationConfig ? <ConstellationConfig formik={formik} /> : '' }
-      {isOpen.spacePowerConfig ? <SpacePowerModal formik={formik} /> : '' }
-    </form>
+    <FormProvider {...methods}>
+      <form id="sim-form" onSubmit={methods.handleSubmit(onSubmit)}>
+        <SatelliteMenu />
+        <SatelliteConfig />
+        <ConstellationConfig />
+        <SpacePowerModal />
+      </form>
+    </FormProvider>
   );
 }
 

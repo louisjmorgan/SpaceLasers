@@ -3,79 +3,73 @@
 import { Button } from '@chakra-ui/button';
 import { AddIcon } from '@chakra-ui/icons';
 import { Flex } from '@chakra-ui/layout';
-import { FieldArray, FormikProvider } from 'formik';
 import { v4 as uuidv4 } from 'uuid';
 import shallow from 'zustand/shallow';
 import { Accordion } from '@chakra-ui/react';
+import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useUIStore } from '../../../Model/store';
 import ConstellationListItem from './ConstellationListItem';
 import { defaultConstellation } from '../../../Util/defaultInputs';
 
-function ConstellationList({
-  formik,
-}) {
+function ConstellationList() {
   const {
     isEditing, constellationIndex, setConstellationIndex, openMenu,
   } = useUIStore((state) => ({
     isEditing: state.isEditing,
-    satIndex: state.satIndex,
     setSatIndex: state.setSatIndex,
     setConstellationIndex: state.setConstellationIndex,
     constellationIndex: state.constellationIndex,
     openMenu: state.openMenu,
   }), shallow);
-  return (
-    <FormikProvider value={formik}>
-      <FieldArray name="constellations">
-        {(fieldArrayProps) => {
-          const {
-            push, remove, form,
-          } = fieldArrayProps;
-          const { values } = form;
-          return (
-            <Flex direction="column" align="center" mt={3}>
-              <Accordion
-                width="100%"
-                margin="auto"
-                defaultIndex={0}
-                allowToggle
-                index={constellationIndex}
-                onChange={setConstellationIndex}
-              >
-                {values.constellations.length > 0
-                  && values.constellations.map((constellation, i) => (
-                    <ConstellationListItem
-                      constellation={constellation}
-                      index={i}
-                      formik={form}
-                      remove={remove}
-                      key={constellation.id}
-                    />
-                  ))}
-              </Accordion>
-              {isEditing ? (
-                <Button
-                  m={5}
-                  onClick={() => {
-                    const { length } = values.constellations;
-                    push({
-                      name: `Constellation ${length + 1}`,
-                      ...defaultConstellation,
-                      id: uuidv4(),
-                    });
-                    setConstellationIndex(length);
-                    openMenu('constellationConfig');
-                  }}
-                >
-                  <AddIcon />
-                </Button>
-              ) : ''}
 
-            </Flex>
-          );
-        }}
-      </FieldArray>
-    </FormikProvider>
+  const { getValues, control } = useFormContext();
+
+  const {
+    fields, append, remove,
+  } = useFieldArray({
+    control,
+    name: 'constellations',
+    keyName: 'key',
+  });
+
+  return (
+    <Flex direction="column" align="center" mt={3}>
+      <Accordion
+        width="100%"
+        margin="auto"
+        defaultIndex={0}
+        allowToggle
+        index={constellationIndex}
+        onChange={setConstellationIndex}
+      >
+        {fields.map((field, index) => (
+          <ConstellationListItem
+            constellation={field}
+            index={index}
+            remove={remove}
+            key={field.id}
+          />
+        ))}
+      </Accordion>
+      {isEditing ? (
+        <Button
+          m={5}
+          onClick={() => {
+            const { length } = getValues('constellations');
+            append({
+              name: `Constellation ${length + 1}`,
+              ...defaultConstellation,
+              id: uuidv4(),
+            });
+            setConstellationIndex(length);
+            openMenu('constellationConfig');
+          }}
+        >
+          <AddIcon />
+        </Button>
+      ) : ''}
+    </Flex>
+
   );
 }
 

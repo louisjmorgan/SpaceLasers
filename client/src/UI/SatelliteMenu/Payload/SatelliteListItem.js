@@ -1,4 +1,5 @@
 import { Flex, ListItem } from '@chakra-ui/layout';
+import { useFormContext } from 'react-hook-form';
 import {
   FaCamera, FaCog, FaEyeSlash, FaTag, FaTrash,
 } from 'react-icons/fa';
@@ -11,11 +12,11 @@ import CustomIconButton from '../../Elements/CustomIconButton';
 
 /* eslint-disable react/prop-types */
 function SatelliteListItem({
-  satellite, index, constellation, isPayload = true, formik, remove,
+  satellite, index, constellation, isPayload = true, remove,
 }) {
   const {
     satIndex, setSatIndex, setConstellationIndex,
-    openMenu, isOpen, setEditing, isEditing,
+    openMenu, isOpen, isEditing,
   } = useUIStore((state) => ({
     satIndex: state.satIndex,
     setSatIndex: state.setSatIndex,
@@ -23,7 +24,6 @@ function SatelliteListItem({
     openMenu: state.openMenu,
     isOpen: state.isOpen,
     isEditing: state.isEditing,
-    setEditing: state.setEditing,
   }), shallow);
 
   const {
@@ -57,7 +57,6 @@ function SatelliteListItem({
   };
 
   const onCog = () => {
-    if (!isEditing) setEditing(true);
     setSatIndex(index);
     setConstellationIndex(constellation);
     openMenu('satelliteConfig');
@@ -80,9 +79,11 @@ function SatelliteListItem({
     updateName(satellite.id, v);
   };
 
+  const { getValues, setValue } = useFormContext();
+
   const onChangeColor = useDebouncyFn(
     (c) => {
-      formik.setFieldValue(`constellations[${constellation}].satellites[${index}].color`, c);
+      setValue(`constellations.${constellation}.satellites.${index}.color`, c);
       if (satelliteOptions) changeColor(satellite.id, c);
     },
     400, // number of milliseconds to delay
@@ -96,25 +97,22 @@ function SatelliteListItem({
       align="center"
       borderRadius={5}
       bg="background.100"
-      // layerStyle={(satIndex === index) ? 'selected' : ''}
       key={satellite.id}
       position="relative"
     >
       <CustomEditableInput
         value={satellite.name}
-        name={`satellites[${index}].name`}
-        formik={formik}
+        name={`constellations.${constellation}.satellites.${index}.name`}
         isDisabled={!isPayload}
         onSubmit={onSubmitName}
       />
       <ColorPicker
         id={satellite.id}
         onChange={onChangeColor}
-        color={formik.values.constellations[constellation].satellites[index].color}
+        color={getValues(`constellations.${constellation}.satellites.${index}.color`)}
       />
-      {isEditing ? (isPayload && (
+      {isEditing ? (
         <>
-
           <CustomIconButton
             className="secondary"
             onClick={onRemove}
@@ -128,7 +126,7 @@ function SatelliteListItem({
             value="satelliteConfig"
           />
         </>
-      )) : (
+      ) : (
         <>
           <CustomIconButton
             icon={<FaTag />}

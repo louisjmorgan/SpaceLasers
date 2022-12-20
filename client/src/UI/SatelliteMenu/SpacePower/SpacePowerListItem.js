@@ -1,4 +1,4 @@
-import { Flex, ListItem } from '@chakra-ui/layout';
+import { Flex, ListItem, Text } from '@chakra-ui/layout';
 import {
   FaCamera, FaEyeSlash, FaTag,
 } from 'react-icons/fa';
@@ -6,12 +6,11 @@ import { useDebouncyFn } from 'use-debouncy';
 import shallow from 'zustand/shallow';
 import { useSimStore, useUIStore } from '../../../Model/store';
 import ColorPicker from '../../Elements/ColorPicker';
-import CustomEditableInput from '../../Elements/CustomEditableInput';
 import CustomIconButton from '../../Elements/CustomIconButton';
 
 /* eslint-disable react/prop-types */
 function SpacePowerListItem({
-  satellite, index, constellation, isPayload = true, formik,
+  satellite,
 }) {
   const {
     isEditing,
@@ -21,7 +20,7 @@ function SpacePowerListItem({
 
   const {
     attachCamera, detachCamera, cameraTarget, toggleVisibility,
-    toggleLabel, satelliteOptions, updateName, changeColor,
+    toggleLabel, satelliteOptions, changeColor,
   } = useSimStore(
     (state) => ({
       isInitialized: state.isInitialized,
@@ -50,10 +49,6 @@ function SpacePowerListItem({
     toggleVisibility(satellite);
   };
 
-  const onSubmitName = (v) => {
-    updateName(satellite, v);
-  };
-
   const onChangeColor = useDebouncyFn(
     (c) => {
       if (!isEditing) changeColor(satellite, c);
@@ -72,14 +67,14 @@ function SpacePowerListItem({
       key={satellite.id}
       position="relative"
     >
-      <CustomEditableInput
-        value={satelliteOptions.name}
-        // name=""
-        formik={formik}
-        isDisabled={!isPayload}
-        onSubmit={onSubmitName}
-      />
-
+      <Text
+        flexBasis="100%"
+        textAlign="left"
+        p={4}
+        px={5}
+      >
+        {(satelliteOptions.name)}
+      </Text>
       {isEditing ? '' : (
         <>
           <ColorPicker

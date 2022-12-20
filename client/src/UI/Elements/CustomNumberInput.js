@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/prop-types */
 import {
   Flex,
@@ -8,59 +9,69 @@ import {
   NumberIncrementStepper,
   NumberInput, NumberInputField, NumberInputStepper, Text,
 } from '@chakra-ui/react';
-import { getIn } from 'formik';
-import { useEffect } from 'react';
+import { ErrorMessage } from '@hookform/error-message';
+import { Controller, useFormContext } from 'react-hook-form';
 
 function CustomNumberInput({
-  min, max, label, name, units, step, formik, sideEffect = () => null,
+  min, max, label, name, units, step, sideEffect = () => null,
 }) {
-  const errors = getIn(formik.errors, name);
-
+  const { control, formState: { errors } } = useFormContext();
   return (
-    <FormControl
-      p={5}
-      isInvalid={errors}
-      as={Flex}
-      direction="column"
-      maxWidth="30ch"
-    >
-      <FormLabel
-        htmlFor={`${name}`}
-      >
-        {label}
-      </FormLabel>
-      <Flex
-        gap={1}
-        align="center"
-        justify="centerr"
-      >
-        <NumberInput
-          id={name}
-          name={`${name}`}
-          onChange={(v) => {
-            formik.setFieldValue(
-              `${name}`,
-              v,
-            );
-            formik.setFieldTouched(`${name}`, true);
-            sideEffect();
-          }}
-          value={getIn(formik.values, name)}
-          step={step}
-          min={min}
-          max={max}
-          flex={3}
+    <Controller
+      control={control}
+      name={name}
+      render={({
+        field: {
+          onChange, onBlur, value, ref,
+        },
+      }) => (
+        <FormControl
+          p={5}
+          as={Flex}
+          direction="column"
+          maxWidth="30ch"
         >
-          <NumberInputField />
-          <NumberInputStepper>
-            <NumberIncrementStepper />
-            <NumberDecrementStepper />
-          </NumberInputStepper>
-        </NumberInput>
-        {units ? <Text flex={1} align="left">{units}</Text> : ''}
-      </Flex>
-      <FormErrorMessage>{errors}</FormErrorMessage>
-    </FormControl>
+          <FormLabel
+            htmlFor={name}
+          >
+            {label}
+          </FormLabel>
+          <Flex
+            gap={1}
+            align="center"
+            justify="center"
+          >
+            <NumberInput
+              id={name}
+              step={step}
+              min={min}
+              max={max}
+              flex={3}
+              ref={ref}
+              onChange={(v) => {
+                onChange(parseFloat(v));
+                sideEffect(v);
+              }}
+              onBlur={onBlur}
+              value={value}
+            >
+              <NumberInputField />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
+            </NumberInput>
+            {units ? <Text flex={1} align="left">{units}</Text> : ''}
+          </Flex>
+          <ErrorMessage
+            errors={errors}
+            name={`${name}`}
+            render={({ message }) => <FormErrorMessage>{message}</FormErrorMessage>}
+          />
+        </FormControl>
+      )}
+    />
+
   );
 }
 

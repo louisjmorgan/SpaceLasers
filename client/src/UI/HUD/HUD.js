@@ -64,7 +64,7 @@ const statProps = [
 function HUD() {
   const {
     satellites, constellations, toggleLabel, toggleAllLabels,
-    satelliteOptions, constellationOptions,
+    satelliteOptions, constellationOptions, isInitialized,
   } = useSimStore((state) => ({
     satellites: state.mission.satellites,
     constellations: state.mission.constellations,
@@ -72,6 +72,7 @@ function HUD() {
     toggleAllLabels: state.toggleAllLabels,
     satelliteOptions: state.satelliteOptions,
     constellationOptions: state.constellationOptions,
+    isInitialized: state.isInitialized,
   }), shallow);
 
   const {

@@ -5,6 +5,7 @@ import {
 import {
   AccordionButton, AccordionItem, AccordionPanel,
 } from '@chakra-ui/react';
+import { useFormContext } from 'react-hook-form';
 import {
   FaCog, FaEyeSlash, FaTag, FaTrash,
 } from 'react-icons/fa';
@@ -16,14 +17,15 @@ import CustomIconButton from '../../Elements/CustomIconButton';
 import SatelliteList from './SatelliteList';
 
 function ConstellationListItem({
-  constellation, formik, index, remove,
+  constellation, index, remove,
 }) {
   const {
-    satIndex, setSatIndex, setConstellationIndex, openMenu, isOpen,
-    setEditing, isEditing,
+    satIndex, setSatIndex, constellationIndex, setConstellationIndex,
+    openMenu, isOpen, setEditing, isEditing,
   } = useUIStore((state) => ({
     satIndex: state.satIndex,
     setConstellationIndex: state.setConstellationIndex,
+    constellationIndex: state.constellationIndex,
     setSatIndex: state.setSatIndex,
     openMenu: state.openMenu,
     isOpen: state.isOpen,
@@ -40,14 +42,13 @@ function ConstellationListItem({
     toggleConstellationVisibility: state.toggleConstellationVisibility,
     changeConstellationColor: state.changeConstellationColor,
   }));
-
   const onRemove = () => {
-    if (index === satIndex) {
-      setSatIndex(
+    if (index === constellationIndex) {
+      setConstellationIndex(
         () => (index > 0 ? index - 1 : 0),
       );
     } else if (index < satIndex) {
-      setSatIndex((prev) => prev - 1);
+      setConstellationIndex((prev) => prev - 1);
     }
     remove(index);
   };
@@ -67,17 +68,18 @@ function ConstellationListItem({
     toggleConstellationVisibility(constellation.id);
   };
 
+  const { setValue, getValues } = useFormContext();
+
   const onChangeColor = useDebouncyFn(
     (c) => {
-      formik.setFieldValue(`constellations[${index}].color`, c);
-      formik.values.constellations[index].satellites.forEach((satellite, i) => {
-        formik.setFieldValue(`constellations[${index}].satellites[${i}].color`, c);
+      setValue(`constellations.${index}.color`, c);
+      getValues.constellations[index].satellites.forEach((satellite, i) => {
+        setValue(`constellations.${index}..satellites.${i}.color`, c);
       });
       if (constellationOptions) changeConstellationColor(constellation.id, c);
     },
     400, // number of milliseconds to delay
   );
-
   return (
     <AccordionItem position="relative">
       <Flex
@@ -96,10 +98,10 @@ function ConstellationListItem({
         >
           <Flex justify="space-between" align="space-between" width="100%">
             <Text mr={5}>
-              {formik.values.constellations[index].name}
+              {getValues(`constellations.${index}.name`)}
             </Text>
             <Text>
-              {`(${formik.values.constellations[index].satellites.length})`}
+              {`(${getValues(`constellations.${index}.satellites.length`)})`}
             </Text>
           </Flex>
         </AccordionButton>
@@ -107,11 +109,10 @@ function ConstellationListItem({
           <ColorPicker
             id={constellation.id}
             onChange={onChangeColor}
-            color={formik.values.constellations[index].color}
+            color={getValues(`constellations.${index}.color`)}
           />
           {isEditing ? (
             <>
-
               <CustomIconButton
                 className="secondary"
                 onClick={onRemove}
@@ -126,7 +127,6 @@ function ConstellationListItem({
             </>
           ) : (
             <>
-
               <CustomIconButton
                 icon={<FaTag />}
                 onClick={onLabel}
@@ -141,11 +141,10 @@ function ConstellationListItem({
               />
             </>
           )}
-
         </Flex>
       </Flex>
       <AccordionPanel p={0}>
-        <SatelliteList formik={formik} constellation={index} />
+        <SatelliteList constellation={index} />
       </AccordionPanel>
     </AccordionItem>
   );

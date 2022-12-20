@@ -6,17 +6,14 @@ import {
 import {
   useState, useEffect,
   useLayoutEffect,
-  useRef,
 } from 'react';
-
 import '@fontsource/barlow/700.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/azeret-mono';
 import shallow from 'zustand/shallow';
 import { useGLTF } from '@react-three/drei';
-import { createPortal } from 'react-dom';
 import Controls from './UI/Controls';
-import { useSimStore, useUIStore } from './Model/store';
+import { useSimStore } from './Model/store';
 import { defaultValues } from './Util/defaultInputs';
 import theme from './theme';
 import MenuButtons from './UI/MenuButtons';
@@ -39,16 +36,17 @@ const view = {
 
 function App() {
   const {
-    initializeMission, isInitialized, storeObj,
+    initializeMission, isInitialized, storeObj, updateStatus, status,
   } = useSimStore(
     (state) => ({
       initializeMission: state.initializeMission,
       isInitialized: state.isInitialized,
       storeObj: state.storeObj,
+      updateStatus: state.updateStatus,
+      status: state.status,
     }),
     shallow,
   );
-
   const obj = useGLTF(SatelliteGLB);
 
   useLayoutEffect(() => {
@@ -59,7 +57,16 @@ function App() {
   const [firstRender, setFirstRender] = useState(false);
   useEffect(() => {
     if (firstRender) {
-      initializeMission(defaultValues);
+      const worker = new Worker(new URL('./Model/workers/missionWorker.js', import.meta.url), { type: module });
+      worker.postMessage({ messageType: 'Request', req: defaultValues });
+      worker.onmessage = (e) => {
+        if (e.data.done === true) {
+          const { mission } = e.data;
+          initializeMission(mission);
+        } else {
+          updateStatus(e.data.message);
+        }
+      };
     }
   }, [firstRender]);
 
@@ -124,7 +131,28 @@ function App() {
                   <Simulation />
                   <HUD />
                 </>
-              ) : <Spinner position="absolute" top="50%" left="50%" transform={'translate(-50%, -50%)'} />}
+              ) : (
+                <Flex
+                  position="absolute"
+                  top="0"
+                  bottom="0"
+                  left="0"
+                  right="0"
+                  direction="column"
+                  align="center"
+                  justify="center"
+                  gap={5}
+                >
+                  <Text width="30ch" textAlign="center" height="2ch">{status}</Text>
+                  <Spinner
+                    // position="absolute"
+                    // top="50%"
+                    // left="50%"
+                    // transform={'translate(-50%, -50%)'}
+                    size={'lg'}
+                  />
+                </Flex>
+              )}
             </Grid>
           </GridItem>
           <FormWrapper />

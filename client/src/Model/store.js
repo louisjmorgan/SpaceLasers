@@ -1,45 +1,9 @@
 import create from 'zustand';
 import createVanilla from 'zustand/vanilla';
-import { defaultConstellation } from '../Util/defaultInputs';
-import { handleMissionRequest } from './mission';
 
 const defaultOptions = {
   showLabel: false,
   isVisible: true,
-};
-
-const views = {
-  simulation: {
-    name: 'simulation',
-    templateRows: '0.375fr 2.125fr 0.125fr',
-    templateColumns: '1fr',
-    templateAreas: '',
-    simulationArea: ' 1 / 1 / 4 / 2',
-    headerArea: ' 1 / 1 / 2 / 4',
-    footerArea: '3 / 1 / 4 / 2',
-  },
-  mission: {
-    name: 'mission',
-    templateRows: '0.75fr 1.75fr 0.125fr',
-    templateColumns: '1fr 2.25fr',
-    templateAreas: `"simulation parameters"
-  "select parameters"
-  "footer footer"`,
-    simulationArea: 'simulation',
-    headerArea: '',
-    footerArea: 'footer',
-  },
-  performance: {
-    name: 'performance',
-    templateRows: '1fr 1.5fr 0.125fr',
-    templateColumns: '1fr 2fr',
-    templateAreas: `"simulation performance"
-  "summary performance"
-  "footer footer"`,
-    simulationArea: 'simulation',
-    headerArea: '',
-    footerArea: 'footer',
-  },
 };
 
 const useFrameStore = createVanilla(() => ({
@@ -57,6 +21,7 @@ const useSimStore = create((set) => ({
   },
   refs: new Map(),
   mission: null,
+  status: '',
   isInitialized: false,
   satelliteObj: null,
   satelliteOptions: new Map(),
@@ -193,8 +158,10 @@ const useSimStore = create((set) => ({
     },
   })),
   storeRef: (id, ref) => set((state) => ({ refs: new Map(state.refs).set(id, ref) })),
-  initializeMission: (values) => set(() => {
-    const mission = handleMissionRequest(values);
+  updateStatus: (message) => set(() => ({ status: message })),
+  initializeMission: (mission) => set(() => {
+    console.log(mission.constellations[0].summary.lowestChargeStateBeams);
+
     const satellites = [...mission.satellites.customers, ...mission.satellites.spacePowers];
     const newSatelliteOptions = new Map();
     satellites.forEach((satellite) => {
@@ -242,6 +209,8 @@ const useUIStore = create((set) => ({
   isAdvanced: false,
   shouldLoop: false,
   isFinished: false,
+  isOptimizing: false,
+  setOptimizing: (isOptimizing) => set(() => ({ isOptimizing })),
   setLoop: (shouldLoop) => set(() => ({ shouldLoop })),
   setFinished: (isFinished) => set(() => ({ isFinished })),
   openMenu: (e) => set((state) => ({

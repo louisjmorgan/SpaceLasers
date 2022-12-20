@@ -11,13 +11,14 @@ import { Switch } from '@chakra-ui/switch';
 import {
   Tab, TabList, TabPanel, TabPanels, Tabs,
 } from '@chakra-ui/tabs';
+import { useFormContext } from 'react-hook-form';
 import shallow from 'zustand/shallow';
 import { useUIStore } from '../../../Model/store';
 import DutyTab from './DutyTab';
 import OrbitTab from './OrbitTab';
 import PowerTab from './PowerTab';
 
-function SatelliteConfig({ formik }) {
+function SatelliteConfig() {
   const {
     isOpen, closeMenu, satIndex, setSatIndex, constellationIndex,
     setConstellationIndex, setAdvanced, isAdvanced,
@@ -48,6 +49,7 @@ function SatelliteConfig({ formik }) {
   const onAdvanced = (e) => {
     setAdvanced(e.target.checked);
   };
+  const { getValues } = useFormContext();
 
   return (
     <Modal
@@ -75,7 +77,7 @@ function SatelliteConfig({ formik }) {
               Edit
             </FormLabel>
             <Select variant="filled" value={constellationIndex} onChange={onSelectConstellation} width="20ch">
-              {formik.values.constellations.map(
+              {getValues('constellations').map(
                 (constellation, index) => (
                   <option
                     key={constellation.id}
@@ -87,13 +89,13 @@ function SatelliteConfig({ formik }) {
               )}
             </Select>
             <Select variant="filled" value={satIndex} onChange={onSelectSatellite} width="20ch">
-              {formik.values.constellations[constellationIndex].satellites.map(
-                (satellite, index) => (
+              {getValues(`constellations.${constellationIndex}.satellites`).map(
+                (sat, index) => (
                   <option
-                    key={satellite.id}
+                    key={sat.id}
                     value={index}
                   >
-                    {satellite.name}
+                    {sat.name}
                   </option>
                 ),
               )}
@@ -124,15 +126,13 @@ function SatelliteConfig({ formik }) {
             </TabList>
             <TabPanels>
               <TabPanel pt={5}>
-                <OrbitTab
-                  formik={formik}
-                />
+                <OrbitTab address={`constellations.${constellationIndex}.satellites.${satIndex}`} />
               </TabPanel>
               <TabPanel pt={10}>
-                <PowerTab address={`constellations[${constellationIndex}].satellites[${satIndex}]`} formik={formik} />
+                <PowerTab address={`constellations.${constellationIndex}.satellites.${satIndex}`} />
               </TabPanel>
               <TabPanel pt={10}>
-                <DutyTab address={`constellations[${constellationIndex}].satellites[${satIndex}]`} formik={formik} />
+                <DutyTab address={`constellations.${constellationIndex}.satellites.${satIndex}`} />
               </TabPanel>
             </TabPanels>
           </Tabs>

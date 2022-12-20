@@ -7,7 +7,7 @@ import {
   getOrbitAtTime, getSunPosition, getEarthRotationAngle, getDistance,
 } from '../Util/astronomy';
 import { isEclipsed, getChargeState, getNetCurrent } from '../Util/power';
-import { SIM_LENGTH, FRAMES, BEAM_DISTANCE } from '../Util/constants';
+import { SIM_LENGTH, BEAM_DISTANCE } from '../Util/constants';
 
 function getTimeArray(initial, length, frames) {
   const initialMillisecs = initial.getTime();
@@ -147,7 +147,7 @@ function getSources(satellite, beams, timeArray) {
 }
 
 function getChargeStates(satellite, timeArray, hasBeams = true) {
-  const delta = ((SIM_LENGTH / (60 * 60 * 1000)) / FRAMES);
+  const delta = ((SIM_LENGTH / (60 * 60 * 1000)) / timeArray.length);
   let chargeState = 1;
   return timeArray.map((time, index) => {
     let source = satellite.performance.sources[index];
@@ -188,10 +188,11 @@ function getDischargeSaved(satellite) {
     const netCurrentNoBeams = getNetCurrent(satellite.params, sourceNoBeams, currentDuty);
     return netCurrentNoBeams + prev;
   }, 0);
-  const totalHours = (SIM_LENGTH / (1000 * 60 * 60)) / FRAMES;
+  const frames = satellite.performance.sources.length;
+  const totalHours = (SIM_LENGTH / (1000 * 60 * 60)) / frames;
   const totalDischarge = Math.abs(totalDischargeBeams * totalHours);
   const dischargeSaved = (totalCurrentBeams - totalCurrentNoBeams) * totalHours;
-  timeCharged = ((timeCharged / FRAMES) * SIM_LENGTH) / (1000 * 60);
+  timeCharged = ((timeCharged / frames) * SIM_LENGTH) / (1000 * 60);
   return [totalDischarge, dischargeSaved, timeCharged];
 }
 

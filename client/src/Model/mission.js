@@ -4,7 +4,9 @@
 import * as Yup from 'yup';
 import { generateTLE, twoline2satrec } from '../Util/astronomy';
 import { FRAMES, SIM_LENGTH } from '../Util/constants';
-import { createSatellite, createPowerSatellite, getOffsets } from './satellite';
+import {
+  createSatellite, createPowerSatellite, getOffsets, getIndexCounts, generateIndices,
+} from './satellite';
 import {
   getTimeArray,
   getSatellitePositions,
@@ -145,6 +147,10 @@ const MissionSchema = Yup.object().shape({
       spacePowersCount: Yup.number()
         .integer()
         .min(0, 'Must be an integer greater than or equal to 0'),
+      spacePowerIndices: Yup.array().of(
+        Yup.number()
+          .min(0),
+      ),
       offsets: Yup.object().shape({
         inclination: Yup.number()
           .min(0, 'Must be 0-36°')
@@ -214,8 +220,11 @@ const initializeCustomers = (constellations, time, sun) => {
 const initializeSpacePowers = (constellations) => {
   const spacePowers = [];
   constellations.forEach((constellation) => {
-    const offsets = getOffsets(Number(constellation.spacePowersCount), constellation.satellites.length, constellation.offsets);
-    console.log(offsets);
+    let indices;
+    if (!constellation.spacePowerIndices) indices = generateIndices(constellation.spacePowersCount, constellation.satellites.length);
+    else indices = constellation.spacePowerIndices;
+    const counts = getIndexCounts(constellation.satellites.length, indices);
+    const offsets = getOffsets(constellation.offsets, counts);
     constellation.satellites.forEach((satellite, index) => {
       if (!offsets[index]) return;
       return offsets[index].forEach((offset) => {
@@ -280,7 +289,7 @@ const simulateConstellations = (time, constellations, customers, spacePowers) =>
       chargeStateNoBeams: time.map((t, index) => satellites.reduce((prev, current) => prev + current.performance.chargeStateNoBeams[index], 0) / customers.length),
     },
     summary: {
-      totalDischarge: satellites.reduce((prev, current) => prev + current.summary.totalDischarge, 0),
+      // totalDischarge: satellites.reduce((prev, current) => prev + current.summary.totalDischarge, 0),
       dischargeSaved: satellites.reduce((prev, current) => prev + current.summary.dischargeSaved, 0),
       timeCharged: satellites.reduce((prev, current) => prev + current.summary.timeCharged, 0),
       lowestChargeStateBeams: satellites.reduce((prev, current) => {
@@ -299,7 +308,7 @@ const handleMissionRequest = (req, length = SIM_LENGTH, frames = FRAMES) => {
   const [time, sun, earth] = simulateBaseData(req.constellations[0].satellites[0], length, frames);
   let constellations = initializeConstellations(req.constellations);
   const customers = initializeCustomers(req.constellations, time, sun);
-  const [spacePowers, beams] = simulateSpacePowers(time, sun, req.constellations, customers, req.offsets);
+  const [spacePowers, beams] = simulateSpacePowers(time, sun, req.constellations, customers);
   simulateBatteries(customers, time, beams);
   constellations = simulateConstellations(time, constellations, customers, spacePowers);
   return {
@@ -316,4 +325,50 @@ const handleMissionRequest = (req, length = SIM_LENGTH, frames = FRAMES) => {
   };
 };
 
-export { handleMissionRequest, MissionSchema };
+const generatePartialMission = (req, length = SIM_LENGTH, frames = FRAMES) => {
+  const [time, sun, earth] = simulateBaseData(req.constellations[0].satellites[0], length, frames);
+  const constellations = initializeConstellations(req.constellations);
+  const customers = initializeCustomers(req.constellations, time, sun);
+  return {
+    time,
+    constellations,
+    satellites: {
+      customers,
+    },
+    sun,
+    earth,
+  };
+};
+
+const handleOptimizerMission = (mission, req) => {
+  const [spacePowers, beams] = simulateSpacePowers(
+    mission.time,
+    mission.sun,
+    req.constellations,
+    mission.satellites.customers,
+  );
+  simulateBatteries(mission.satellites.customers, mission.time, beams);
+  const constellations = simulateConstellations(
+    mission.time,
+    mission.constellations,
+    mission.satellites.customers,
+    spacePowers,
+  );
+  return {
+    ...mission,
+    success: true,
+    satellites: {
+      customers: mission.satellites.customers,
+      spacePowers,
+    },
+    constellations,
+    beams,
+  };
+};
+
+export {
+  handleMissionRequest, simulateBaseData, initializeConstellations, initializeCustomers,
+  simulateSpacePowers, simulateBatteries, simulateConstellations, generatePartialMission,
+  handleOptimizerMission,
+  MissionSchema,
+};

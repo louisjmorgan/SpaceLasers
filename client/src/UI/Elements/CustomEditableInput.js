@@ -1,36 +1,30 @@
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/prop-types */
 import {
-  Editable, EditableInput, EditablePreview, Flex, FormControl, Input,
+  Editable, EditableInput, EditablePreview, FormControl, Input,
 } from '@chakra-ui/react';
+import { useFormContext } from 'react-hook-form';
 // import EditableControls from '../MissionPlanner/EditableControls';
 
 function CustomEditableInput({
-  value, name, formik, onSubmit, isDisabled = false,
+  value, name, onSubmit = () => null, isDisabled = false,
 }) {
+  const { setValue, register } = useFormContext();
   return (
     <FormControl>
       <Editable
-        as={Flex}
         submitOnBlur
         defaultValue={value}
-        align="center"
-        width="auto"
-        justify="space-between"
+        textAlign="left"
         isDisabled={isDisabled}
         p={3}
         px={5}
         onSubmit={(v) => {
-          formik.setFieldValue(
-            `${name}`,
-            v,
-          );
+          setValue(name, v);
           onSubmit(v);
         }}
         onCancel={(v) => {
-          formik.setFieldValue(
-            `${name}`,
-            v,
-          );
+          setValue(name, v);
         }}
       >
         <EditablePreview />
@@ -38,7 +32,7 @@ function CustomEditableInput({
           textAlign="left"
           as={EditableInput}
           id="name"
-          name={name}
+          {...register(name)}
           type="text"
           variant="filled"
         />

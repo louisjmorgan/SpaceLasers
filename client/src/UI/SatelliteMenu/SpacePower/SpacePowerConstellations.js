@@ -1,14 +1,12 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable react/prop-types */
-import { Flex } from '@chakra-ui/layout';
 import shallow from 'zustand/shallow';
 import { Accordion } from '@chakra-ui/react';
+import { useWatch } from 'react-hook-form';
 import { useSimStore, useUIStore } from '../../../Model/store';
 import SpacePowerList from './SpacePowerList';
 
-function SpacePowerConstellations({
-  formik,
-}) {
+function SpacePowerConstellations() {
   const {
     constellationIndex, setConstellationIndex,
   } = useUIStore((state) => ({
@@ -23,20 +21,21 @@ function SpacePowerConstellations({
   const { constellations } = useSimStore((state) => ({
     constellations: state.mission.constellations,
   }), shallow);
+  const constellationsForm = useWatch({ name: 'constellations' });
   return (
     <Accordion
       width="100%"
-      margin="auto"
+      margin="0"
       defaultIndex={0}
       allowToggle
       index={constellationIndex}
       onChange={setConstellationIndex}
+      mt={3}
     >
-      {formik.values.constellations.map((constellation, i) => (
+      {constellationsForm.map((constellation, i) => (
         <SpacePowerList
           constellation={constellations.find((c) => c.id === constellation.id)}
           index={i}
-          formik={formik}
           key={constellation.id}
         />
       ))}
