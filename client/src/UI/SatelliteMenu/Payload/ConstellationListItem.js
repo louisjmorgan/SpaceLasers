@@ -74,7 +74,7 @@ function ConstellationListItem({
     (c) => {
       setValue(`constellations.${index}.color`, c);
       getValues(`constellations.${index}.satellites`).forEach((satellite, i) => {
-        setValue(`constellations.${index}..satellites.${i}.color`, c);
+        setValue(`constellations.${index}.satellites.${i}.color`, c);
       });
       if (constellationOptions) changeConstellationColor(constellation.id, c);
     },

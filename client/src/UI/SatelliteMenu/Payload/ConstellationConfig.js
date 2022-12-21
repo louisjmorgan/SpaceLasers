@@ -22,6 +22,7 @@ import ConstellationOrbitTab from './ConstellationOrbitTab';
 import DutyTab from './DutyTab';
 import PowerTab from './PowerTab';
 import { twoline2satrec } from '../../../Util/astronomy';
+import { generateIndices } from '../../../Model/satellite';
 
 function ConstellationConfig() {
   const {
@@ -101,6 +102,10 @@ function ConstellationConfig() {
       }
     });
     setValue(`constellations.${constellationIndex}.satellites`, newSats);
+    setValue(
+      `constellations.${constellationIndex}.spacePowerIndices`,
+      generateIndices(getValues(`constellations.${constellationIndex}.spacePowersCount`), newSats.length),
+    );
     if (failed > 0) {
       setError(`${failed} failed.`);
       return;

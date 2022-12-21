@@ -4,11 +4,13 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const webpack = require('webpack')
+const ThreadsPlugin = require('threads-plugin')
 
 let mode = 'development';
 const target = 'web';
 const plugins = [
   new CleanWebpackPlugin(),
+  // new ThreadsPlugin(),
   new HtmlWebpackPlugin({
     title: 'Space Power Simulator',
     template: path.resolve(__dirname, '..', './src/index.html'),

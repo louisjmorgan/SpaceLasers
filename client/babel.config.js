@@ -15,7 +15,7 @@ module.exports = {
         targets: '> 5%, not dead, not ie 11, not op_mini all',
       },
     ],
-    ['@babel/preset-react', { runtime: 'automatic' }],
+    ['@babel/preset-react', { runtime: 'automatic', modules: false }],
   ],
   plugins,
 };

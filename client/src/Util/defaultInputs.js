@@ -52,9 +52,11 @@ const defaultConstellation = {
   list: 'OneWeb',
   color: '#CD5C5C',
   payload: defaultSatellite,
+  spacePowerColor: '#28D759',
   satellites: [],
   satelliteCount: 3,
   spacePowersCount: 3,
+  spacePowerIndices: ['0', 1, 2],
   offsets: {
     inclination: 6,
     rightAscension: 0,
@@ -62,6 +64,11 @@ const defaultConstellation = {
     perigee: 0,
     meanAnomaly: 0,
     meanMotion: 0,
+  },
+  optimization: {
+    population: 1000,
+    generations: 10,
+    threads: 4,
   },
 };
 

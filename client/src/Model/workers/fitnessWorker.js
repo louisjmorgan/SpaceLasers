@@ -1,36 +1,38 @@
+/* eslint-disable prefer-arrow-callback */
 /* eslint-disable no-restricted-globals */
+import { expose } from 'threads/worker';
 import {
   simulateBatteries, simulateConstellations, simulateSpacePowers,
 } from '../mission';
 
-onmessage = (event) => {
-  try {
-    const { req } = event.data;
-
-    const [spacePowers, beams] = simulateSpacePowers(
-      self.mission.time,
-      self.mission.sun,
-      req.constellations,
-      self.mission.satellites.customers,
-    );
-    simulateBatteries(self.mission.satellites.customers, self.mission.time, beams);
-    const constellations = simulateConstellations(
-      self.mission.time,
-      self.mission.constellations,
-      self.mission.satellites.customers,
-      spacePowers,
-    );
-    const restMission = {
-      success: true,
-      satellites: {
-        spacePowers,
-      },
-      constellations,
-      beams,
-    };
-
-    postMessage({ done: true, mission: restMission });
-  } catch (e) {
-    postMessage({ done: false, error: e });
-  }
+let mission;
+const fitnessWorker = {
+  initialize(partialMission) {
+    mission = partialMission;
+    return true;
+  },
+  calculate(req) {
+    return new Promise((resolve) => {
+      try {
+        const [spacePowers, beams] = simulateSpacePowers(
+          mission.time,
+          mission.sun,
+          req.constellations,
+          mission.satellites.customers,
+        );
+        simulateBatteries(mission.satellites.customers, mission.time, beams);
+        const constellations = simulateConstellations(
+          mission.time,
+          mission.constellations,
+          mission.satellites.customers,
+          spacePowers,
+        );
+        resolve(constellations[0].summary.dischargeSaved);
+      } catch (e) {
+        resolve(0);
+      }
+    });
+  },
 };
+
+expose(fitnessWorker);

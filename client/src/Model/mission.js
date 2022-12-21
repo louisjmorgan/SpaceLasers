@@ -194,9 +194,7 @@ const simulateBaseData = (baseSatellite, length, frames) => {
 };
 
 const initializeConstellations = (constellations) => constellations.map((constellation) => ({
-  name: constellation.name,
-  id: constellation.id,
-  color: constellation.color,
+  ...constellation,
   satellites: constellation.satellites.map((satellite) => satellite.id),
 }));
 
@@ -232,7 +230,7 @@ const initializeSpacePowers = (constellations) => {
           `Space Power ${index + 1}`,
           satellite.orbit,
           offset,
-          constellation.id,
+          constellation,
         ));
       });
     });
@@ -369,6 +367,6 @@ const handleOptimizerMission = (mission, req) => {
 export {
   handleMissionRequest, simulateBaseData, initializeConstellations, initializeCustomers,
   simulateSpacePowers, simulateBatteries, simulateConstellations, generatePartialMission,
-  handleOptimizerMission,
+  handleOptimizerMission, initializeSpacePowers,
   MissionSchema,
 };

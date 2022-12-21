@@ -31,14 +31,12 @@ function ConstellationList() {
     name: 'constellations',
     keyName: 'key',
   });
-
   return (
     <Flex direction="column" align="center" mt={3}>
       <Accordion
         width="100%"
         margin="auto"
         defaultIndex={0}
-        allowToggle
         index={constellationIndex}
         onChange={setConstellationIndex}
       >

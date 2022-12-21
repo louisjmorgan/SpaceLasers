@@ -6,8 +6,11 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable default-case */
 import { Genetic, Select } from 'async-genetic';
+import { spawn, Pool, Worker } from 'threads';
 import { FRAMES, SIM_LENGTH } from '../Util/constants';
-import { generatePartialMission, handleMissionRequest, handleOptimizerMission } from './mission';
+import {
+  generatePartialMission, handleOptimizerMission, initializeConstellations, initializeSpacePowers,
+} from './mission';
 // import { twoline2satrec, generateTLE, getOrbitAtTime } from '../Util/astronomy';
 import { createPowerSatellite } from './satellite';
 
@@ -23,10 +26,15 @@ const randomOrbit = () => [
 ];
 
 async function optimizeSpacePower(req) {
-  const GENERATIONS = 10;
-  const POPULATION = 1000;
-  const NUM_WORKERS = 3;
+  const constellation = req.constellations[0];
+  const GENERATIONS = constellation.optimization.generations;
+  const POPULATION = constellation.optimization.population;
   const partialMission = generatePartialMission(req, SIM_LENGTH, FRAMES / 120);
+  const pool = Pool(async () => {
+    const worker = await spawn(new Worker(new URL('./workers/fitnessWorker.js', import.meta.url)));
+    worker.initialize(partialMission);
+    return worker;
+  }, constellation.optimization.threads);
   const testOrbit = (elements) => {
     const offsets = {
       inclination: elements[0],
@@ -40,7 +48,11 @@ async function optimizeSpacePower(req) {
     };
 
     try {
-      createPowerSatellite('test', req.constellations[0].satellites[0].orbit, offsets, 'test');
+      initializeSpacePowers([{
+        ...constellation,
+        offsets,
+        spacePowerIndices: elements.slice(6),
+      }]);
     } catch (err) {
       const error = 'Orbital propagation failed';
       throw new Error(error);
@@ -59,8 +71,8 @@ async function optimizeSpacePower(req) {
       }
     }
     const indices = Array.from(
-      { length: req.constellations[0].spacePowersCount },
-      () => Math.floor(Math.random() * req.constellations[0].satellites.length),
+      { length: constellation.spacePowersCount },
+      () => Math.floor(Math.random() * constellation.satellites.length),
     );
     variables.push(...indices);
     return variables;
@@ -71,7 +83,9 @@ async function optimizeSpacePower(req) {
     const eccentricityDrift = ((Math.random() - 0.5) * 2) * 0.1;
     // const meanMotionDotDrift = ((Math.random() - 0.5) * 2) * 0.001;
     // const bstarDrift = ((Math.random() - 0.5) * 2) * 0.001;
-    const indexDrift = Math.floor(((Math.random() - 0.5) * (req.constellations[0].length)));
+    const indexDrift = Math.floor((
+      (Math.random() - 0.5) * (constellation.satellites.length)
+    ));
 
     const i = Math.floor(Math.random() * entity.length);
     let newValue;
@@ -95,7 +109,7 @@ async function optimizeSpacePower(req) {
     //   else newEntity[i] = newValue;
     } else if (i > 5) {
       newValue = newEntity[i] + indexDrift;
-      if (newValue > req.constellations[0].satellites.length
+      if (newValue >= constellation.satellites.length
           || newValue < 0) newEntity[i] -= indexDrift;
       else newEntity[i] = newValue;
     }
@@ -117,55 +131,6 @@ async function optimizeSpacePower(req) {
     return mutation;
   };
 
-  const crossoverFunction = async (mother, father) => {
-    // crossover via interpolation
-    function lerp(a, b, p) {
-      return a + (b - a) * p;
-    }
-
-    const i = Math.floor(Math.random() * 5);
-    const r = Math.random();
-    const son = [].concat(father);
-    const daughter = [].concat(mother);
-
-    son[i] = lerp(father[i], mother[i], r);
-    daughter[i] = lerp(mother[i], father[i], r);
-    return [son, daughter];
-  };
-
-  // const workers = new Set();
-  // const promiseWorker = (testReq) => new Promise((resolve, reject) => {
-  //   const worker = new Worker(new URL('./fitnessWorker.js', import.meta.url), { type: module });
-  //   workers.add(worker);
-  //   worker.postMessage({ messageType: 'Request', req: testReq });
-  //   worker.onmessage = (e) => {
-  //     if (e.data.done === true) {
-  //       const { restMission } = e.data;
-  //       const mission = {
-  //         ...self.partialMission,
-  //         ...restMission,
-  //         satellites: {
-  //           ...self.partialMission.satellites,
-  //           ...restMission.satellites,
-  //         },
-  //       };
-  //       const result = mission.constellations[0].summary.dischargeSaved;
-  //       worker.terminate();
-  //       workers.delete(worker);
-  //       resolve(result);
-  //     } else if (e.data.error) {
-  //       worker.terminate();
-  //       workers.delete(worker);
-  //       reject(e.data.error);
-  //     }
-  //   };
-  //   worker.onerror = (e) => {
-  //     worker.terminate();
-  //     workers.delete(worker);
-  //     reject(e);
-  //   };
-  // });
-
   // const waitFor = (delay) => new Promise((resolve) => { setTimeout(resolve, delay); });
   const fitnessFunction = async (variables) => {
     const offsets = {
@@ -182,29 +147,23 @@ async function optimizeSpacePower(req) {
     const testReq = {
       constellations: [
         {
-          ...req.constellations[0],
+          ...constellation,
           offsets,
           spacePowerIndices,
         },
       ],
     };
-    let result;
+
+    const task = pool.queue((fitness) => fitness.calculate(testReq));
+    const result = await task;
+    // let result
     // try {
-    //   while (workers.size >= NUM_WORKERS) {
-    //     await waitFor(100);
-    //   }
-    //   console.log(workers);
-    //   result = await promiseWorker(testReq);
+    //   const mission = handleOptimizerMission(partialMission, testReq);
+    //   const { summary } = mission.constellations[0];
+    //   result = summary.dischargeSaved + summary.lowestChargeStateBeams;
     // } catch (e) {
     //   result = 0;
     // }
-    try {
-      const mission = handleOptimizerMission(partialMission, testReq);
-      const { summary } = mission.constellations[0];
-      result = summary.dischargeSaved + summary.lowestChargeStateBeams;
-    } catch (e) {
-      result = 0;
-    }
 
     return { fitness: result };
   };
@@ -221,9 +180,9 @@ async function optimizeSpacePower(req) {
     fitnessFunction,
     randomFunction,
     populationSize: POPULATION,
-    fittestNSurvives: 1,
+    fittestNSurvives: 3,
     select1: Select.Fittest,
-    select2: Select.Tournament2,
+    select2: Select.Tournament3,
     mutateProbablity: 1,
     // crossoverProbablity: 0.2,
     deduplicate: () => true,

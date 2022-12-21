@@ -6,14 +6,16 @@ import {
   // FaRocket,
   FaSatellite,
 } from 'react-icons/fa';
-import { useUIStore } from '../Model/store';
+import shallow from 'zustand/shallow';
+import { useSimStore, useUIStore } from '../Model/store';
 
 function MenuButtons() {
   const { isOpen, openMenu } = useUIStore((state) => ({
     openMenu: state.openMenu,
     isOpen: state.isOpen,
-  }));
+  }), shallow);
 
+  const isInitialized = useSimStore((state) => state.isInitialized);
   const onSatellites = () => {
     openMenu('satellites');
   };
@@ -32,6 +34,7 @@ function MenuButtons() {
         <Button
           id="satellites"
           onClick={onSatellites}
+          disabled={!isInitialized}
         >
           <Flex align="center" gap={2}>
 

@@ -27,6 +27,10 @@ function Satellites() {
       <Instances
         geometry={satelliteObj.nodes.Satellite.geometry}
       >
+        {/* <lineSegments>
+          <edgesGeometry attach="geometry" args={[satelliteObj.nodes.Satellite.geometry]} />
+          <lineBasicMaterial color="green.500" attach="material" />
+        </lineSegments> */}
         <meshToonMaterial
           gradientMap={gradientMap}
         />

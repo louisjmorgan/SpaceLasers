@@ -25,7 +25,7 @@ function Time() {
       .text(date.current.toString().slice(0, 21));
   });
   return (
-    <Text ref={timeRef} width="18ch" m={2} />
+    <Text textTransform="uppercase" fontWeight="bold" ref={timeRef} width="20ch" m={2} />
   );
 }
 

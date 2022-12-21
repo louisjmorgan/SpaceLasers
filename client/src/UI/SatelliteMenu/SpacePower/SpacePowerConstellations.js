@@ -23,6 +23,8 @@ function SpacePowerConstellations() {
   }), shallow);
   // const constellationsForm = useWatch({ name: 'constellations' });
   const { getValues } = useFormContext();
+  console.log(getValues('constellations'));
+  console.log(constellations);
   return (
     <Accordion
       width="100%"

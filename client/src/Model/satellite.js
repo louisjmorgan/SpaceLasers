@@ -150,15 +150,14 @@ function createPowerSatellite(name, orbit, offsets, constellation) {
   Object.entries(offsets).forEach((offset) => {
     newOrbit[offset[0]] = orbit[offset[0]] + Number(offset[1]);
   });
-
   const request = {
     ...POWER_SAT_REQUEST,
     name,
-    color: '#28d659',
+    color: constellation.spacePowerColor,
     id: uuidv4(),
     orbit: newOrbit,
   };
-  return createSatellite(request, constellation, false);
+  return createSatellite(request, constellation.id, false);
 }
 
 function generateIndices(spacePowersCount, customersCount) {

@@ -2,17 +2,47 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { Flex, List, Text } from '@chakra-ui/layout';
 import { AccordionButton, AccordionItem, AccordionPanel } from '@chakra-ui/react';
-import { useFormContext } from 'react-hook-form';
+import { useFormContext, useWatch } from 'react-hook-form';
+import { FaEyeSlash, FaTag } from 'react-icons/fa';
+import { useDebouncyFn } from 'use-debouncy';
 import shallow from 'zustand/shallow';
-import { useUIStore } from '../../../Model/store';
+import { useSimStore, useUIStore } from '../../../Model/store';
+import ColorPicker from '../../Elements/ColorPicker';
+import CustomIconButton from '../../Elements/CustomIconButton';
 import SpacePowerConfig from './SpacePowerConfig';
 import SpacePowerListItem from './SpacePowerListItem';
 
-function SpacePowerList({ formik, index, constellation }) {
+function SpacePowerList({ index, constellation }) {
   const { isEditing } = useUIStore((state) => ({
     isEditing: state.isEditing,
   }), shallow);
-  const { getValues } = useFormContext();
+  const {
+    constellationOptions, toggleSpacePowerLabels, toggleSpacePowerVisibility, changeSpacePowerColor,
+  } = useSimStore((state) => ({
+    constellationOptions: state.constellationOptions.get(constellation && constellation.id),
+    toggleSpacePowerLabels: state.toggleSpacePowerLabels,
+    toggleSpacePowerVisibility: state.toggleSpacePowerVisibility,
+    changeSpacePowerColor: state.changeSpacePowerColor,
+  }), shallow);
+
+  const onLabel = () => {
+    toggleSpacePowerLabels(constellation.id);
+  };
+
+  const onEye = () => {
+    toggleSpacePowerVisibility(constellation.id);
+  };
+  const { setValue, getValues } = useFormContext();
+
+  const onChangeColor = useDebouncyFn(
+    (c) => {
+      setValue(`constellations.${index}.spacePowerColor`, c);
+      if (constellationOptions) changeSpacePowerColor(constellation.id, c);
+    },
+    400, // number of milliseconds to delay
+  );
+
+  useWatch(`constellations.${index}.spacePowerColor`);
   return (
     <AccordionItem position="relative" m={0}>
       <Flex
@@ -35,30 +65,36 @@ function SpacePowerList({ formik, index, constellation }) {
               {getValues(`constellations.${index}.name`)}
             </Text>
             <Text>
-              {getValues(`constellations.${index}.spacePowersCount`)}
+              {`(${getValues(`constellations.${index}.spacePowersCount`)})`}
             </Text>
           </Flex>
         </AccordionButton>
-        {/* <Flex flexBasis="auto"> */}
-        {/* <ColorPicker
-            id={constellation.id}
+        <Flex flexBasis="auto">
+          <ColorPicker
+            id={getValues(`constellations.${index}.id`)}
             onChange={onChangeColor}
-            color={formik.values.constellations[index].color}
-          /> */}
-        {isEditing ? (
-          ''
-        ) : (''
-        // <CustomIconButton
-        //   icon={<FaTag />}
-        //   onClick={onLabel}
-        //   isActive={constellationOptions.showLabel}
-        //   label="toggle label"
-        // />
-        )}
-        {/* </Flex> */}
+            color={getValues(`constellations.${index}.spacePowerColor`)}
+          />
+          {isEditing ? '' : (
+            <>
+              <CustomIconButton
+                icon={<FaTag />}
+                onClick={onLabel}
+                isActive={constellationOptions.showSpacePowerLabels}
+                label="toggle label"
+              />
+              <CustomIconButton
+                icon={<FaEyeSlash />}
+                onClick={onEye}
+                isActive={!constellationOptions.isSpacePowerVisible}
+                label="toggle visibility"
+              />
+            </>
+          )}
+        </Flex>
       </Flex>
       <AccordionPanel p={0}>
-        {isEditing ? <SpacePowerConfig formik={formik} index={index} />
+        {isEditing ? <SpacePowerConfig index={index} />
           : (
             <List width="100%" maxHeight="60vh" overflowY="auto" margin="auto">
               {constellation.spacePowers.map((id, i) => (

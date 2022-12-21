@@ -58,6 +58,7 @@ function FormWrapper() {
     console.log(methods.formState.errors);
     setInitialized(false);
     const worker = new Worker(new URL('../Model/workers/missionWorker.js', import.meta.url), { type: module });
+    methods.setValue('constellations', methods.getValues('constellations').filter((c) => c.satellites.length > 0));
     worker.postMessage({ messageType: 'Request', req: values });
     worker.onmessage = (e) => {
       if (e.data.done === true) {

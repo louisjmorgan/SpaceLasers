@@ -99,6 +99,24 @@ const useSimStore = create((set) => ({
       satelliteOptions: newSatelliteOptions,
     });
   }),
+  toggleSpacePowerLabels: (id) => set((state) => {
+    const prev = state.constellationOptions.get(id);
+    const newSatelliteOptions = new Map(state.satelliteOptions);
+    prev.spacePowers.forEach((spacePower) => {
+      const prevSat = state.satelliteOptions.get(spacePower);
+      newSatelliteOptions.set(spacePower, {
+        ...prevSat,
+        showLabel: !prev.showSpacePowerLabels,
+      });
+    });
+    return ({
+      constellationOptions: new Map(state.constellationOptions).set(id, {
+        ...prev,
+        showSpacePowerLabels: !prev.showSpacePowerLabels,
+      }),
+      satelliteOptions: newSatelliteOptions,
+    });
+  }),
   changeConstellationColor: (id, color) => set((state) => {
     const prev = state.constellationOptions.get(id);
     const newSatelliteOptions = new Map(state.satelliteOptions);
@@ -117,6 +135,24 @@ const useSimStore = create((set) => ({
       satelliteOptions: newSatelliteOptions,
     });
   }),
+  changeSpacePowerColor: (id, color) => set((state) => {
+    const prev = state.constellationOptions.get(id);
+    const newSatelliteOptions = new Map(state.satelliteOptions);
+    prev.spacePowers.forEach((spacePower) => {
+      const prevSat = state.satelliteOptions.get(spacePower);
+      newSatelliteOptions.set(spacePower, {
+        ...prevSat,
+        color,
+      });
+    });
+    return ({
+      constellationOptions: new Map(state.constellationOptions).set(id, {
+        ...prev,
+        spacePowerColor: color,
+      }),
+      satelliteOptions: newSatelliteOptions,
+    });
+  }),
   toggleConstellationVisibility: (id) => set((state) => {
     const prev = state.constellationOptions.get(id);
     const newSatelliteOptions = new Map(state.satelliteOptions);
@@ -131,6 +167,24 @@ const useSimStore = create((set) => ({
       constellationOptions: new Map(state.constellationOptions).set(id, {
         ...prev,
         isVisible: !prev.isVisible,
+      }),
+      satelliteOptions: newSatelliteOptions,
+    });
+  }),
+  toggleSpacePowerVisibility: (id) => set((state) => {
+    const prev = state.constellationOptions.get(id);
+    const newSatelliteOptions = new Map(state.satelliteOptions);
+    prev.spacePowers.forEach((spacePower) => {
+      const prevSat = state.satelliteOptions.get(spacePower);
+      newSatelliteOptions.set(spacePower, {
+        ...prevSat,
+        isVisible: !prev.isSpacePowerVisible,
+      });
+    });
+    return ({
+      constellationOptions: new Map(state.constellationOptions).set(id, {
+        ...prev,
+        isSpacePowerVisible: !prev.isSpacePowerVisible,
       }),
       satelliteOptions: newSatelliteOptions,
     });
@@ -160,9 +214,8 @@ const useSimStore = create((set) => ({
   storeRef: (id, ref) => set((state) => ({ refs: new Map(state.refs).set(id, ref) })),
   updateStatus: (message) => set(() => ({ status: message })),
   initializeMission: (mission) => set(() => {
-    console.log(mission.constellations[0].summary.lowestChargeStateBeams);
-
     const satellites = [...mission.satellites.customers, ...mission.satellites.spacePowers];
+    console.log(mission.satellites.spacePowers);
     const newSatelliteOptions = new Map();
     satellites.forEach((satellite) => {
       newSatelliteOptions.set(satellite.id, {
@@ -176,8 +229,11 @@ const useSimStore = create((set) => ({
       mission.constellations.map((constellation) => [constellation.id, {
         ...constellation,
         ...defaultOptions,
+        showSpacePowerLabels: false,
+        isSpacePowerVisible: true,
       }]),
     );
+    console.log(newConstellationOptions);
     return ({
       mission,
       satelliteOptions: newSatelliteOptions,
