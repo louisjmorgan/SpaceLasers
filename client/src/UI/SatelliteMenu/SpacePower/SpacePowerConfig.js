@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { Flex } from '@chakra-ui/layout';
 import { Button } from '@chakra-ui/react';
-import { useWatch } from 'react-hook-form';
+import { useFormContext, useWatch } from 'react-hook-form';
 import { FaCog } from 'react-icons/fa';
 import { useUIStore } from '../../../Model/store';
 import CustomNumberInput from '../../Elements/CustomNumberInput';
@@ -11,6 +11,11 @@ function SpacePowerConfig({ index }) {
 
   const onConfig = () => {
     openMenu('spacePowerConfig');
+  };
+  const { setValue, getValues } = useFormContext();
+  const onChangeNumber = () => {
+    const prev = getValues(`constellations.${index}.spacePowerIndices`);
+    setValue(`constellations.${index}.spacePowerIndices`, [...prev, 0]);
   };
 
   useWatch(`constellations.${index}`);
@@ -25,6 +30,7 @@ function SpacePowerConfig({ index }) {
         label="Number of power satellites"
         min={0}
         max={10}
+        sideEffect={onChangeNumber}
       />
       <Button m={3} leftIcon={<FaCog />} onClick={onConfig}>
         Configure

@@ -152,6 +152,11 @@ function SpacePowerModal() {
     toastIdRef.current = toast();
   }
 
+  useWatch(`constellations.${constellationIndex}.spacePowerIndices`);
+  const onChangeNumber = () => {
+    const prev = getValues(`constellations.${constellationIndex}.spacePowerIndices`);
+    setValue(`constellations.${constellationIndex}.spacePowerIndices`, [...prev, 0]);
+  };
   useEffect(() => {
     if (isOptimizing && !isOpen) {
       addToast();
@@ -194,6 +199,7 @@ function SpacePowerModal() {
                 label="Number of power satellites"
                 min={0}
                 max={10}
+                sideEffect={onChangeNumber}
               />
             </Box>
             <Tabs align="center">
