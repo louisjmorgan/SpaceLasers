@@ -107,7 +107,7 @@ function SpacePowerModal({ onOptimize, onChangeNumber }) {
   }), shallow);
 
   useWatch(`constellations.${constellationIndex}.offsets`);
-  const { getValues, setValue, control } = useFormContext();
+  const { getValues, control } = useFormContext();
 
   const {
     fields: indexFields,

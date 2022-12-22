@@ -9,10 +9,9 @@ import { Genetic, Select } from 'async-genetic';
 import { spawn, Pool, Worker } from 'threads';
 import { FRAMES, SIM_LENGTH } from '../Util/constants';
 import {
-  generatePartialMission, handleOptimizerMission, initializeConstellations, initializeSpacePowers,
+  generatePartialMission, initializeSpacePowers,
 } from './mission';
 // import { twoline2satrec, generateTLE, getOrbitAtTime } from '../Util/astronomy';
-import { createPowerSatellite } from './satellite';
 
 const randomOrbit = () => [
   Math.random() * 16, // inclination

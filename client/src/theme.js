@@ -8,30 +8,26 @@ const {
   defineMultiStyleConfig,
 } = createMultiStyleConfigHelpers(tabsAnatomy.keys);
 
-const colorfulVariant = definePartsStyle((props) => {
-  const { colorScheme: c } = props; // extract colorScheme from component props
+const colorfulVariant = definePartsStyle(() => ({
+  tab: {
+    borderTopRadius: "md",
+    border: "1px solid",
+    borderColor: "transparent",
+    mb: "-1px",
+    color: 'whiteAlpha.500',
+    _selected: {
+      color: `text`,
+      borderColor: 'whiteAlpha.500',
+      borderBottomColor: 'background.300',
 
-  return {
-    tab: {
-      borderTopRadius: "md",
-      border: "1px solid",
-      borderColor: "transparent",
-      mb: "-1px",
-      color: 'whiteAlpha.500',
-      _selected: {
-        color: `text`,
-        borderColor: 'whiteAlpha.500',
-        borderBottomColor: 'background.300',
-
-      },
     },
-    tablist: {
-      mb: "-1px",
-      borderBottom: "1px solid",
-      borderColor: "inherit",
-    },
-  };
-});
+  },
+  tablist: {
+    mb: "-1px",
+    borderBottom: "1px solid",
+    borderColor: "inherit",
+  },
+}));
 
 const baseStyle = definePartsStyle((props) => {
   // define the part you're going to style

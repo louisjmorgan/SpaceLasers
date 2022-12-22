@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { Flex } from '@chakra-ui/layout';
 import { Button, Spinner, useToast } from '@chakra-ui/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { FaCog } from 'react-icons/fa';
 import { spawn, Thread, Worker } from 'threads';
