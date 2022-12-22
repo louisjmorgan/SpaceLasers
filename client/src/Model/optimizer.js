@@ -206,7 +206,7 @@ async function* optimizeSpacePower(req) {
     fitnessFunction,
     randomFunction,
     populationSize: POPULATION,
-    fittestNSurvives: 3,
+    fittestNSurvives: 1,
     select1: Select.Fittest,
     select2: Select.Tournament3,
     mutateProbablity: 1,

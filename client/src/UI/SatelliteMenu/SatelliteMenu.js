@@ -141,7 +141,7 @@ function SatelliteMenu() {
                       type="reset"
                       onClick={onDiscard}
                       width="30ch"
-                      effectColor="complement.red"
+                      effectColor="accent.red"
                     >
                       Discard Changes
                     </SPButton>

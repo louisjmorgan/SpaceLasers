@@ -14,17 +14,23 @@ const SPButton = forwardRef(({
     maxWidth="80%"
     m={0}
     clipPath="polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)"
-    border="2px solid"
+    border="1px solid"
     cursor="pointer"
-    borderColor={effectColor || 'green.500'}
+    borderColor={effectColor || 'text'}
     textTransform="uppercase"
     textAlign="center"
     fontWeight="bold"
+    transition="color 0.3s linear"
     onClick={onClick}
     sx={{
       ':hover div': {
         transform: 'scaleX(1)',
       },
+    }}
+    _hover={{
+      color: 'background.300',
+      transition: 'none',
+
     }}
     {...props}
 
@@ -32,15 +38,10 @@ const SPButton = forwardRef(({
     <Box
       position="absolute"
       inset={0}
-      backgroundColor={effectColor || 'green.500'}
+      backgroundColor={effectColor || 'text'}
       zIndex={-1}
       transform="scaleX(0)"
       transition="transform 0.3s ease-in-out"
-      sx={{
-        'div:hover': {
-          transform: 'scaleX(1)',
-        },
-      }}
     />
     {children}
   </chakra.button>

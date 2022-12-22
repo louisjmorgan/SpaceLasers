@@ -77,7 +77,6 @@ function SpacePowerConfig({ index }) {
             </p>
           </>),
       });
-      console.log(toast);
 
       if (!update.done) return;
       Object.entries(update.value.offsets).forEach(([key, value]) => {

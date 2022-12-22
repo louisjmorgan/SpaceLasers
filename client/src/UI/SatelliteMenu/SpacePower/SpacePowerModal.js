@@ -161,7 +161,16 @@ function SpacePowerModal({ onOptimize, onChangeNumber }) {
                 sideEffect={onChangeNumber}
               />
             </Box>
-            <Tabs align="center">
+            <Tabs
+              align="center"
+              maxWidth="80ch"
+              display="flex"
+              height="100%"
+              width="100%"
+              overflow="hidden"
+              flexDirection="column"
+              m={0}
+            >
               <TabList>
                 <Tab>Orbital Offsets</Tab>
                 <Tab>Offset From</Tab>

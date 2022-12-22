@@ -8,23 +8,62 @@ const {
   defineMultiStyleConfig,
 } = createMultiStyleConfigHelpers(tabsAnatomy.keys);
 
-const baseStyle = definePartsStyle({
+const colorfulVariant = definePartsStyle((props) => {
+  const { colorScheme: c } = props; // extract colorScheme from component props
+
+  return {
+    tab: {
+      borderTopRadius: "md",
+      border: "1px solid",
+      borderColor: "transparent",
+      mb: "-1px",
+      color: 'whiteAlpha.500',
+      _selected: {
+        color: `text`,
+        borderColor: 'whiteAlpha.500',
+        borderBottomColor: 'background.300',
+
+      },
+    },
+    tablist: {
+      mb: "-1px",
+      borderBottom: "1px solid",
+      borderColor: "inherit",
+    },
+  };
+});
+
+const baseStyle = definePartsStyle((props) => {
   // define the part you're going to style
   // tab: {
   //   maxHeight: "100%",
   //   overflow: "auto", // change the font weight
   // },
-  root: {
-    margin: 0,
-    width: "100%",
-  },
-  tabpanels: {
-    height: "100%",
-    overflowY: "auto",
-  },
+  const { colorScheme: c } = props;
+  console.log(c);
+  return {
+    root: {
+      margin: 0,
+      width: "100%",
+    },
+    tabpanels: {
+      height: "100%",
+      overflowY: "auto",
+    },
+    // tab: {
+    //   color: 'green',
+    //   _selected: {
+    //     color: `text`,
+    //   },
+    // },
+  };
 });
 
-export const tabsTheme = defineMultiStyleConfig({ baseStyle });
+export const tabsTheme = defineMultiStyleConfig({
+  baseStyle,
+  variants: { colorfulVariant },
+  defaultProps: { variant: 'colorfulVariant', colorScheme: 'white' },
+});
 
 const config = {
   useSystemColorMode: false,
@@ -34,7 +73,7 @@ const config = {
 const styles = {
   global: (props) => ({
     body: {
-      bg: mode('white', 'rgb(22,22,22)')(props),
+      bg: mode('text', 'background.300')(props),
       fontFamily: `'Barlow', sans-serif`,
     },
     h1: {
@@ -68,7 +107,7 @@ const fonts = {
 
 const layerStyles = {
   selected: {
-    bg: 'rgba(255,255,255,0.1)',
+    bg: 'accent.blue',
   },
 };
 
@@ -107,20 +146,21 @@ const components = {
     variants: {
       outline: {
         border: '2px solid',
-        borderColor: 'green.500',
-        color: 'white',
+        borderColor: 'text',
+        color: 'text',
       },
       solid: {
-        color: 'white',
+        color: 'text',
         textTransform: 'uppercase',
         backgroundColor: 'whiteAlpha.100',
         _hover: {
-          backgroundColor: 'green.500',
+          color: 'background.300',
+          backgroundColor: 'text',
         },
       },
       active: {
-        color: 'white',
-        backgroundColor: 'green.500',
+        backgroundColor: 'accent.blue',
+        color: 'text',
         textTransform: 'uppercase',
       },
     },
@@ -154,8 +194,22 @@ const colors = {
     200: 'rgba(22,22,22,0.9)',
     300: 'rgba(22,22,22,1)',
   },
-  complement: {
-    red: '#d73328',
+  accent: {
+    red: '#A4031F',
+    blue: '#067BC2',
+  },
+  text: '#EDEDED',
+  primary: {
+    50: "#F2F2F2",
+    100: "#DBDBDB",
+    200: "#C4C4C4",
+    300: "#ADADAD",
+    400: "#969696",
+    500: "#808080",
+    600: "#666666",
+    700: "#FDFDFD",
+    800: "#333333",
+    900: "#1A1A1A",
   },
   green: {
     main: "#28D759",
@@ -170,17 +224,17 @@ const colors = {
     800: "#105624",
     900: "#082B12",
   },
-  accent: {
-    50: "#28D759",
-    100: "#28D759",
-    200: "#28D759",
-    300: "#28D759",
+  tabs: {
+    50: "#1A1A1A",
+    100: "#1A1A1A",
+    200: "#1A1A1A",
+    300: "#EDEDED",
   },
 };
 
 const colorScheme = withDefaultColorScheme({
-  colorScheme: 'accent',
-  components: ['Switch', 'Tabs', 'Slider', 'Radio'],
+  colorScheme: 'primary',
+  components: ['Switch', 'Slider', 'Radio'],
 });
 
 const theme = extendTheme(colorScheme, {
