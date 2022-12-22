@@ -215,7 +215,6 @@ const useSimStore = create((set) => ({
   updateStatus: (message) => set(() => ({ status: message })),
   initializeMission: (mission) => set(() => {
     const satellites = [...mission.satellites.customers, ...mission.satellites.spacePowers];
-    console.log(mission.satellites.spacePowers);
     const newSatelliteOptions = new Map();
     satellites.forEach((satellite) => {
       newSatelliteOptions.set(satellite.id, {
@@ -233,7 +232,6 @@ const useSimStore = create((set) => ({
         isSpacePowerVisible: true,
       }]),
     );
-    console.log(newConstellationOptions);
     return ({
       mission,
       satelliteOptions: newSatelliteOptions,

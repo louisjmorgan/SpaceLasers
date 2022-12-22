@@ -2,12 +2,12 @@
 /* eslint-disable react/prop-types */
 import {
   Box,
-  Button, Center, Flex, FormControl, FormErrorMessage, FormLabel, Modal, ModalBody, ModalCloseButton, ModalContent,
-  ModalFooter, ModalHeader, ModalOverlay, Select, Spinner, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useToast,
+  Button, Center, Flex, FormControl, FormErrorMessage, FormLabel, Modal,
+  ModalBody, ModalCloseButton, ModalContent,
+  ModalFooter, ModalHeader, ModalOverlay, Select, Spinner,
+  Tab, TabList, TabPanel, TabPanels, Tabs,
 } from '@chakra-ui/react';
-import { spawn, Thread, Worker } from 'threads';
 import shallow from 'zustand/shallow';
-import { useEffect, useRef } from 'react';
 import {
   Controller, useFieldArray, useFormContext, useWatch,
 } from 'react-hook-form';
@@ -95,9 +95,9 @@ const optimizationFields = [
   },
 ];
 
-function SpacePowerModal() {
+function SpacePowerModal({ onOptimize, onChangeNumber }) {
   const {
-    isOpen, closeMenu, constellationIndex, setOptimizing, isOptimizing,
+    isOpen, closeMenu, constellationIndex, isOptimizing,
   } = useUIStore((state) => ({
     isOpen: state.isOpen.spacePowerConfig,
     closeMenu: state.closeMenu,
@@ -105,20 +105,6 @@ function SpacePowerModal() {
     setOptimizing: state.setOptimizing,
     isOptimizing: state.isOptimizing,
   }), shallow);
-
-  const toastIdRef = useRef();
-
-  const toast = useToast({
-    title: 'Optimization in progress...',
-    variant: 'subtle',
-    position: 'bottom-right',
-    containerStyle: {
-      maxWidth: '100%',
-    },
-    padding: '3rem',
-    isClosable: false,
-    duration: null,
-  });
 
   useWatch(`constellations.${constellationIndex}.offsets`);
   const { getValues, setValue, control } = useFormContext();
@@ -131,39 +117,12 @@ function SpacePowerModal() {
     keyName: 'key',
   });
 
-  const onOptimize = async () => {
-    setOptimizing(true);
-    const worker = await spawn(new Worker(new URL('../../../Model/workers/optimizeWorker.js', import.meta.url)));
-    const result = await worker.optimize({ constellations: [getValues(`constellations.${constellationIndex}`)] });
-    Object.entries(result.offsets).forEach(([key, value]) => {
-      setValue(`constellations.${constellationIndex}.offsets.${key}`, value);
-    });
-    setValue(`constellations.${constellationIndex}.spacePowerIndices`, result.indices);
-    setOptimizing(false);
-    toast.update(toastIdRef.current, { title: 'Optimization complete.', isClosable: true, duration: 9000 });
-    await Thread.terminate(worker);
-  };
-
   const onClose = () => {
     closeMenu('spacePowerConfig');
   };
 
-  function addToast() {
-    toastIdRef.current = toast();
-  }
-
   useWatch(`constellations.${constellationIndex}.spacePowerIndices`);
-  const onChangeNumber = () => {
-    const prev = getValues(`constellations.${constellationIndex}.spacePowerIndices`);
-    setValue(`constellations.${constellationIndex}.spacePowerIndices`, [...prev, 0]);
-  };
-  useEffect(() => {
-    if (isOptimizing && !isOpen) {
-      addToast();
-    } else if (isOpen) {
-      toast.closeAll();
-    }
-  }, [isOpen, isOptimizing]);
+
   return isOpen && (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <ModalOverlay backdropFilter="blur(10px)" />

@@ -10,7 +10,6 @@ import { defaultValues } from '../Util/defaultInputs';
 import SatelliteMenu from './SatelliteMenu';
 import ConstellationConfig from './SatelliteMenu/Payload/ConstellationConfig';
 import SatelliteConfig from './SatelliteMenu/Payload/SatelliteConfig';
-import SpacePowerModal from './SatelliteMenu/SpacePower/SpacePowerModal';
 
 function fetchTLEs(urls) {
   const tles = [];
@@ -82,7 +81,6 @@ function FormWrapper() {
         <SatelliteMenu />
         <SatelliteConfig />
         <ConstellationConfig />
-        <SpacePowerModal />
       </form>
     </FormProvider>
   );

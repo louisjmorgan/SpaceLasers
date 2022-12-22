@@ -25,7 +25,33 @@ const randomOrbit = () => [
   // (Math.random() - 0.5) * 4, // bstar (-2, 2)
 ];
 
-async function optimizeSpacePower(req) {
+async function* solve(genetic, GENERATIONS, log) {
+  let generations = 0;
+  await genetic.seed();
+  let best;
+  for (let i = 0; i <= GENERATIONS; i++) {
+    if (log) {
+      console.count('gen');
+    }
+
+    await genetic.estimate();
+    const bestOne = genetic.best()[0];
+    best = genetic.best();
+    generations += 1;
+    yield {
+      best,
+      generations,
+    };
+    if (log) {
+      console.log(`${bestOne.entity} - ${bestOne.fitness}`);
+    }
+
+    await genetic.breed();
+  }
+  return { best, generations };
+}
+
+async function* optimizeSpacePower(req) {
   const constellation = req.constellations[0];
   const GENERATIONS = constellation.optimization.generations;
   const POPULATION = constellation.optimization.population;
@@ -189,39 +215,33 @@ async function optimizeSpacePower(req) {
   });
 
   const log = true;
-  async function solve() {
-    await genetic.seed();
-    let best;
-    for (let i = 0; i <= GENERATIONS; i++) {
-      if (log) {
-        console.count('gen');
-      }
 
-      await genetic.estimate();
-      const bestOne = genetic.best()[0];
-      best = genetic.best();
-
-      if (log) {
-        console.log(`${bestOne.entity} - ${bestOne.fitness}`);
-      }
-
-      await genetic.breed();
-    }
-    return best;
+  const gen = solve(genetic, GENERATIONS, log);
+  let done = false;
+  let result;
+  while (!done) {
+    result = await gen.next();
+    done = result.done;
+    if (done) break;
+    yield result;
   }
-  const result = await solve();
-  const optimized = result[0].entity;
+  console.log(result);
+  const optimized = result.value.best[0].entity;
   return {
-    offsets: {
+    done: true,
+    value: {
+      ...result.value,
+      offsets: {
       // ...req.constellation[0].offsets,
-      inclination: optimized[0],
-      rightAscension: optimized[1],
-      perigee: optimized[2],
-      meanAnomaly: optimized[3],
-      meanMotion: optimized[4],
-      eccentricity: optimized[5],
+        inclination: optimized[0],
+        rightAscension: optimized[1],
+        perigee: optimized[2],
+        meanAnomaly: optimized[3],
+        meanMotion: optimized[4],
+        eccentricity: optimized[5],
+      },
+      indices: optimized.slice(6),
     },
-    indices: optimized.slice(6),
   };
 }
 

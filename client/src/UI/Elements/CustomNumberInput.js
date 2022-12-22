@@ -49,8 +49,8 @@ function CustomNumberInput({
               flex={3}
               ref={ref}
               onChange={(v) => {
-                onChange(parseFloat(v) || '');
                 sideEffect(v);
+                onChange(parseFloat(v) || '');
               }}
               onBlur={onBlur}
               value={value}

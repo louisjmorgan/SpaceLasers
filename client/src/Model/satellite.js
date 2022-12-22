@@ -168,7 +168,7 @@ function generateIndices(spacePowersCount, customersCount) {
 function getIndexCounts(customersCount, indices) {
   return Array.from(
     { length: customersCount },
-    (v, i) => indices.filter((index) => index === i).length,
+    (v, i) => indices.filter((index) => Number(index) === i).length,
   );
   // if (spacePowers === 0) return [];
   // if (spacePowers === customers) return Array.from({ length: customers }, (v, i) => 1);
