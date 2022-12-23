@@ -14,7 +14,7 @@ import React, {
   useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition,
 } from 'react';
 import shallow from 'zustand/shallow';
-import { useStore, useFrameStore } from '../../Model/store';
+import { useFrameStore, useSimStore } from '../../Model/store';
 import Chart from './Chart';
 import SatelliteList from './SatelliteList';
 
@@ -39,7 +39,7 @@ const paramChoices = [
 function ChartEditor() {
   const {
     customers, time, spacePowers, averages,
-  } = useStore(
+  } = useSimStore(
     (state) => ({
       customers: state.mission.satellites.customers,
       spacePowers: state.mission.satellites.spacePowers,
@@ -53,8 +53,8 @@ function ChartEditor() {
   // const [selectedParams, setSelectedParams] = useState('chargeState');
 
   const selected = useRef({
-    satellites: customers.slice(0, 3),
-    params: ['chargeState', 'chargeStateNoBeams'],
+    satellites: customers.slice(0, 1),
+    params: ['chargeState'],
   });
   const [selectedSatellites, setSelectedSatellites] = useState(customers.slice(0, 3));
   const shouldUpdate = useRef(false);
@@ -98,7 +98,7 @@ function ChartEditor() {
   const timeRef = useRef();
 
   useEffect(() => {
-    selected.current.satellites = customers.slice(0, 3);
+    selected.current.satellites = customers.slice(0, 1);
     timeRef.current = time;
     shouldUpdate.current = true;
   }, [customers, time]);
@@ -108,10 +108,10 @@ function ChartEditor() {
       <Chart
         selected={selected}
         shouldUpdate={shouldUpdate}
-        time={timeRef}
+        time={time}
         zoom={zoom}
       />
-      <FormControl width="50%">
+      {/* <FormControl width="50%">
         <Flex gap={3} align="center" justify="center" m={3}>
           <FormLabel height="100%" margin={0}>Zoom:</FormLabel>
           <Slider
@@ -146,7 +146,7 @@ function ChartEditor() {
           </VStack>
         </Center>
         <Box width="20%" />
-      </Flex>
+      </Flex> */}
     </VStack>
   );
 }

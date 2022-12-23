@@ -51,9 +51,9 @@ function Simulation() {
             <PerformanceMonitor
               onChange={({ factor }) => setDpr((0.75 + 1.5 * factor).toFixed(1))}
             />
-            <Camera />
+            {/* <Camera /> */}
             <Frame />
-            <Stars
+            {/* <Stars
               radius={100} // Radius of the inner sphere (default=100)
               depth={50} // Depth of area where stars should fit (default=50)
               count={5000} // Amount of stars (default=5000)
@@ -61,11 +61,11 @@ function Simulation() {
               saturation={1} // Saturation 0-1 (default=0)
               fade
               speed={isPaused ? 0 : 1}
-            />
+            /> */}
             {/* <ambientLight intensity={0.25} /> */}
-            <Sun />
-            <Earth />
-            <Satellites />
+            {/* <Sun /> */}
+            {/* <Earth /> */}
+            {/* <Satellites /> */}
           </Suspense>
         </Canvas>
       </div>

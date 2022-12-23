@@ -3,13 +3,13 @@ import {
   Checkbox, CheckboxGroup, VStack,
 } from '@chakra-ui/react';
 import shallow from 'zustand/shallow';
-import { useStore } from '../../Model/store';
+import { useSimStore } from '../../Model/store';
 import './Charts.css';
 
 function SatelliteList({ toggleSelected, selected }) {
   const {
     customers,
-  } = useStore(
+  } = useSimStore(
     (state) => ({
       customers: state.mission.satellites.customers,
     }),
