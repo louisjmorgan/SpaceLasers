@@ -102,14 +102,18 @@ function ChartEditor() {
     timeRef.current = time;
     shouldUpdate.current = true;
   }, [customers, time]);
+  const containerRef = useRef();
 
   return (
     <VStack>
+      <div ref={containerRef} />
+
       <Chart
         selected={selected}
         shouldUpdate={shouldUpdate}
         time={time}
         zoom={zoom}
+        container={containerRef}
       />
       {/* <FormControl width="50%">
         <Flex gap={3} align="center" justify="center" m={3}>

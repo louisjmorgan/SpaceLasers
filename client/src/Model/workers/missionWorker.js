@@ -5,6 +5,7 @@ import {
 } from '../mission';
 
 onmessage = function (event) {
+  console.log(FRAMES);
   const { req } = event.data;
   postMessage({ done: false, message: 'Simulating celestial bodies' });
   const [time, sun, earth] = simulateBaseData(

@@ -22,4 +22,4 @@ function PerformanceView() {
   );
 }
 
-export default React.memo(PerformanceView);
+export default PerformanceView;
