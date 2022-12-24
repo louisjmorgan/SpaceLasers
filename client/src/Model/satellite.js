@@ -1,3 +1,4 @@
+/* eslint-disable array-callback-return */
 /* eslint-disable consistent-return */
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -28,12 +29,16 @@ const PV_SOURCES = {
 
 const POWER_SAT_REQUEST = {
   power: {
-    pvVoltage: 4.7,
-    currentDensity: 170.5,
-    area: 0.0128,
-    batteryVoltage: 3.6,
-    capacity: 1.125,
-    powerStoringConsumption: 1.2,
+    pv: {
+      voltage: 4.7,
+      currentDensity: 170.5,
+      area: 0.0128,
+      powerStoringConsumption: 1.2,
+    },
+    battery: {
+      voltage: 3.6,
+      capacity: 1.125,
+    },
   },
   duties: [
     {
@@ -77,17 +82,17 @@ function getDutyIntervals(duty, period, time) {
   });
 }
 
-function createSatellite(satellite, isCustomer = true) {
+function createSatellite(satellite, constellation, isCustomer = true) {
   const tles = generateTLE({
     ...satellite.orbit,
     epoch: new Date(satellite.orbit.epoch),
   });
-  console.log(tles);
+
   const orbit = twoline2satrec(tles.tle1, tles.tle2);
   try {
     getOrbitAtTime({ orbit }, new Date());
   } catch (err) {
-    const error = `Unable to propagate orbital parameters for ${satellite.name}. ${
+    const error = `Unable to propagate orbital parameters for ${satellite.orbit.tle}. ${
       isCustomer ? '\nPlease try different values or choose a TLE.' : '\nPlease try different offsets in the power configuration menu.'}`;
     throw new Error(error);
   }
@@ -96,19 +101,20 @@ function createSatellite(satellite, isCustomer = true) {
 
   const pv = {
     sources: PV_SOURCES,
-    voltage: satellite.power.pvVoltage,
-    currentDensity: satellite.power.currentDensity,
-    area: satellite.power.area,
+    voltage: satellite.power.pv.voltage,
+    currentDensity: satellite.power.pv.currentDensity,
+    area: satellite.power.pv.area,
   };
 
   const battery = {
-    voltage: satellite.power.batteryVoltage,
-    capacity: satellite.power.capacity,
+    voltage: satellite.power.battery.voltage,
+    capacity: satellite.power.battery.capacity,
   };
 
   const duties = satellite.duties.map((duty) => ({
     name: duty.name,
     type: duty.type,
+    priority: duty.priority,
     consumption: Number(duty.consumption),
     duration: (Number(duty.duration) * 1000) || null,
     cycles: Number(duty.cycles) || null,
@@ -118,11 +124,13 @@ function createSatellite(satellite, isCustomer = true) {
   duties.unshift({
     name: 'Power storing',
     type: 'power storing',
-    consumption: satellite.power.powerStoringConsumption,
+    consumption: satellite.power.pv.powerStoringConsumption,
   });
   const powerProfiles = generatePowerProfiles(pv, duties, battery);
   return {
     name: satellite.name,
+    color: satellite.color,
+    constellation,
     id: satellite.id,
     params: {
       orbit,
@@ -137,55 +145,75 @@ function createSatellite(satellite, isCustomer = true) {
   };
 }
 
-function createPowerSatellite(name, orbit, offsets) {
+function createPowerSatellite(name, orbit, offsets, constellation) {
   const newOrbit = { ...orbit };
   Object.entries(offsets).forEach((offset) => {
     newOrbit[offset[0]] = orbit[offset[0]] + Number(offset[1]);
   });
-
   const request = {
     ...POWER_SAT_REQUEST,
     name,
+    color: constellation.spacePowerColor,
     id: uuidv4(),
     orbit: newOrbit,
   };
-  return createSatellite(request, false);
+  return createSatellite(request, constellation.id, false);
 }
 
-function getOffsets(spacePowers, customers, offsets) {
-  if (spacePowers === 0) return [];
-  if (spacePowers === customers) return Array.from({ length: customers }, () => [offsets]);
-  if (spacePowers < customers) {
-    const spacing = Math.floor(customers / spacePowers);
-    let total = 0;
-    return Array.from({ length: customers }, (value, index) => {
-      if (index % spacing) return null;
-      total += 1;
-      if (total > spacePowers) return null;
-      return [offsets];
-    });
-  }
-  if (spacePowers > customers) {
-    let ratio = Math.ceil(spacePowers / customers);
-    let total = 0;
-    return Array.from(
-      { length: customers },
-      () => {
-        let multiplier = 0;
-        if ((total + ratio) > spacePowers) ratio = spacePowers - total;
-        return Array.from({ length: ratio }, (value, index) => {
-          if (index % 2 === 0) multiplier += 1;
-          const newOffsets = {};
-          Object.entries(offsets).forEach((offset) => {
-            newOffsets[offset[0]] = offset[1] * multiplier * ((0 - 1) ** index);
-          });
-          total += 1;
+function generateIndices(spacePowersCount, customersCount) {
+  const ratio = customersCount / spacePowersCount;
+  return Array.from({ length: spacePowersCount }, (v, i) => Math.floor(ratio * i));
+}
 
-          return newOffsets;
+function getIndexCounts(customersCount, indices) {
+  return Array.from(
+    { length: customersCount },
+    (v, i) => indices.filter((index) => Number(index) === i).length,
+  );
+  // if (spacePowers === 0) return [];
+  // if (spacePowers === customers) return Array.from({ length: customers }, (v, i) => 1);
+  // if (spacePowers < customers) {
+  //   const spacing = Math.floor(customers / spacePowers);
+  //   let total = 0;
+  //   return Array.from({ length: customers }, (value, index) => {
+  //     if (index % spacing) return null;
+  //     total += 1;
+  //     if (total > spacePowers) return null;
+  //     return 1;
+  //   });
+  // }
+  // if (spacePowers > customers) {
+  //   let ratio = Math.ceil(spacePowers / customers);
+  //   let total = 0;
+  //   return Array.from(
+  //     { length: customers },
+  //     () => {
+  //       if ((total + ratio) > spacePowers) ratio = spacePowers - total;
+  //       total += 1;
+  //       return ratio;
+  //     },
+  //   );
+  // }
+}
+
+function getOffsets(offsets, counts) {
+  return counts.map((count) => {
+    if (count === 0) return null;
+    if (count === 1) return [offsets];
+    if (count > 1) {
+      let multiplier = 0;
+      return Array.from({ length: count }, (v, index) => {
+        if (index % 2 === 0) multiplier += 1;
+        const newOffsets = {};
+        Object.entries(offsets).forEach((offset) => {
+          newOffsets[offset[0]] = offset[1] * multiplier * ((0 - 1) ** index);
         });
-      },
-    );
-  }
+        return newOffsets;
+      });
+    }
+  });
 }
 
-export { createSatellite, createPowerSatellite, getOffsets };
+export {
+  createSatellite, createPowerSatellite, getOffsets, generateIndices, getIndexCounts,
+};

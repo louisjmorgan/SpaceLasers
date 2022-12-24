@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import shallow from 'zustand/shallow';
 // import { unstable_batchedUpdates } from 'react-dom'; // or 'react-native'
-import { useStore, useFrameStore } from '../Model/store';
+import { useSimStore, useFrameStore, useUIStore } from '../Model/store';
 import { FRAMES, SIM_LENGTH, MIN_SPEED } from '../Util/constants';
 
 const interval = 1 / 60;
@@ -15,18 +15,21 @@ function Frame() {
   }, []);
 
   const {
-    isPaused, speed, shouldLoop, setFinished, isFinished, setPaused,
-  } = useStore(
+    isPaused, speed, setPaused,
+  } = useSimStore(
     (state) => ({
       setPaused: state.setPaused,
       speed: state.speed,
-      shouldLoop: state.shouldLoop,
-      setFinished: state.setFinished,
-      isFinished: state.isFinished,
       isPaused: state.isPaused,
     }),
     shallow,
   );
+
+  const { shouldLoop, setFinished, isFinished } = useUIStore((state) => ({
+    shouldLoop: state.shouldLoop,
+    setFinished: state.setFinished,
+    isFinished: state.isFinished,
+  }), shallow);
 
   const frame = useRef(0);
   useFrame(({ clock }, delta) => {

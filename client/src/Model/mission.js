@@ -2,7 +2,11 @@
 /* eslint-disable max-len */
 /* eslint-disable no-param-reassign */
 import * as Yup from 'yup';
-import { createSatellite, createPowerSatellite, getOffsets } from './satellite';
+import { generateTLE, twoline2satrec } from '../Util/astronomy';
+import { FRAMES, SIM_LENGTH } from '../Util/constants';
+import {
+  createSatellite, createPowerSatellite, getOffsets, getIndexCounts, generateIndices,
+} from './satellite';
 import {
   getTimeArray,
   getSatellitePositions,
@@ -18,142 +22,40 @@ import {
   getLowestChargeState,
 } from './simulation';
 
-const MissionSchema = Yup.object().shape({
-
-  satellites: Yup.array()
-    .of(
-      Yup.object().shape({
-        name: Yup.string()
-          .min(2, 'Too Short!')
-          .max(50, 'Too Long!')
-          .trim(),
-        // size: Yup.number()
-        //   .integer()
-        //   .min(1, 'Size must be 1 or more!')
-        //   .max(6, 'Size must be 6 or less!')
-        //   .required('size is required'),
-        // tle1: Yup.string()
-        //   .min(69, 'tle must be 69 columns')
-        //   .max(69, 'tle must be 69 columns')
-        //   .required('tle line 1 is required'),
-        // tle2: Yup.string()
-        //   .min(69, 'tle must be 69 columns')
-        //   .max(69, 'tle must be 69 columns')
-        //   .required('tle line 2 required'),
-
-        orbit: Yup.object().shape({
-          tle: Yup.string(),
-          meanMotionDot: Yup.number()
-            .min(-1, 'Must be more than -1')
-            .max(1, 'Must be less than 1')
-            .required('meanMotionDot is required'),
-          bstar: Yup.number()
-            .min(-2, 'Must be between -2 and 2')
-            .max(2, 'Must be between -2 and 2')
-            .required('bstar is required'),
-          inclination: Yup.number()
-            .min(0, 'Must be 0-360°')
-            .max(360, 'Must be 0-360°')
-            .required('inclination is required'),
-          rightAscension: Yup.number()
-            .min(0, 'Must be 0-360°')
-            .max(360, 'Must be 0-360°')
-            .required('right ascension is required'),
-          eccentricity: Yup.number()
-            .min(0, 'Must be between 0 and 1')
-            .max(1, 'Must be between 0 and 1')
-            .required('eccentricity is required'),
-          perigee: Yup.number()
-            .min(0, 'Must be 0-360°')
-            .max(360, 'Must be 0-360°')
-            .required('perigee is required'),
-          meanAnomaly: Yup.number()
-            .min(0, 'Must be 0-360°')
-            .max(360, 'Must be 0-360°')
-            .required('mean anomaly is required'),
-          meanMotion: Yup.number()
-            .min(0, 'Must be greater than 0')
-            .max(16, 'Must be less than 16')
-            .required('mean motion is required'),
-        }),
-        power: Yup.object().shape({
-          pvVoltage: Yup.number()
-            .min(0, 'Must be positive')
-            .required('pv voltage is required'),
-          currentDensity: Yup.number()
-            .min(0, 'Must be positive')
-            .required('pv current density is required'),
-          area: Yup.number()
-            .min(0, 'Must be greater than 0')
-            .required('pv area is required'),
-          batteryVoltage: Yup.number()
-            .min(0, 'Must be positive')
-            .required('battery voltage is required'),
-          capacity: Yup.number()
-            .min(0, 'Must be greater than 0')
-            .required('battery capacity is required'),
-          powerStoringConsumption: Yup.number()
-            .min(0, 'Must be greater than 0')
-            .required('Power storing consumption is required'),
-        }),
-        duties: Yup.array()
-          .of(
-            Yup.object().shape({
-              type: Yup.string()
-                .oneOf(['cyclical'])
-                .required('Type is required'),
-              name: Yup.string()
-                .min(2, 'Too Short!')
-                .max(30, 'Too Long!')
-                .required('required!'),
-              priority: Yup.number()
-                .integer()
-                .min(1)
-                .required('Priority is required'),
-              consumption: Yup.number()
-                .min(0, 'Must be positive')
-                .required('Consumption is required'),
-              duration: Yup.number()
-                .min(0, 'Must be positive')
-                .when(
-                  'type',
-                  {
-                    is: 'cyclical',
-                    then: Yup.number().required('Duration is required'),
-                  },
-                ),
-              cycles: Yup.number()
-                .min(0, 'Must be positive')
-                .when(
-                  'type',
-                  {
-                    is: 'cyclical',
-                    then: Yup.number().required('Cycles is required'),
-                  },
-                ),
-            }),
-          ),
-      }),
-    ),
-  powerSats: Yup.number()
-    .integer()
-    .min(0, 'Must be an integer greater than or equal to 0'),
-  offsets: Yup.object().shape({
+const SatelliteSchema = Yup.object().shape({
+  name: Yup.string()
+    .min(2, 'Too Short!')
+    .max(50, 'Too Long!')
+    .trim(),
+  color: Yup.string()
+    .trim()
+    .matches(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i),
+  orbit: Yup.object().shape({
+    tle: Yup.string(),
+    list: Yup.string(),
+    meanMotionDot: Yup.number()
+      .min(-1, 'Must be more than -1')
+      .max(1, 'Must be less than 1')
+      .required('meanMotionDot is required'),
+    bstar: Yup.number()
+      .min(-2, 'Must be between -2 and 2')
+      .max(2, 'Must be between -2 and 2')
+      .required('bstar is required'),
     inclination: Yup.number()
-      .min(0, 'Must be 0-36°')
-      .max(36, 'Must be 0-36°')
+      .min(0, 'Must be 0-360°')
+      .max(360, 'Must be 0-360°')
       .required('inclination is required'),
     rightAscension: Yup.number()
-      .min(0, 'Must be 0-36°')
-      .max(36, 'Must be 0-36°')
+      .min(0, 'Must be 0-360°')
+      .max(360, 'Must be 0-360°')
       .required('right ascension is required'),
     eccentricity: Yup.number()
       .min(0, 'Must be between 0 and 1')
       .max(1, 'Must be between 0 and 1')
       .required('eccentricity is required'),
     perigee: Yup.number()
-      .min(0, 'Must be 0-36°')
-      .max(36, 'Must be 0-36°')
+      .min(0, 'Must be 0-360°')
+      .max(360, 'Must be 0-360°')
       .required('perigee is required'),
     meanAnomaly: Yup.number()
       .min(0, 'Must be 0-360°')
@@ -164,24 +66,145 @@ const MissionSchema = Yup.object().shape({
       .max(16, 'Must be less than 16')
       .required('mean motion is required'),
   }),
+  power: Yup.object().shape({
+    pv: Yup.object().shape({
+      voltage: Yup.number()
+        .min(0, 'Must be positive')
+        .required('pv voltage is required'),
+      currentDensity: Yup.number()
+        .min(0, 'Must be positive')
+        .required('pv current density is required'),
+      area: Yup.number()
+        .min(0, 'Must be greater than 0')
+        .required('pv area is required'),
+      powerStoringConsumption: Yup.number()
+        .min(0, 'Must be greater than 0')
+        .required('Power storing consumption is required'),
+      preset: Yup.string()
+        .oneOf(['small', 'medium', 'large', 'custom']),
+    }),
+    battery: Yup.object().shape({
+      voltage: Yup.number()
+        .min(0, 'Must be positive')
+        .required('battery voltage is required'),
+      capacity: Yup.number()
+        .min(0, 'Must be greater than 0')
+        .required('battery capacity is required'),
+      preset: Yup.string()
+        .oneOf(['small', 'medium', 'large', 'custom']),
+    }),
+  }),
+  duties: Yup.array()
+    .of(
+      Yup.object().shape({
+        type: Yup.string()
+          .oneOf(['cyclical'])
+          .required('Type is required'),
+        name: Yup.string()
+          .min(2, 'Too Short!')
+          .max(30, 'Too Long!')
+          .required('required!'),
+        priority: Yup.number()
+          .integer()
+          .min(1)
+          .required('Priority is required'),
+        consumption: Yup.number()
+          .min(0, 'Must be positive')
+          .required('Consumption is required'),
+        duration: Yup.number()
+          .min(0, 'Must be positive')
+          .when(
+            'type',
+            {
+              is: 'cyclical',
+              then: Yup.number().required('Duration is required'),
+            },
+          ),
+        cycles: Yup.number()
+          .min(0, 'Must be positive')
+          .when(
+            'type',
+            {
+              is: 'cyclical',
+              then: Yup.number().required('Cycles is required'),
+            },
+          ),
+      }),
+    ),
 });
 
-const handleMissionRequest = (req) => {
-  // try {
-  //   missionSchema.validate(req);
-  // } catch (err) {
-  //   console.log(err);
-  //   return new Error({ type: err.name, message: `${err.path} ${err.message}` });
-  // }
+const MissionSchema = Yup.object().shape({
+  constellations: Yup.array().of(
+    Yup.object().shape({
+      name: Yup.string()
+        .min(2, 'Too Short!')
+        .max(50, 'Too Long!')
+        .trim(),
+      list: Yup.string(),
+      payload: SatelliteSchema,
+      satelliteCount: Yup.number().min(0).required('Satellite count is required'),
+      satellites: Yup.array().of(SatelliteSchema),
+      spacePowersCount: Yup.number()
+        .integer()
+        .min(0, 'Must be an integer greater than or equal to 0'),
+      spacePowerIndices: Yup.array().of(
+        Yup.number()
+          .min(0),
+      ),
+      offsets: Yup.object().shape({
+        inclination: Yup.number()
+          .min(0, 'Must be 0-36°')
+          .max(36, 'Must be 0-36°')
+          .required('inclination is required'),
+        rightAscension: Yup.number()
+          .min(0, 'Must be 0-36°')
+          .max(36, 'Must be 0-36°')
+          .required('right ascension is required'),
+        eccentricity: Yup.number()
+          .min(0, 'Must be between 0 and 1')
+          .max(1, 'Must be between 0 and 1')
+          .required('eccentricity is required'),
+        perigee: Yup.number()
+          .min(0, 'Must be 0-36°')
+          .max(36, 'Must be 0-36°')
+          .required('perigee is required'),
+        meanAnomaly: Yup.number()
+          .min(0, 'Must be 0-360°')
+          .max(360, 'Must be 0-360°')
+          .required('mean anomaly is required'),
+        meanMotion: Yup.number()
+          .min(0, 'Must be greater than 0')
+          .max(16, 'Must be less than 16')
+          .required('mean motion is required'),
+      }),
+    }),
+  ),
+});
 
-  // initialize customers
-  const customers = req.satellites.map((customer) => createSatellite(customer));
-  // initialize global simulation parameters
-  const time = getTimeArray(customers[0].params.orbit.epochdate);
+const simulateBaseData = (baseSatellite, length, frames) => {
+  const tles = generateTLE({
+    ...baseSatellite.orbit,
+    epoch: new Date(baseSatellite.orbit.epoch),
+  });
+  const orbit = twoline2satrec(tles.tle1, tles.tle2);
+  const time = getTimeArray(orbit.epochdate, length, frames);
   const sun = getSunPositions(time);
   const earth = getEarthRotationAngles(time);
+  return [time, sun, earth];
+};
 
-  // simulate customer orbits and duties
+const initializeConstellations = (constellations) => constellations.map((constellation) => ({
+  ...constellation,
+  satellites: constellation.satellites.map((satellite) => satellite.id),
+}));
+
+const initializeCustomers = (constellations, time, sun) => {
+  const customers = [];
+  constellations.forEach((constellation) => {
+    constellation.satellites.forEach((satellite) => {
+      customers.push(createSatellite(satellite, constellation.id));
+    });
+  });
   customers.forEach((customer) => {
     customer.positions = getSatellitePositions(customer.params, time);
     customer.performance = {
@@ -189,91 +212,161 @@ const handleMissionRequest = (req) => {
       isEclipsed: getEclipsedArray(customer, sun, time),
     };
   });
-  const offsets = getOffsets(Number(req.spacePowers), req.satellites.length, req.offsets);
-  const spacePowers = [];
+  return customers;
+};
 
-  req.satellites.forEach((satellite, index) => {
-    if (!offsets[index]) return;
-    return offsets[index].forEach((offset) => spacePowers.push(createPowerSatellite(
-      `Space Power ${index + 1}`,
-      satellite.orbit,
-      offset,
-    )));
+const initializeSpacePowers = (constellations) => {
+  const spacePowers = [];
+  constellations.forEach((constellation) => {
+    let indices;
+    if (!constellation.spacePowerIndices) indices = generateIndices(constellation.spacePowersCount, constellation.satellites.length);
+    else indices = constellation.spacePowerIndices;
+    const counts = getIndexCounts(constellation.satellites.length, indices);
+    const offsets = getOffsets(constellation.offsets, counts);
+    constellation.satellites.forEach((satellite, index) => {
+      if (!offsets[index]) return;
+      return offsets[index].forEach((offset) => {
+        spacePowers.push(createPowerSatellite(
+          `Space Power ${index + 1}`,
+          satellite.orbit,
+          offset,
+          constellation,
+        ));
+      });
+    });
   });
 
-  // simulate space power orbits and initialize beams
+  return spacePowers;
+};
+
+const simulateSpacePowers = (time, sun, constellations, customers) => {
+  const spacePowers = initializeSpacePowers(constellations);
   const beams = [];
   spacePowers.forEach((spacePower) => {
     spacePower.positions = getSatellitePositions(spacePower.params, time);
-    const satBeams = getBeams(spacePower, customers, time);
+    const satBeams = getBeams(spacePower, customers.filter((c) => c.constellation === spacePower.constellation), time);
     spacePower.performance = {
       currentDuties: getBeamDuties(satBeams, time),
       isEclipsed: getEclipsedArray(spacePower, sun, time),
     };
+    spacePower.performance.sources = getSources(spacePower, satBeams, time);
+    spacePower.performance.chargeState = getChargeStates(spacePower, time);
     beams.push(...satBeams);
   });
+  return [spacePowers, beams];
+};
 
-  // simulate batteries
+const simulateBatteries = (customers, time, beams) => {
   customers.forEach((customer) => {
     customer.performance.sources = getSources(customer, beams, time);
-
     customer.performance = {
       ...customer.performance,
       chargeState: getChargeStates(customer, time),
       chargeStateNoBeams: getChargeStates(customer, time, false),
     };
-    const [dischargeSaved, timeCharged] = getDischargeSaved(customer);
+    const [totalDischarge, dischargeSaved, timeCharged] = getDischargeSaved(customer);
     const [lowestChargeStateBeams, lowestChargeStateNoBeams] = getLowestChargeState(customer);
     customer.summary = {
+      totalDischarge,
       dischargeSaved,
       timeCharged,
       lowestChargeStateBeams,
       lowestChargeStateNoBeams,
     };
   });
+};
 
-  spacePowers.forEach((spacePower) => {
-    spacePower.performance.sources = getSources(spacePower, beams, time);
-    spacePower.performance = {
-      ...spacePower.performance,
-      chargeState: getChargeStates(spacePower, time),
-    };
-  });
-
-  // calculate averages
-
-  const fleet = {
-    name: 'fleet',
+const simulateConstellations = (time, constellations, customers, spacePowers) => constellations.map((constellation) => {
+  const satellites = constellation.satellites.map((id) => customers.find((customer) => customer.id === id));
+  return {
+    ...constellation,
+    isCustomer: true,
+    spacePowers: spacePowers.filter((spacePower) => spacePower.constellation === constellation.id).map((spacePower) => spacePower.id),
     performance: {
-      chargeState: time.map((t, index) => customers.reduce((prev, current) => prev + current.performance.chargeState[index], 0) / customers.length),
-      chargeStateNoBeams: time.map((t, index) => customers.reduce((prev, current) => prev + current.performance.chargeStateNoBeams[index], 0) / customers.length),
+      chargeState: time.map((t, index) => satellites.reduce((prev, current) => prev + current.performance.chargeState[index], 0) / customers.length),
+      chargeStateNoBeams: time.map((t, index) => satellites.reduce((prev, current) => prev + current.performance.chargeStateNoBeams[index], 0) / customers.length),
     },
     summary: {
-      dischargeSaved: customers.reduce((prev, current) => prev + current.summary.dischargeSaved, 0),
-      timeCharged: customers.reduce((prev, current) => prev + current.summary.timeCharged, 0),
-      lowestChargeStateBeams: customers.reduce((prev, current) => {
+      // totalDischarge: satellites.reduce((prev, current) => prev + current.summary.totalDischarge, 0),
+      dischargeSaved: satellites.reduce((prev, current) => prev + current.summary.dischargeSaved, 0),
+      timeCharged: satellites.reduce((prev, current) => prev + current.summary.timeCharged, 0),
+      lowestChargeStateBeams: satellites.reduce((prev, current) => {
         const c = current.summary.lowestChargeStateBeams;
         return prev < c ? prev : c;
-      }, customers[0].summary.lowestChargeStateBeams),
-      lowestChargeStateNoBeams: customers.reduce((prev, current) => {
+      }, satellites[0].summary.lowestChargeStateBeams),
+      lowestChargeStateNoBeams: satellites.reduce((prev, current) => {
         const c = current.summary.lowestChargeStateNoBeams;
         return prev < c ? prev : c;
-      }, customers[0].summary.lowestChargeStateNoBeams),
+      }, satellites[0].summary.lowestChargeStateNoBeams),
     },
   };
+});
 
+const handleMissionRequest = (req, length = SIM_LENGTH, frames = FRAMES) => {
+  const [time, sun, earth] = simulateBaseData(req.constellations[0].satellites[0], length, frames);
+  let constellations = initializeConstellations(req.constellations);
+  const customers = initializeCustomers(req.constellations, time, sun);
+  const [spacePowers, beams] = simulateSpacePowers(time, sun, req.constellations, customers);
+  simulateBatteries(customers, time, beams);
+  constellations = simulateConstellations(time, constellations, customers, spacePowers);
   return {
     success: true,
     time,
     satellites: {
       customers,
       spacePowers,
-      fleet,
     },
+    constellations,
     beams,
     sun,
     earth,
   };
 };
 
-export { handleMissionRequest, MissionSchema };
+const generatePartialMission = (req, length = SIM_LENGTH, frames = FRAMES) => {
+  const [time, sun, earth] = simulateBaseData(req.constellations[0].satellites[0], length, frames);
+  const constellations = initializeConstellations(req.constellations);
+  const customers = initializeCustomers(req.constellations, time, sun);
+  return {
+    time,
+    constellations,
+    satellites: {
+      customers,
+    },
+    sun,
+    earth,
+  };
+};
+
+const handleOptimizerMission = (mission, req) => {
+  const [spacePowers, beams] = simulateSpacePowers(
+    mission.time,
+    mission.sun,
+    req.constellations,
+    mission.satellites.customers,
+  );
+  simulateBatteries(mission.satellites.customers, mission.time, beams);
+  const constellations = simulateConstellations(
+    mission.time,
+    mission.constellations,
+    mission.satellites.customers,
+    spacePowers,
+  );
+  return {
+    ...mission,
+    success: true,
+    satellites: {
+      customers: mission.satellites.customers,
+      spacePowers,
+    },
+    constellations,
+    beams,
+  };
+};
+
+export {
+  handleMissionRequest, simulateBaseData, initializeConstellations, initializeCustomers,
+  simulateSpacePowers, simulateBatteries, simulateConstellations, generatePartialMission,
+  handleOptimizerMission, initializeSpacePowers,
+  MissionSchema,
+};

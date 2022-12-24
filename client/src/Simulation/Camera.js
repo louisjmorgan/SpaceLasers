@@ -5,7 +5,8 @@ import React, { useRef, useEffect, useLayoutEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { Vector3, Spherical } from 'three';
-import { useStore } from '../Model/store';
+import shallow from 'zustand/shallow';
+import { useSimStore } from '../Model/store';
 
 export default function Camera() {
   const controls = useRef();
@@ -13,7 +14,7 @@ export default function Camera() {
   useLayoutEffect(() => {
     camera.position.z = 4;
   }, [camera]);
-  const target = useStore((state) => state.cameraTarget);
+  const target = useSimStore((state) => state.cameraTarget, shallow);
   useEffect(() => {
     controls.current.maxDistance = 10;
     controls.current.minDistance = 2;

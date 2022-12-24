@@ -1,0 +1,51 @@
+{
+  "satellite": {
+      "name": "",
+      "tles": "",
+      "dimensions": 1,
+      "battery": {
+          "capacity": 1.125,
+          "voltage": 3.6
+              },
+      "pv": {
+          "profiles": {
+              "sunOnly": {
+                  "name": "sun only",
+                  "efficiency": 1
+              },
+              "beamOnly": {
+                  "name": "beam only",
+                  "efficiency": 1
+              },
+              "sunAndBeam": {
+                  "name": "sun and beam",
+                  "efficiency": 1.5
+              },
+              "eclipsed": {
+                  "name": "eclipsed",
+                  "efficiency": 0
+              }
+          },
+          "voltage": 4.7,
+          "currentDensity": 170.5,
+          "area": 0.0064
+              },
+      "load": {
+          "powerStoring": {
+          "name": "power storing",
+          "default": true,
+          "duration": null,
+          "consumption": 1.2,
+          "cycles": null
+          },
+      
+          "overPower": {
+          "name": "overpower",
+          "default": false,
+          "duration": 600,
+          "consumption": 3.2, 
+          "cycles": 6
+          }
+      }
+  }
+}

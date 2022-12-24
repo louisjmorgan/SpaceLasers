@@ -1,133 +1,148 @@
-import {
+const { v4: uuidv4 } = require('uuid');
+const {
   twoline2satrec,
-  loadTLEs,
-  getCorsFreeUrl,
-} from '../Utils/TLE';
+  extractTLE,
+  generateTLE,
+} = require('../util/astronomy');
 
-const defaultBattery = {
-  capacity: 1.125, // Ah
-  voltage: 3.6, // V
-};
+const { SIM_LENGTH } = require('../util/constants')
 
-const defaultPV = {
-  profiles: {
-    // current density multipliers
-    sunOnly: {
-      name: 'sun only',
-      efficiency: 1,
-    },
-    beamOnly: {
-      name: 'beam only',
-      efficiency: 1,
-    },
-    sunAndBeam: {
-      name: 'sun and beam',
-      efficiency: 1.5,
-    },
-    eclipsed: {
-      name: 'eclipsed',
-      efficiency: 0,
-    },
+const PV_SOURCES = {
+  sunOnly: {
+    name: 'sun only',
+    efficiency: 1,
   },
-  voltage: 4.7, // V at mpp
-  currentDensity: 170.5, // A/m^2
-  area: 0.0064, // m^2
-};
-
-const defaultLoad = {
-  powerStoring: {
-    name: 'power storing',
-    default: true,
-    duration: null,
-    consumption: 1.2, // W
-    cycles: null,
+  beamOnly: {
+    name: 'beam only',
+    efficiency: 1,
   },
-
-  overPower: {
-    name: 'overpower',
-    default: false,
-    duration: 600, // s
-    consumption: 3.2, // W
-    cycles: 6, // per orbit
+  sunAndBeam: {
+    name: 'sun and beam',
+    efficiency: 1.5,
+  },
+  eclipsed: {
+    name: 'eclipsed',
+    efficiency: 0,
   },
 };
 
-const defaultUI = {
-  showLabel: false,
-  chargeState: 0.3,
-  currentDuty: 'powerStoring',
-};
+const POWER_SAT_REQUEST = {
+  pvVoltage: 4.7,
+  currentDensity: 170.5,
+  area:  0.0128,
+  batteryVoltage: 3.6,
+  capacity: 1.125,
+  duties: [
+    {
+      name: 'power storing',
+      duration: null,
+      cycles: null,
+      consumption: 1.2,
+      type: 'power storing',
+    },
+    {
+      name: 'beaming',
+      duration: null,
+      cycles: null,
+      consumption: 3.2,
+      type: 'space power',
+    }
+  ]
+}
 
-function generateProfiles(pv, load, battery) {
+function generatePowerProfiles(pv, duties, battery) {
   const { area, voltage, currentDensity } = pv;
-  const newPowerProfiles = new Map();
-  Object.entries(pv.profiles).forEach((powerProfile) => {
+  const newPowerProfiles = [];
+  Object.entries(pv.sources).forEach((pvSource) => {
     const current =
-      currentDensity * powerProfile[1].efficiency * area;
+      currentDensity * pvSource[1].efficiency * area;
     const pvPower = current * voltage;
-    const loadProfiles = new Map();
-    Object.entries(load).forEach((loadProfile) => {
-      const netPower = pvPower - loadProfile[1].consumption;
+    const loadProfiles = [];
+    duties.forEach((duty) => {
+      const netPower = pvPower - duty.consumption;
       const netCurrent = netPower / battery.voltage;
-      loadProfiles.set(loadProfile[1].name, netCurrent);
+      loadProfiles.push(netCurrent);
+      
     });
-    newPowerProfiles.set(powerProfile[1].name, loadProfiles);
+    newPowerProfiles[pvSource[1].name] = loadProfiles;
   });
   return newPowerProfiles;
+};
+
+
+function getDutyIntervals(load, period, time) {
+  if (load.type === 'cyclical') {
+    const cycles = Number(load.cycles);
+    const duration = Number(load.duration) * 1000;
+    const interval =
+      (period  - (duration * cycles)) / cycles;
+    const totalCycles = Math.floor((SIM_LENGTH / period) * cycles)
+     return Array.from({ length: totalCycles}, (value, index) => {
+      const start = time.valueOf()  + (interval * (index + 1)) + (duration * index);
+      return {
+        start: start,
+        end: start + duration,
+      }
+    })
+  }
 }
+
+function getPowerTLEs(tles, inclinationOffset) {
+  const orbitElements = extractTLE(tles.tle1, tles.tle2)
+  orbitElements.inclination += inclinationOffset;
+  return generateTLE(orbitElements)
+}
+
+function createPowerSatellite(name, tles, inclinationOffset) {
+  const newTLEs = getPowerTLEs(tles, inclinationOffset);
+  return createSatellite(name, POWER_SAT_REQUEST, newTLEs)
+} 
 
 function createSatellite(
   name,
+  params,
   tles,
-  dimensions = 1,
-  battery,
-  pv,
-  load
 ) {
-  if (!battery) {
-    battery = {
-      ...defaultBattery,
-      capacity: defaultBattery.capacity * dimensions,
-      dischargeCurrent: defaultBattery.dischargeCurrent * dimensions,
-    };
-  }
 
-  if (!pv) {
-    pv = {
-      ...defaultPV,
-      voltage: defaultPV.voltage * dimensions,
-      area: defaultPV.area * dimensions,
-    };
-  } else pv.profiles = defaultPV.profiles;
-
-  if (!load) {
-    load = {
-      ...defaultLoad,
-      powerStoring: {
-        ...defaultLoad.powerStoring,
-        consumption:
-          defaultLoad.powerStoring.consumption * dimensions,
-      },
-      overPower: {
-        ...defaultLoad.overPower,
-        consumption: defaultLoad.overPower.consumption * dimensions,
-      },
-    };
-  }
-
-  // const performance = defaultPerformance;
-
-  const profiles = generateProfiles(pv, load, battery);
   const orbit = twoline2satrec(tles.tle1, tles.tle2);
-  orbit.period = (2 * Math.PI * 60) / orbit.no;
+  orbit.period = (2 * Math.PI * 60 * 1000) / orbit.no;
+
+  const pv = {
+    sources: PV_SOURCES,
+    voltage: params.pvVoltage,
+    currentDensity: params.currentDensity,
+    area: params.area,
+  };
+
+  const battery = {
+    voltage: params.batteryVoltage,
+    capacity: params.capacity,
+  };
+
+  const duties = params.duties.map((duty) => {
+    return {
+      name: duty.name,
+      type: duty.type,
+      consumption: Number(duty.consumption),
+      duration: (Number(duty.duration) * 1000) || null,
+      cycles: Number(duty.cycles) || null,
+      intervals: duty.type === 'cyclical' ? getDutyIntervals(duty, orbit.period, orbit.epochdate) : null
+    }
+  });
+  const powerProfiles = generatePowerProfiles(pv, duties, battery);
   return {
-    name,
-    orbit,
-    profiles,
-    battery,
-    pv,
-    load,
+    name: name,
+    id: uuidv4(),
+    params: {
+      orbit,
+      battery,
+      pv,
+      load: {
+        powerProfiles,
+        duties,
+      },
+    }
   };
 }
 
-export default createSatellite;
+module.exports = {createSatellite, createPowerSatellite};

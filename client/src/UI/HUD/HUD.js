@@ -4,8 +4,8 @@
 /* eslint-disable react/prop-types */
 import {
   Flex, Select, Stat, StatLabel, StatNumber,
-  Box, Center, StatGroup, GridItem, StatHelpText, ButtonGroup,
-  Button, Text,
+  Box, Center, StatGroup, StatHelpText, Text,
+  Drawer, DrawerContent,
 } from '@chakra-ui/react';
 import {
   useCallback, useEffect, useRef, useState,
@@ -14,7 +14,7 @@ import shallow from 'zustand/shallow';
 import { addEffect } from '@react-three/fiber';
 import * as d3 from 'd3';
 import { TriangleUpIcon } from '@chakra-ui/icons';
-import { useFrameStore, useStore } from '../../Model/store';
+import { useFrameStore, useSimStore, useUIStore } from '../../Model/store';
 import Gauge from './Gauge';
 import './HUD.css';
 import { FRAMES } from '../../Util/constants';
@@ -54,63 +54,86 @@ const statProps = [
     key: 'chargeState',
     label: '',
     shouldArrows: false,
-    getValue: (frame, selected) => selected.performance.chargeStateNoBeams[frame] * 100,
-    formatValue: (value) => `${(value).toPrecision(3)}%`,
-    getHelpText: () => 'w/ Space Power',
-    getHelpNumber: (frame, selected) => `${(selected.performance.chargeState[frame] * 100).toPrecision(3)}% `,
+    getValue: (frame, selected) => `${(selected.performance.chargeState[frame] * 100).toPrecision(3)}% `,
+    formatValue: (value) => value,
+    getHelpText: (frame, selected) => (selected.isCustomer ? 'w/o Space Power' : ''),
+    getHelpNumber: (frame, selected) => (selected.isCustomer ? `${(selected.performance.chargeStateNoBeams[frame] * 100).toPrecision(3)}% ` : ''),
   },
 ];
 
 function HUD() {
   const {
-    satellites, toggleLabel, toggleAllLabels, attachCamera,
-    detachCamera, cameraTarget, satelliteOptions, view, isFinished, isPaused,
-  } = useStore(
-    (state) => ({
-      satellites: state.mission.satellites,
-      toggleLabel: state.toggleLabel,
-      toggleAllLabels: state.toggleAllLabels,
-      satelliteOptions: state.satelliteOptions,
-      attachCamera: state.attachCamera,
-      detachCamera: state.detachCamera,
-      cameraTarget: state.cameraTarget,
-      view: state.view,
-      isFinished: state.isFinished,
-      isPaused: state.isPaused,
-    }),
-    shallow,
-  );
+    satellites, constellations, toggleLabel, toggleAllLabels,
+    satelliteOptions, constellationOptions, isInitialized,
+  } = useSimStore((state) => ({
+    satellites: state.mission.satellites,
+    constellations: state.mission.constellations,
+    toggleLabel: state.toggleLabel,
+    toggleAllLabels: state.toggleAllLabels,
+    satelliteOptions: state.satelliteOptions,
+    constellationOptions: state.constellationOptions,
+    isInitialized: state.isInitialized,
+  }), shallow);
 
-  // const [selected, setSelected] = useState(satellites.customers[0]);
-  // const selected = useRef(satellites.customers[0]);
-  const [selected, setSelected] = useState(satellites.customers[0]);
+  const {
+    isOpen, closeMenu,
+  } = useUIStore((state) => ({
+    view: state.view,
+    isOpen: state.isOpen.HUD,
+    closeMenu: state.closeMenu,
+  }), shallow);
+
+  const onClose = () => {
+    closeMenu('HUD');
+  };
+
+  const [selected, setSelected] = useState({
+    constellation: constellations[0],
+    satellite: satellites.customers[0],
+  });
+
   useEffect(() => {
-    // selected.current = satellites.customers[0];
-    setSelected(() => satellites.customers[0]);
-  }, [satellites]);
+    setSelected(() => ({
+      constellation: constellations[0],
+      satellite: satellites.customers[0],
+    }));
+  }, [satellites, constellations]);
 
   const handleSelectSatellite = (e) => {
     const selection = e.target.value;
-    if (selection === 'fleet') {
-      setSelected(() => satellites.fleet);
+    if (selection === selected.constellation.id) {
+      setSelected(() => ({
+        ...selected,
+        satellite: selected.constellation,
+      }));
     } else {
-      setSelected(() => satellites.customers.find((customer) => (
-        customer.id === selection)));
+      setSelected(() => ({
+        ...selected,
+        satellite: satelliteOptions.get(selection).isCustomer
+          ? satellites.customers.find((customer) => (customer.id === selection))
+          : satellites.spacePowers.find((spacePower) => (spacePower.id === selection)),
+      }));
     }
   };
 
-  const handleLabel = () => {
-    toggleLabel(selected.id);
+  const handleSelectConstellation = (e) => {
+    const selection = e.target.value;
+    setSelected(() => ({
+      constellation: constellationOptions.get(selection),
+      satellite: satellites.customers.find((customer) => (
+        customer.id === constellationOptions.get(selection).satellites[0]
+      )),
+    }));
   };
 
-  const handleCamera = () => {
-    if (cameraTarget.id === selected.id) detachCamera();
-    else attachCamera(selected.id);
-  };
-
-  const hideAllLabels = () => {
-    toggleAllLabels(false);
-  };
+  useEffect(() => {
+    if (selected.satellite.id === selected.constellation.id) {
+      toggleAllLabels(true);
+    } else {
+      toggleAllLabels(false);
+      toggleLabel(selected.satellite.id);
+    }
+  }, [selected]);
 
   const frame = useRef(useFrameStore.getState().frame);
   useEffect(() => {
@@ -122,7 +145,6 @@ function HUD() {
     );
   }, []);
 
-  // const statRefs = useRef([]);
   const statRefs = useRef(new Map());
   const handleStatRefs = useCallback((node) => {
     if (!node) return;
@@ -140,21 +162,19 @@ function HUD() {
   const arrow = useRef();
   const parent = useRef();
   addEffect(() => {
-    // if (prevFrame.current === frame.current) return;
     if (frame.current > FRAMES) return;
-    // if (isPaused || isFinished) return;
     statRefs.current.forEach((stat) => {
       if (!stat.ref) return;
       parent.current = d3.select(stat.ref);
 
-      if (selected.name === 'fleet' && stat.key !== 'chargeState') {
+      if (selected.satellite.id === selected.constellation.id && stat.key !== 'chargeState') {
         if (!parent.current.classed('hide')) d3.select(stat.ref).classed('hide', true);
         return;
       }
       if (parent.current.classed('hide')) d3.select(stat.ref).classed('hide', false);
       let value;
       try {
-        value = stat.getValue(frame.current, selected);
+        value = stat.getValue(frame.current, selected.satellite);
       } catch {
         return;
       }
@@ -165,12 +185,12 @@ function HUD() {
 
       parent.current.selectAll('.chakra-stat__help-text')
         .select('.help-text')
-        .text(stat.getHelpText(frame.current, selected));
+        .text(stat.getHelpText(frame.current, selected.satellite));
 
       if (stat.getHelpNumber) {
         parent.current.selectAll('.chakra-stat__help-text')
           .select('.help-number')
-          .text(stat.getHelpNumber(frame.current, selected));
+          .text(stat.getHelpNumber(frame.current, selected.satellite));
       }
 
       if (stat.shouldArrows) {
@@ -190,88 +210,100 @@ function HUD() {
 
   if (!satellites) return;
   return (
-    <GridItem area={'3 / 1 / 4 / 3'} zIndex={99} transform={view.name === 'simulation' ? '' : 'translate(-9999px, 0)'} position={view.name === 'simulation' ? '' : 'absolute'}>
-      <Flex height="100%" justify="space-between" align-items="center">
-        <Center flex={1}>
-          <Box px={2}>
-            <Select onChange={handleSelectSatellite}>
-              {satellites.customers.map((customer) => (
-                <option key={customer.id} value={customer.id}>{customer.name}</option>
-              ))}
-              <option value="fleet">Fleet</option>
-            </Select>
+    <Drawer
+      isOpen={isOpen}
+      placement="bottom"
+      onClose={onClose}
+      closeOnEsc={false}
+      size="md"
+      variant="permanent"
+    >
+      {/* <GridItem
+      area={'3 / 1 / 4 / 3'}
+      zIndex={99} transform={view.name === 'simulation' ? '' : 'translate(-9999px, 0)'}
+      position={view.name === 'simulation' ? '' : 'absolute'}
+      > */}
+      <DrawerContent
+        width="100%"
+        backgroundColor="transparent"
+        pb="6vh"
+        pt={5}
+        boxShadow="0"
 
-          </Box>
-          {selected.name !== 'fleet'
-            ? (
-              <ButtonGroup>
-                <Button onClick={handleLabel}>
-                  {satelliteOptions.get(selected.id).showLabel ? 'Hide Label' : 'Show Label'}
-                </Button>
-                <Button
-                  // onClick={
-                  //     cameraTarget.id === selected.id
-                  //       ? () => detachCamera() : () => attachCamera(selected.id)
-                  //   }
-                  onClick={handleCamera}
-                >
-                  {cameraTarget.id === selected.id ? 'Detach Camera' : 'Attach Camera'}
-                </Button>
-              </ButtonGroup>
-            )
-            : <Button onClick={hideAllLabels}>{'Hide All Labels'}</Button>}
-        </Center>
-        <Box height="100%" flex={1}>
-          <Center>
-            <Stat
-              align="center"
-              ref={handleStatRefs}
-              id={'chargeState'}
-            >
-              <StatLabel>Charge</StatLabel>
-              <Gauge
-                height={200}
-                selected={selected}
-                styles={{ position: 'absolute' }}
-              />
-              <StatNumber textStyle="number">
-                <span />
-              </StatNumber>
-              <StatHelpText width="100%">
-                <Text as={'span'} textStyle="number" className="help-number" />
-                <span className="help-text" />
-              </StatHelpText>
-
-            </Stat>
+      >
+        <Flex height="100%" justify="space-between" align-items="center">
+          <Center flex={1}>
+            <Flex gap={5} direction="column">
+              <Select value={selected.constellation.id} onChange={handleSelectConstellation}>
+                {[...constellationOptions.entries()].map(([id, constellation]) => (
+                  <option
+                    key={id}
+                    value={id}
+                  >
+                    {constellation.name}
+                  </option>
+                ))}
+              </Select>
+              <Select value={selected.satellite.id} onChange={handleSelectSatellite}>
+                {constellationOptions.get(selected.constellation.id).satellites.map((id) => (
+                  <option key={id} value={id}>{satelliteOptions.get(id).name}</option>
+                ))}
+                <option value={selected.constellation.id}>All</option>
+              </Select>
+            </Flex>
           </Center>
-        </Box>
-        <Center flex={1}>
-          <Box>
-            <StatGroup>
-              {statProps.slice(0, 2).map((stat) => (
-                <Stat
-                  width="30ch"
-                  key={stat.key}
-                  id={stat.key}
-                  ref={handleStatRefs}
-                >
-                  <StatLabel>{stat.label}</StatLabel>
-                  <StatNumber textStyle="number"><span /></StatNumber>
-                  <StatHelpText>
-                    {stat.shouldArrows
-                      ? (
-                        <TriangleUpIcon className="up-arrow" m={1} ml={0} />
-                      )
-                      : '' }
-                    <span className="help-text" />
-                  </StatHelpText>
-                </Stat>
-              ))}
-            </StatGroup>
+          <Box height="100%" flex={1}>
+            <Center>
+              <Stat
+                align="center"
+                ref={handleStatRefs}
+                id={'chargeState'}
+              >
+                <StatLabel>Charge</StatLabel>
+                <Gauge
+                  height={200}
+                  selected={selected.satellite}
+                  styles={{ position: 'absolute' }}
+                />
+                <StatNumber textStyle="number" color="green.500">
+                  <span />
+                </StatNumber>
+                <StatHelpText width="100%">
+                  <Text as={'span'} textStyle="number" className="help-number" />
+                  <span className="help-text" />
+                </StatHelpText>
+              </Stat>
+            </Center>
           </Box>
-        </Center>
-      </Flex>
-    </GridItem>
+          <Center flex={1}>
+            <Box>
+              <StatGroup>
+                {statProps.slice(0, 2).map((stat) => (
+                  <Stat
+                    width="30ch"
+                    key={stat.key}
+                    id={stat.key}
+                    ref={handleStatRefs}
+                  >
+                    <StatLabel>{stat.label}</StatLabel>
+                    <StatNumber textStyle="number"><span /></StatNumber>
+                    <StatHelpText>
+                      {stat.shouldArrows
+                        ? (
+                          <TriangleUpIcon className="up-arrow" m={1} ml={0} />
+                        )
+                        : '' }
+                      <span className="help-text" />
+                    </StatHelpText>
+                  </Stat>
+                ))}
+              </StatGroup>
+            </Box>
+          </Center>
+        </Flex>
+      </DrawerContent>
+      {/* </GridItem> */}
+    </Drawer>
   );
 }
 

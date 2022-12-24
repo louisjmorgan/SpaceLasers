@@ -7,7 +7,8 @@ import { Billboard } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import React, { forwardRef, useEffect, useRef } from 'react';
 import { earthRadius } from 'satellite.js/lib/constants';
-import { useFrameStore, useStore } from '../Model/store';
+import shallow from 'zustand/shallow';
+import { useFrameStore, useSimStore } from '../Model/store';
 
 function Sun() {
   const ref = useRef();
@@ -22,7 +23,7 @@ function Sun() {
     );
   }, []);
 
-  const position = useStore((state) => state.mission.sun);
+  const position = useSimStore((state) => state.mission.sun, shallow);
   useFrame(({ clock }) => {
     ref.current.position.x = position.x[frame.current];
     ref.current.position.y = position.y[frame.current];

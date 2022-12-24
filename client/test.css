@@ -1,0 +1,23 @@
+/* replace .btn with whatever the button class is called */
+.btn {
+  clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+  border-color: #28D759; 
+  text-transform: uppercase;
+  font-weight: bold;
+  padding: 10 30;
+  z-index: 1;
+  position: relative;
+}
+
+.btn::after {
+  background-color: #28D759;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  transform: scaleX(0);
+  transition: transform 0.3s ease-in-out;
+}
+
+.btn:hover::after {
+  transform: scaleX(1);
+}
