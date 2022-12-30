@@ -43,3 +43,21 @@
   font-size: 0.75rem;
 } */
 
+
+.u-wrap {
+  position: relative;
+  width: 100%;
+  color: 'white'
+}
+.u-under, .u-axis {
+  position: absolute;
+  width: 100%;
+
+}
+
+.u-wrap > canvas {
+  position: absolute;
+  width: 100%;
+  color: 'white'
+
+}

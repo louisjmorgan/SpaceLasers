@@ -6,7 +6,7 @@ import shallow from 'zustand/shallow';
 import { useSimStore } from '../../Model/store';
 import './Charts.css';
 
-function SatelliteList({ toggleSelected, selected }) {
+function SatelliteList({ onSelectSatellite, selected }) {
   const {
     customers,
   } = useSimStore(
@@ -17,7 +17,7 @@ function SatelliteList({ toggleSelected, selected }) {
   );
   const handleSelect = (e) => {
     const { id } = e.target;
-    toggleSelected(id);
+    onSelectSatellite(id);
   };
 
   return (
@@ -35,8 +35,8 @@ function SatelliteList({ toggleSelected, selected }) {
             id={customer.id}
             key={customer.id}
             align="start"
-            isDisabled={(selected.length === 1 && selected.includes(customer))}
-            isChecked={selected.includes(customer)}
+            isDisabled={(selected.length === 1 && selected.includes(customer.id))}
+            isChecked={selected.includes(customer.id)}
           >
             {customer.name}
           </Checkbox>

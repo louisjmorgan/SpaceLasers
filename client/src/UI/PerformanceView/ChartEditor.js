@@ -1,11 +1,12 @@
+/* eslint-disable no-plusplus */
 /* eslint-disable consistent-return */
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-unused-vars */
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {
-  Box, Center, Flex, FormControl, FormLabel, NumberDecrementStepper, NumberIncrementStepper,
-  NumberInput, NumberInputField, NumberInputStepper, Select, Slider, SliderFilledTrack, SliderThumb, SliderTrack, Text, VStack,
+  Box, Center, Flex, FormControl, FormLabel,
+  Select, Slider, SliderFilledTrack, SliderThumb, SliderTrack, Text, VStack,
 } from '@chakra-ui/react';
 
 import React, {
@@ -15,6 +16,7 @@ import React, {
 } from 'react';
 import shallow from 'zustand/shallow';
 import { useFrameStore, useSimStore } from '../../Model/store';
+import { FRAMES } from '../../Util/constants';
 import Chart from './Chart';
 import SatelliteList from './SatelliteList';
 
@@ -36,6 +38,63 @@ const paramChoices = [
   },
 ];
 
+const dataHelpers = {
+  chargeState: {
+    name: 'Charge State',
+    unit: '%',
+    label: '',
+    getValue: (frame, satellite) => (satellite.performance.chargeState[frame] * 100).toFixed(2),
+    shouldFixYScale: true,
+    min: 0,
+    max: 100,
+
+  },
+  chargeStateNoBeams: {
+    name: 'Charge w/o Space Power',
+    unit: '%',
+    label: 'w/o Space Power',
+    getValue: (frame, satellite) => (satellite.performance.chargeStateNoBeams[frame] * 100).toFixed(2),
+    shouldFixYScale: true,
+
+    min: 0,
+    max: 100,
+  },
+  netCurrent: {
+    name: 'Net Current',
+    unit: 'A',
+    label: '',
+    getValue: (frame, satellite) => satellite.params.load.powerProfiles[
+      satellite.performance.sources[frame]
+    ][
+      satellite.performance.currentDuties[frame]
+    ],
+    shouldFixYScale: false,
+
+  },
+  consumption: {
+    name: 'Consumption',
+    unit: 'W',
+    label: '',
+    getValue: (frame, satellite) => satellite.params.load.duties[
+      satellite.performance.currentDuties[frame]
+    ].consumption,
+    shouldFixYScale: false,
+  },
+};
+
+const palette = [
+  '#7EB26D', // 0: pale green
+  '#EAB839', // 1: mustard
+  '#6ED0E0', // 2: light blue
+  '#EF843C', // 3: orange
+  '#E24D42', // 4: red
+  '#1F78C1', // 5: ocean
+  '#BA43A9', // 6: purple
+  '#705DA0', // 7: violet
+  '#508642', // 8: dark green
+  '#CCA300', // 9: dark sand
+];
+
 function ChartEditor() {
   const {
     customers, time, spacePowers, averages,
@@ -49,82 +108,95 @@ function ChartEditor() {
     shallow,
   );
 
-  // const [selected.current.satellites, setselected.current.satellite] = useState([...customers]);
-  // const [selectedParams, setSelectedParams] = useState('chargeState');
-
-  const selected = useRef({
-    satellites: customers.slice(0, 1),
-    params: ['chargeState'],
+  const [selected, setSelected] = useState({
+    satellites: [customers[0].id],
+    params: ['chargeState', 'chargeStateNoBeams'],
   });
-  const [selectedSatellites, setSelectedSatellites] = useState(customers.slice(0, 3));
-  const shouldUpdate = useRef(false);
-  const toggleSelected = (id) => {
-    const satellite = customers.find((v) => v.id === id);
-    if (selected.current.satellites.includes(satellite)) {
-      if (selected.current.satellites.length === 1) return;
-      selected.current.satellites = selected.current.satellites.filter(
-        (v) => v.id !== satellite.id,
-      );
-    } else {
-      selected.current.satellites = [...selected.current.satellites, satellite];
-      if (selected.current.satellites.length > 6) {
-        selected.current.satellites.splice(0, 1);
-      }
-    }
-    startTransition(() => { setSelectedSatellites(selected.current.satellites); });
+  const [selectedParams, setSelectedParams] = useState('chargeState');
 
-    shouldUpdate.current = true;
-  };
-  const handleSelectParam = (e) => {
-    selected.current.params = paramChoices.find((v) => v.key === e.target.value).selection;
-    shouldUpdate.current = true;
+  const onSelectSatellite = (id) => {
+    // const sat = customers.find((c) => c.id === id);
+    setSelected((prev) => ({
+      ...prev,
+      satellites: prev.satellites.includes(id)
+        ? prev.satellites.filter((v) => v !== id)
+        : [...prev.satellites, id],
+    }));
   };
 
-  const frame = useRef(useFrameStore.getState().frame);
+  const onSelectParam = (e) => {
+    const choice = paramChoices.find((c) => c.key === e.target.value);
+    setSelected((prev) => ({
+      ...prev,
+      params: choice.selection,
+    }));
+  };
+
+  const [series, setSeries] = useState([{
+    satellite: customers[0],
+    param: 'chargeState',
+    color: palette[0],
+    name: `${customers[0].name}-${dataHelpers.chargeState.name}`,
+    data: time.map(
+      (t, j) => dataHelpers.chargeState.getValue(j, customers[0]),
+    ),
+    shouldFixYScale: true,
+  },
+  {
+    satellite: customers[0],
+    param: 'chargeStateNoBeams',
+    color: palette[1],
+    name: `${customers[0].name}-${dataHelpers.chargeStateNoBeams.name}`,
+    data: time.map(
+      (t, j) => dataHelpers.chargeStateNoBeams.getValue(j, customers[0]),
+    ),
+    shouldFixYScale: true,
+  }]);
+
   useEffect(() => {
-    useFrameStore.subscribe(
-      (state) => {
-        if (state.frame - 2 > frame.current) { frame.current = state.frame; }
-        if (frame.current > state.frame) { frame.current = state.frame; }
+    setSeries((prev) => {
+      let index = 0;
+      const newSeries = selected.satellites.map((id) => {
+        const satellite = customers.find((c) => c.id === id);
+        return (
+          selected.params.map((param) => ({
+            data: time.map(
+              (t, j) => dataHelpers[param].getValue(j, satellite),
+            ),
+            param,
+            name: `${satellite.name}-${dataHelpers[param].name}`,
+            color: palette[index++],
+            shouldFixYScale: dataHelpers[param].shouldFixYScale,
+          }))
+        );
+      });
+      return newSeries.flat();
+    });
+  }, [selected.satellites, selected.params]);
+  console.log(series);
 
-        // frame.current = state.frame;
-      },
-    );
-  }, []);
-  const zoom = useRef(300);
+  const window = useRef(300);
+
   const handleZoom = (v) => {
-    zoom.current = v;
+    window.current = FRAMES / v;
   };
-  const timeRef = useRef();
-
-  useEffect(() => {
-    selected.current.satellites = customers.slice(0, 1);
-    timeRef.current = time;
-    shouldUpdate.current = true;
-  }, [customers, time]);
-  const containerRef = useRef();
-
   return (
     <VStack>
-      <div ref={containerRef} />
-
       <Chart
-        selected={selected}
-        shouldUpdate={shouldUpdate}
+        series={series}
         time={time}
-        zoom={zoom}
-        container={containerRef}
+        window={window}
       />
-      {/* <FormControl width="50%">
+      <FormControl width="50%">
         <Flex gap={3} align="center" justify="center" m={3}>
           <FormLabel height="100%" margin={0}>Zoom:</FormLabel>
           <Slider
             aria-label="slider-ex-2"
             colorScheme="purple"
             defaultValue={300}
-            min={0}
-            max={1000}
-            step={10}
+            min={1}
+            max={48}
+            step={5}
             onChange={handleZoom}
             maxWidth="10rem"
           >
@@ -136,12 +208,12 @@ function ChartEditor() {
         </Flex>
       </FormControl>
       <Flex width="100%" justify="flex-start">
-        <SatelliteList toggleSelected={toggleSelected} selected={selectedSatellites} />
+        <SatelliteList onSelectSatellite={onSelectSatellite} selected={selected.satellites} />
         <Center width="50%">
           <VStack width="50%">
             <h4>Choose parameter</h4>
             <Select
-              onChange={handleSelectParam}
+              onChange={onSelectParam}
             >
               {paramChoices.map((choice) => (
                 <option value={choice.key} key={choice.key}>{choice.name}</option>
@@ -150,7 +222,7 @@ function ChartEditor() {
           </VStack>
         </Center>
         <Box width="20%" />
-      </Flex> */}
+      </Flex>
     </VStack>
   );
 }
