@@ -23,6 +23,9 @@ const plugins = [
  })
 ];
 
+const PUBLIC_URL = process.env.PUBLIC_URL || '/';
+console.log(PUBLIC_URL)
+
 if (process.env.NODE_ENV === 'production') {
   mode = 'production';
   // target = 'browserslist';
@@ -43,9 +46,10 @@ module.exports = {
   },
 
   output: {
-    path: path.resolve(__dirname, '..', 'dist'),
+    path: path.resolve(__dirname, '..', 'build'),
     filename: '[name].bundle.js',
     assetModuleFilename: 'assets/[hash][ext][query]',
+    publicPath: PUBLIC_URL,
   },
 
   optimization: {
@@ -93,7 +97,7 @@ module.exports = {
     proxy: {
       '/api': 'http://localhost:5000',
     },
-    static: path.resolve(__dirname, '..', './dist'),
+    static: path.resolve(__dirname, '..', './build'),
     hot: true,
   },
 };

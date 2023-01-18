@@ -11,10 +11,17 @@ import {
 } from '@chakra-ui/react';
 import { useFormik } from 'formik';
 import { useEffect, useState } from 'react';
+<<<<<<< HEAD
+import { loadTLEs } from '../../Util/astronomy';
+import { useStore } from '../../Model/store';
+import { MissionSchema } from '../../Model/mission';
+
+=======
 
 import { getCorsFreeUrl, loadTLEs } from '../../Util/astronomy';
 import { useStore } from '../../Model/store';
 import { MissionSchema } from '../../Model/mission';
+>>>>>>> new-ui
 import SatelliteList from './SatelliteList';
 import OrbitTab from '../SatelliteMenu/OrbitTab';
 import PowerTab from '../SatelliteMenu/PowerTab';
@@ -25,7 +32,7 @@ import { defaultValues } from '../../Util/defaultInputs';
 function fetchTLEs(urls) {
   const tles = [];
   Object.entries(urls).forEach(([key, url]) => {
-    loadTLEs(getCorsFreeUrl(url)).then((res) => {
+    loadTLEs(url).then((res) => {
       tles.push({
         name: key,
         tles: res,
@@ -42,6 +49,10 @@ const urls = {
   Galileo: 'https://celestrak.org/NORAD/elements/gp.php?GROUP=galileo&FORMAT=tle',
   Geosynchronous: 'https://celestrak.org/NORAD/elements/gp.php?GROUP=geo&FORMAT=tle',
 };
+
+// const urls = {
+//   Starlink: 'https://celestrak.org/NORAD/elements/gp.php?INTDES=2020-025&FORMAT=TLE',
+// };
 
 function MissionPlanner({ shouldDisplay }) {
   const [satIndex, setSatIndex] = useState(0);
