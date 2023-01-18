@@ -29,26 +29,20 @@ function PerformanceView() {
       </Button>
       <Drawer
         isOpen={isOpen}
-        placement="bottom"
+        placement="right"
         onClose={onClose}
         finalFocusRef={btnRef}
-        size="full"
+        variant="permanent"
+        size={['full', 'full', 'xl', 'xl']}
+        // size="sm"
+        px={0}
       >
-        <DrawerOverlay />
-        <DrawerContent background="background.100">
+        <DrawerContent background="background.100" p={[2, 2, 5]}>
           <DrawerCloseButton />
-          <DrawerHeader>Charts</DrawerHeader>
-
-          <DrawerBody>
+          <DrawerBody p={0}>
             <ChartEditor />
           </DrawerBody>
 
-          <DrawerFooter>
-            <Button variant="outline" mr={3} onClick={onClose}>
-              Cancel
-            </Button>
-            <Button colorScheme="blue">Save</Button>
-          </DrawerFooter>
         </DrawerContent>
       </Drawer>
     </>

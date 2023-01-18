@@ -1,13 +1,17 @@
+/* eslint-disable consistent-return */
+/* eslint-disable no-nested-ternary */
 /* eslint-disable quote-props */
 /* eslint-disable no-param-reassign */
 /* eslint-disable react/prop-types */
-import { Box, Flex } from '@chakra-ui/react';
-import { addAfterEffect, addEffect } from '@react-three/fiber';
-import { rgb } from 'd3';
-import React, {
+import {
+  Box, Center, Flex, VStack,
+} from '@chakra-ui/react';
+import { addEffect } from '@react-three/fiber';
+import {
   useCallback,
   useEffect, useRef, useState,
 } from 'react';
+import { unstable_batchedUpdates } from 'react-dom';
 import uPlot from 'uplot';
 import UplotReact from 'uplot-react';
 import shallow from 'zustand/shallow';
@@ -69,7 +73,7 @@ const dataHelpers = {
 };
 
 function Chart({
-  series, window,
+  series, chartWindow, pauseUpdates, showLegend = true,
 }) {
   const frame = useRef(useFrameStore.getState().frame);
   useEffect(() => {
@@ -80,44 +84,26 @@ function Chart({
     );
   }, []);
   const {
-    time, setPaused, isPaused,
+    time,
   } = useSimStore(
     (state) => ({
       satellites: state.mission.satellites.customers,
-      setPaused: state.setPaused,
-      isPaused: state.isPaused,
       // spacePowers: state.mission.satellites.spacePowers,
       time: state.mission.time,
     }),
     shallow,
   );
 
-  console.log(series);
-  const shouldFixYScale = useRef(true);
+  // initialize chart
+
   const chart = useRef();
   const [options, setOptions] = useState({
-    title: `${dataHelpers[series[0].param].name}`,
     width: 800,
     height: 400,
     class: 'satellite-chart',
     pxAlign: 0,
     ms: 1,
     hooks: {
-      addSeries: [
-        (u, seriesIdx) => {
-          console.log(`addSeries${u.status === 0 ? ' (init)' : ''}`, seriesIdx);
-        },
-      ],
-      delSeries: [
-        (u, seriesIdx) => {
-          console.log('delSeries', seriesIdx);
-        },
-      ],
-      setSeries: [
-        (u, seriesIdx) => {
-          console.log('setSeries', seriesIdx);
-        },
-      ],
       init: [
         (u) => {
           [...u.root.querySelectorAll('.u-legend .u-series')].forEach((el, i) => {
@@ -128,20 +114,6 @@ function Chart({
         },
       ],
     },
-    scales: {
-      'y': {
-        range: (self, dataMin, dataMax) => (shouldFixYScale.current
-          ? [0, 100] : (uPlot.rangeNum(dataMin, dataMax, 0.1, true))),
-      },
-
-    },
-    series: [{ _hide: true, scale: 'x' }, ...series.map((s) => ({
-      label: s.name,
-      stroke: s.color,
-      paths: uPlot.paths.linear(),
-      scale: 'y',
-      // value: (self, rawValue) => `${(rawValue * 100).toFixed(1)}%`,
-    }))],
     axes: [{
       stroke: '#EDEDED',
       grid: {
@@ -153,6 +125,7 @@ function Chart({
     {
       stroke: '#EDEDED',
       scale: 'y',
+      // size: 50,
       grid: {
         show: true,
         stroke: '#EDEDED',
@@ -163,96 +136,129 @@ function Chart({
 
   });
 
-  const pauseUpdates = useRef(true);
+  const [data, setData] = useState([
+    time.slice(0, frame.current),
+    ...series.map((s) => s.data.slice(0, frame.current)),
+  ]);
 
-  const updateData = () => {
-    if (!chart.current) return;
-    if (pauseUpdates.current || isPaused) return;
-    const start = frame.current - window.current >= 0
-      ? frame.current - window.current : 0;
-    const newData = [
-      time.slice(start, frame.current > window.current ? frame.current : window.current),
-      ...series.map((s) => s.data.slice(start, frame.current)),
-    ];
-    chart.current.setData(newData);
-  };
-
-  useEffect(() => {
-    if (!chart.current) return;
-    pauseUpdates.current = true;
-    // setPaused(true);
-
-    console.log(chart.current);
-    chart.current.batch(() => {
-      const helpers = dataHelpers[series[0].param];
-      console.log(helpers);
-      series.forEach((s, i) => {
-        const newSeries = {
-          label: `${s.name}`,
-          stroke: s.color,
-          paths: uPlot.paths.linear(),
-        };
-        if (chart.current.series[i + 1]) {
-          chart.current.setSeries(i + 1, newSeries);
-          return;
-        }
-        chart.current.addSeries(newSeries, i + 1);
-      });
-
-      if (chart.current.series.length > series.length + 1) {
-        chart.current.series.slice(series.length + 1).forEach(() => {
-          chart.current.delSeries(series.length + 1);
-          chart.current.setData(chart.current.data.filter((v, j) => j !== series.length + 1));
-        });
-      }
-    });
-    shouldFixYScale.current = series[0].shouldFixYScale;
-    chart.current.redraw();
-    // setPaused(false);
-    pauseUpdates.current = false;
-  }, [series]);
+  // DOM handling
 
   const target = useRef();
-
-  addEffect(() => {
-    // if (prevFrame.current === frame.current) return;
-    // if (!time) return;
-    // if (!canvasRef.current) return;
-    if (!chart.current) return;
-    if (!target.current) return;
-    if (isPaused || pauseUpdates.current) return;
-    updateData();
-
-    // chart.current.update();
-    // prevFrame.current = frame.current;
-  });
-
+  const parentRef = useRef();
   const [isMounted, setMounted] = useState(false);
+
   const ref = useCallback((node) => {
     target.current = node;
     setMounted(true);
   }, []);
 
+  const handleResize = () => {
+    if (!parentRef.current) return;
+    if (!chart.current) return;
+    const width = parentRef.current.clientWidth;
+    setOptions((prev) => ({
+      ...prev,
+      width: width > 1400 ? 1000 : width * (showLegend ? 0.8 : 1),
+    }));
+  };
+
+  useEffect(() => {
+    window.addEventListener('resize', handleResize, false);
+    handleResize();
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleLegend = () => {
+    const legend = chart.current.root.querySelector('.u-legend');
+    if (showLegend) {
+      legend.style.display = 'table';
+    } else {
+      legend.style.display = 'none';
+    }
+  };
+  useEffect(() => {
+    if (!chart.current) return;
+    handleLegend();
+    handleResize();
+    chart.current.redraw();
+  }, [showLegend]);
+
+  // updating data (realtime)
+
+  const updateData = () => {
+    const start = frame.current - chartWindow.current >= 0
+      ? frame.current - chartWindow.current : 0;
+    return [
+      time.slice(start, frame.current > chartWindow.current ? frame.current : chartWindow.current),
+      ...series.map((s) => s.data.slice(start, frame.current)),
+    ];
+  };
+
+  addEffect(() => {
+    if (!chart.current) return;
+    if (pauseUpdates.current) return;
+    chart.current.setData(updateData());
+  });
+
+  // updating series (on user selection)
+
+  useEffect(() => {
+    if (!chart.current) return;
+    pauseUpdates.current = true;
+    let title;
+    let scale;
+    if (series.length) {
+      scale = { min: 0, max: 100 };
+      if (!series[0].shouldFixYScale) {
+        const min = Math.min(...series.map((s) => s.scale.min));
+        const max = Math.max(...series.map((s) => s.scale.max));
+        scale.min = min > 0 ? min * 0.9 : min * 1.1;
+        scale.max = max > 0 ? max * 1.1 : max * 0.9;
+      }
+      title = `${dataHelpers[series[0].param].name}`;
+    }
+
+    setOptions((prev) => ({
+      ...prev,
+      title: title || prev.title,
+      series: [{ _hide: true, scale: 'x' }, ...series.map((s) => ({
+        label: s.name,
+        stroke: s.color,
+        paths: uPlot.paths.linear(),
+        scale: 'y',
+        // value: (self, rawValue) => `${(rawValue * 100).toFixed(1)}%`,
+      }))],
+      scales: scale ? {
+        'y': {
+          range: () => ([scale.min, scale.max]),
+        },
+      } : prev.scales,
+    }));
+  }, [series]);
+
+  useEffect(() => {
+    if (!chart.current) return;
+    pauseUpdates.current = true;
+    handleLegend();
+    setData(updateData());
+    pauseUpdates.current = false;
+  }, [options]);
+
   return (
-    <Box width="100%">
-      <Flex justify="center">
-        <div ref={ref} width="100%" />
-        {isMounted
+    <Flex justify="center" width="100%" ref={parentRef}>
+      <div ref={ref} width="100%" />
+      {isMounted
         && (
         <UplotReact
           key="space-chart"
           onCreate={(u) => { chart.current = u; }}
-          data={[
-            time.slice(0, frame.current),
-            ...series.map((s) => s.data.slice(0, frame.current)),
-          ]}
+          data={data}
           target={target.current}
           options={options}
         />
         )}
-
-      </Flex>
-    </Box>
+    </Flex>
   );
 }
 

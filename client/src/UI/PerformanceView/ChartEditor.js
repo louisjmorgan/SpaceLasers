@@ -6,7 +6,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {
   Box, Center, Flex, FormControl, FormLabel,
-  Select, Slider, SliderFilledTrack, SliderThumb, SliderTrack, Text, VStack,
+  Select, Slider, SliderFilledTrack, SliderMark, SliderThumb, SliderTrack, Switch, Text, VStack,
 } from '@chakra-ui/react';
 
 import React, {
@@ -16,7 +16,7 @@ import React, {
 } from 'react';
 import shallow from 'zustand/shallow';
 import { useFrameStore, useSimStore } from '../../Model/store';
-import { FRAMES } from '../../Util/constants';
+import { FPmS, FRAMES } from '../../Util/constants';
 import Chart from './Chart';
 import SatelliteList from './SatelliteList';
 
@@ -95,15 +95,25 @@ const palette = [
   '#CCA300', // 9: dark sand
 ];
 
+const zoomScale = [
+  1,
+  48 / 44,
+  46 / 4,
+  12,
+  16,
+
+];
+
 function ChartEditor() {
   const {
-    customers, time, spacePowers, averages,
+    customers, time, spacePowers, averages, setPaused,
   } = useSimStore(
     (state) => ({
       customers: state.mission.satellites.customers,
       spacePowers: state.mission.satellites.spacePowers,
       averages: state.mission.satellites.averages,
       time: state.mission.time,
+      setPaused: state.setPaused,
     }),
     shallow,
   );
@@ -114,13 +124,17 @@ function ChartEditor() {
   });
   const [selectedParams, setSelectedParams] = useState('chargeState');
 
-  const onSelectSatellite = (id) => {
-    // const sat = customers.find((c) => c.id === id);
+  const onSelectSatellite = (values) => {
+    // // const sat = customers.fivalues((c) => c.id === id);
+    // setSelected((prev) => ({
+    //   ...prev,
+    //   satellites: prev.satellites.includes(id)
+    //     ? prev.satellites.filter((v) => v !== id)
+    //     : [...prev.satellites, id],
+    // }));
     setSelected((prev) => ({
       ...prev,
-      satellites: prev.satellites.includes(id)
-        ? prev.satellites.filter((v) => v !== id)
-        : [...prev.satellites, id],
+      satellites: [...values.map((s) => s.value)],
     }));
   };
 
@@ -140,6 +154,10 @@ function ChartEditor() {
     data: time.map(
       (t, j) => dataHelpers.chargeState.getValue(j, customers[0]),
     ),
+    scale: {
+      min: 0,
+      max: 100,
+    },
     shouldFixYScale: true,
   },
   {
@@ -152,66 +170,108 @@ function ChartEditor() {
     ),
     shouldFixYScale: true,
   }]);
-
+  const pauseUpdates = useRef(false);
   useEffect(() => {
+    pauseUpdates.current = true;
     setSeries((prev) => {
       let index = 0;
       const newSeries = selected.satellites.map((id) => {
         const satellite = customers.find((c) => c.id === id);
         return (
-          selected.params.map((param) => ({
-            data: time.map(
+          selected.params.map((param) => {
+            const data = time.map(
               (t, j) => dataHelpers[param].getValue(j, satellite),
-            ),
-            param,
-            name: `${satellite.name}-${dataHelpers[param].name}`,
-            color: palette[index++],
-            shouldFixYScale: dataHelpers[param].shouldFixYScale,
-          }))
-        );
+            );
+            return {
+              data,
+              scale: {
+                min: Math.min(...data),
+                max: Math.max(...data),
+              },
+              param,
+              name: `${satellite.name} ${dataHelpers[param].label}`,
+              color: palette[index++],
+              shouldFixYScale: dataHelpers[param].shouldFixYScale,
+            };
+          }));
       });
       return newSeries.flat();
     });
   }, [selected.satellites, selected.params]);
-  console.log(series);
 
-  const window = useRef(300);
-
+  const chartWindow = useRef(FRAMES / 24);
+  const [zoom, setZoom] = useState(12);
   const handleZoom = (v) => {
-    window.current = FRAMES / v;
+    chartWindow.current = FRAMES / (48 / (48 - v));
+    setZoom(48 - v);
+  };
+
+  const [showLegend, setLegend] = useState(true);
+
+  const handleLegend = (e) => {
+    setLegend(e.target.checked);
   };
   return (
-    <VStack>
+    <Flex direction="column" justify="start" height="100%">
       <Chart
         series={series}
         time={time}
-        window={window}
+        chartWindow={chartWindow}
+        pauseUpdates={pauseUpdates}
+        showLegend={showLegend}
       />
-      <FormControl width="50%">
-        <Flex gap={3} align="center" justify="center" m={3}>
-          <FormLabel height="100%" margin={0}>Zoom:</FormLabel>
-          <Slider
-            aria-label="slider-ex-2"
-            colorScheme="purple"
-            defaultValue={300}
-            min={1}
-            max={48}
-            step={5}
-            onChange={handleZoom}
-            maxWidth="10rem"
+      <Flex width="100%" align="start" justify="start" pl="15%" direction="column" mt="66px" mb={5} gap={7}>
+        <Flex align="start" flexWrap="wrap" gap={10} width="100%">
+          <FormControl
+            maxWidth={['90%', '90%', '60%']}
+            as={VStack}
+            align="start"
+            mb={5}
           >
-            <SliderTrack>
-              <SliderFilledTrack />
-            </SliderTrack>
-            <SliderThumb />
-          </Slider>
+            <FormLabel height="100%" textAlign="left">Zoom</FormLabel>
+            <Slider
+              aria-label="slider-ex-2"
+              colorScheme="black"
+              defaultValue={36}
+              min={24}
+              max={47}
+              step={2}
+              maxWidth="30ch"
+              onChange={handleZoom}
+            >
+              <SliderMark
+                value={48 - zoom}
+                textAlign="left"
+                color="white"
+                mt="2"
+                w="15ch"
+              >
+                {`${zoom} `}
+                hour
+              </SliderMark>
+              <SliderTrack>
+                <SliderFilledTrack />
+              </SliderTrack>
+              <SliderThumb />
+            </Slider>
+          </FormControl>
+          <FormControl
+            display="flex"
+            alignItems="start"
+            width="20ch"
+            flexDirection="column"
+            maxWidth={['90%', '90%', '30%']}
+          >
+            <FormLabel htmlFor="show-legend">
+              Show Legend
+            </FormLabel>
+            <Switch id="show-legend" isChecked={showLegend} onChange={handleLegend} />
+          </FormControl>
         </Flex>
-      </FormControl>
-      <Flex width="100%" justify="flex-start">
-        <SatelliteList onSelectSatellite={onSelectSatellite} selected={selected.satellites} />
-        <Center width="50%">
-          <VStack width="50%">
-            <h4>Choose parameter</h4>
+        <Flex align="start" flexWrap="wrap" gap={10} width="100%">
+          <SatelliteList onSelectSatellite={onSelectSatellite} selected={selected.satellites} />
+          <FormControl as={VStack} align="start" maxWidth={['90%', '90%', '30%']}>
+            <FormLabel textAlign="left">Parameter</FormLabel>
             <Select
               onChange={onSelectParam}
             >
@@ -219,11 +279,10 @@ function ChartEditor() {
                 <option value={choice.key} key={choice.key}>{choice.name}</option>
               ))}
             </Select>
-          </VStack>
-        </Center>
-        <Box width="20%" />
+          </FormControl>
+        </Flex>
       </Flex>
-    </VStack>
+    </Flex>
   );
 }
 

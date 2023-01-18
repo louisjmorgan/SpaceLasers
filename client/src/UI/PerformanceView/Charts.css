@@ -43,21 +43,70 @@
   font-size: 0.75rem;
 } */
 
+.uplot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  height: 400px;
+  margin-bottom: 2rem;
+}
+
+.u-title {
+  flex-basis: 100%;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
 
 .u-wrap {
   position: relative;
-  width: 100%;
-  color: 'white'
+  color: 'white';
+  flex-basis: 80%;
+  flex-grow: 2;
+
 }
+
+
 .u-under, .u-axis {
   position: absolute;
-  width: 100%;
 
 }
 
 .u-wrap > canvas {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
+  height: 450px;
   color: 'white'
 
 }
+
+.u-legend {
+  /* width: 15vw; */
+  flex-basis: 10%;
+  font-size: 0.75rem;
+
+}
+
+.u-label {
+  font-weight: 400;
+
+}
+
+.u-value {
+  display: none
+}
+
+@media only screen and (max-width: 600px) {
+  .u-legend { 
+    flex-basis: 20%;
+  }
+
+  .u-wrap {
+    flex-basis: 80%;
+  }
+}
+

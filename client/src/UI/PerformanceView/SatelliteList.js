@@ -1,48 +1,49 @@
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/prop-types */
 import {
-  Checkbox, CheckboxGroup, VStack,
+  Checkbox, CheckboxGroup, FormControl, FormLabel, VStack,
 } from '@chakra-ui/react';
 import shallow from 'zustand/shallow';
 import { useSimStore } from '../../Model/store';
 import './Charts.css';
+import { Select, useChakraSelectProps } from 'chakra-react-select';
 
 function SatelliteList({ onSelectSatellite, selected }) {
   const {
-    customers,
+    options, satelliteOptions, customers,
   } = useSimStore(
     (state) => ({
+      options: state.mission.satellites.customers.map((c) => ({ label: c.name, value: c.id })),
       customers: state.mission.satellites.customers,
+      // satelliteOptions: state.satelliteOptions,
     }),
     shallow,
   );
-  const handleSelect = (e) => {
-    const { id } = e.target;
-    onSelectSatellite(id);
+
+  const handleSelect = (v) => {
+    onSelectSatellite(v);
   };
 
-  return (
-    <VStack width="50%">
-      <h4>
-        Show data for
-        {' '}
-        <span>(max 6)</span>
-      </h4>
+  const selectProps = useChakraSelectProps({
+    value: options.filter((o) => selected.includes(o.value)),
+    onChange: handleSelect,
+    isMulti: true,
+  });
 
-      <CheckboxGroup width="100%">
-        {customers.map((customer) => (
-          <Checkbox
-            onChange={handleSelect}
-            id={customer.id}
-            key={customer.id}
-            align="start"
-            isDisabled={(selected.length === 1 && selected.includes(customer.id))}
-            isChecked={selected.includes(customer.id)}
-          >
-            {customer.name}
-          </Checkbox>
-        ))}
-      </CheckboxGroup>
-    </VStack>
+  return (
+    <FormControl as={VStack} align="stretch" maxWidth={['90%', '90%', '60%']}>
+      <FormLabel
+        textAlign="left"
+      >
+        Satellites
+      </FormLabel>
+      <Select
+        {...selectProps}
+        options={options}
+        width="100%"
+        menuPlacement="top"
+      />
+    </FormControl>
   );
 }
 
