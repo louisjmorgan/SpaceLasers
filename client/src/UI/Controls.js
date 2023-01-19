@@ -150,7 +150,7 @@ function Controls() {
         <MenuButton
           as={Button}
           rightIcon={<ChevronDownIcon />}
-          _expanded={{ bg: 'green.500' }}
+          _expanded={{ bg: 'white', color: 'background.300' }}
         >
           <Flex
             align="center"

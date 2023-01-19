@@ -3,6 +3,7 @@ import {
   Button, Flex, GridItem, Show,
 } from '@chakra-ui/react';
 import {
+  FaChartLine,
   // FaRocket,
   FaSatellite,
 } from 'react-icons/fa';
@@ -20,6 +21,10 @@ function MenuButtons() {
     openMenu('satellites');
   };
 
+  const onPerformance = () => {
+    openMenu('performance');
+  };
+
   // const onMission = () => {
   //   openMenu('mission');
   // };
@@ -28,7 +33,7 @@ function MenuButtons() {
     <GridItem
       area="menu-buttons"
     >
-      {isOpen.satellites
+      {isOpen.satellites || isOpen.performance
       || (
       <Flex alignItems="center" justify="center" height="100%" gap={3}>
         <Button
@@ -44,17 +49,19 @@ function MenuButtons() {
             <FaSatellite />
           </Flex>
         </Button>
-        {/* <Button
-          id="mission"
-          onClick={onMission}
+        <Button
+          id="performance"
+          onClick={onPerformance}
+          disabled={!isInitialized}
         >
           <Flex align="center" gap={2}>
+
             <Show above="md">
-              Create a Mission
+              Performance
             </Show>
-            <FaRocket />
+            <FaChartLine />
           </Flex>
-        </Button> */}
+        </Button>
       </Flex>
       )}
     </GridItem>

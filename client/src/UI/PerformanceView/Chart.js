@@ -241,7 +241,8 @@ function Chart({
     if (!chart.current) return;
     pauseUpdates.current = true;
     handleLegend();
-    setData(updateData());
+    // setData(updateData());
+    chart.current.setData(updateData());
     pauseUpdates.current = false;
   }, [options]);
 

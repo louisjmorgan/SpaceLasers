@@ -139,7 +139,7 @@ function HUD() {
   useEffect(() => {
     useFrameStore.subscribe(
       (state) => {
-        if (state.frame - 10 > frame.current) frame.current = state.frame;
+        if (state.frame - 5 > frame.current) frame.current = state.frame;
         if (frame.current > state.frame) frame.current = state.frame;
       },
     );

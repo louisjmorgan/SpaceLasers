@@ -253,6 +253,7 @@ const useUIStore = create((set) => ({
     satelliteConfig: false,
     constellationConfig: false,
     spacePowerConfig: false,
+    performance: false,
     mission: false,
     HUD: true,
   },

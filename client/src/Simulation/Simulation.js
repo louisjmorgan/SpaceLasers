@@ -41,6 +41,7 @@ function Simulation() {
           style={{
             pointerEvents: 'none',
             position: 'fixed',
+            cursor: 'pointer',
             top: '0px',
             left: '0px',
           }}
@@ -51,7 +52,7 @@ function Simulation() {
             <PerformanceMonitor
               onChange={({ factor }) => setDpr((0.75 + 1.5 * factor).toFixed(1))}
             />
-            {/* <Camera /> */}
+            <Camera />
             <Frame />
             <Stars
               radius={100} // Radius of the inner sphere (default=100)
@@ -62,7 +63,6 @@ function Simulation() {
               fade
               speed={isPaused ? 0 : 1}
             />
-            {/* <ambientLight intensity={0.25} /> */}
             <Sun />
             <Earth />
             <Satellites />
