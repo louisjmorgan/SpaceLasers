@@ -36,7 +36,6 @@ const baseStyle = definePartsStyle((props) => {
   //   overflow: "auto", // change the font weight
   // },
   const { colorScheme: c } = props;
-  console.log(c);
   return {
     root: {
       margin: 0,

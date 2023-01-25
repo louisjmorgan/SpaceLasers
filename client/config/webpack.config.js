@@ -14,6 +14,7 @@ const plugins = [
   new HtmlWebpackPlugin({
     title: 'Space Power Simulator',
     template: path.resolve(__dirname, '..', './src/index.html'),
+    favicon: './src/Assets/favicon.jpg'
   }),
   new webpack.ProvidePlugin({
     // Make a global `process` variable that points to the `process` package,
@@ -23,8 +24,8 @@ const plugins = [
  })
 ];
 
-const PUBLIC_URL = process.env.PUBLIC_URL || '/';
-console.log(PUBLIC_URL)
+// const PUBLIC_URL = process.env.PUBLIC_URL || '/';
+// console.log(PUBLIC_URL)
 
 if (process.env.NODE_ENV === 'production') {
   mode = 'production';
@@ -49,7 +50,7 @@ module.exports = {
     path: path.resolve(__dirname, '..', 'build'),
     filename: '[name].bundle.js',
     assetModuleFilename: 'assets/[hash][ext][query]',
-    publicPath: PUBLIC_URL,
+    // publicPath: PUBLIC_URL,
   },
 
   optimization: {

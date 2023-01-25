@@ -22,7 +22,6 @@ function PerformanceView() {
     closeMenu('performance');
     openMenu('HUD');
   };
-  console.log(isOpen);
   return isOpen && (
   <Drawer
     isOpen={isOpen}

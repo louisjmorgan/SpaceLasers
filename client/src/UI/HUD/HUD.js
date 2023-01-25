@@ -64,7 +64,7 @@ const statProps = [
 function HUD() {
   const {
     satellites, constellations, toggleLabel, toggleAllLabels,
-    satelliteOptions, constellationOptions, isInitialized,
+    satelliteOptions, constellationOptions,
   } = useSimStore((state) => ({
     satellites: state.mission.satellites,
     constellations: state.mission.constellations,
@@ -72,7 +72,6 @@ function HUD() {
     toggleAllLabels: state.toggleAllLabels,
     satelliteOptions: state.satelliteOptions,
     constellationOptions: state.constellationOptions,
-    isInitialized: state.isInitialized,
   }), shallow);
 
   const {
@@ -225,15 +224,15 @@ function HUD() {
       > */}
       <DrawerContent
         width="100%"
-        backgroundColor="transparent"
+        backgroundColor={['background.100', 'background.100', 'transparent']}
         pb="6vh"
         pt={5}
         boxShadow="0"
 
       >
-        <Flex height="100%" justify="space-between" align-items="center">
+        <Flex height="100%" justify="space-around" align-items="center" flexWrap="wrap" width="100%">
           <Center flex={1}>
-            <Flex gap={5} direction="column">
+            <Flex gap={5} direction="column" minWidth="15ch">
               <Select value={selected.constellation.id} onChange={handleSelectConstellation}>
                 {[...constellationOptions.entries()].map(([id, constellation]) => (
                   <option
@@ -275,30 +274,30 @@ function HUD() {
               </Stat>
             </Center>
           </Box>
-          <Center flex={1}>
-            <Box>
-              <StatGroup>
-                {statProps.slice(0, 2).map((stat) => (
-                  <Stat
-                    width="30ch"
-                    key={stat.key}
-                    id={stat.key}
-                    ref={handleStatRefs}
-                  >
-                    <StatLabel>{stat.label}</StatLabel>
-                    <StatNumber textStyle="number"><span /></StatNumber>
-                    <StatHelpText>
-                      {stat.shouldArrows
-                        ? (
-                          <TriangleUpIcon className="up-arrow" m={1} ml={0} />
-                        )
-                        : '' }
-                      <span className="help-text" />
-                    </StatHelpText>
-                  </Stat>
-                ))}
-              </StatGroup>
-            </Box>
+          <Center flex={1} minWidth="15ch">
+            <StatGroup as={Flex} justify="space-around" width="100%" flexWrap="wrap" gap={5}>
+              {statProps.slice(0, 2).map((stat) => (
+                <Stat
+                  key={stat.key}
+                  id={stat.key}
+                  ref={handleStatRefs}
+                  width="auto"
+                  as={Flex}
+                  justify="center"
+                >
+                  <StatLabel>{stat.label}</StatLabel>
+                  <StatNumber textStyle="number"><span /></StatNumber>
+                  <StatHelpText>
+                    {stat.shouldArrows
+                      ? (
+                        <TriangleUpIcon className="up-arrow" m={1} ml={0} />
+                      )
+                      : '' }
+                    <span className="help-text" />
+                  </StatHelpText>
+                </Stat>
+              ))}
+            </StatGroup>
           </Center>
         </Flex>
       </DrawerContent>

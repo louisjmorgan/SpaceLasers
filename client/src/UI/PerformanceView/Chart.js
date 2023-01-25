@@ -147,11 +147,6 @@ function Chart({
   const parentRef = useRef();
   const [isMounted, setMounted] = useState(false);
 
-  const ref = useCallback((node) => {
-    target.current = node;
-    setMounted(true);
-  }, []);
-
   const handleResize = () => {
     if (!parentRef.current) return;
     if (!chart.current) return;
@@ -168,6 +163,13 @@ function Chart({
 
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const ref = useCallback((node) => {
+    target.current = node;
+    setMounted(true);
+  }, []);
+
+  useEffect(() => { handleResize(); }, [isMounted]);
 
   const handleLegend = () => {
     const legend = chart.current.root.querySelector('.u-legend');

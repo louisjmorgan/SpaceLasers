@@ -299,7 +299,6 @@ function loadTLEs(url) {
     if (res.ok) {
       return res.text().then((text) => {
         const satellites = parseTLEs(text);
-        console.log(text, satellites);
         return satellites;
       });
     }
