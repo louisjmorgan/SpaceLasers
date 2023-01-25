@@ -31,7 +31,10 @@ function PerformanceView() {
     size={['full', 'full', 'xl', 'xl']}
     px={0}
   >
-    <DrawerContent background="background.100" p={[2, 2, 5]}>
+    <DrawerContent
+      bg={['background.300', 'background.300', 'background.100']}
+      p={[2, 2, 5]}
+    >
       <DrawerCloseButton />
       <DrawerBody p={0}>
         <ChartEditor />
